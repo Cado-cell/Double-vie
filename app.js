@@ -1255,6 +1255,20 @@ function zodiacOf(d,m){for(const [n,mm,dd] of ZODIAC)if(m<mm||(m===mm&&d<=dd))re
 
 /* ---------- Personnes ---------- */
 const NPC_JOBS=['boulanger','infirmière','comptable','professeur','mécanicien','avocate','plombier','pharmacienne','architecte','chauffeur de bus','fleuriste','policier','développeuse','agricultrice','journaliste','coiffeur','médecin','caissière','électricien','sans emploi','agent immobilier','cheffe de projet','pompier','vétérinaire'];
+const NPC_PAY={boulanger:26000,infirmière:30000,comptable:38000,professeur:34000,mécanicien:28000,avocate:62000,plombier:32000,pharmacienne:48000,architecte:45000,'chauffeur de bus':27000,fleuriste:21000,policier:30000,développeuse:48000,agricultrice:24000,journaliste:34000,coiffeur:22000,médecin:82000,caissière:19000,électricien:31000,'sans emploi':11000,'agent immobilier':38000,'cheffe de projet':52000,pompier:29000,vétérinaire:50000};
+/* Revenus et patrimoine estimés d’un PNJ : calculés à la demande, donc toujours à jour avec son âge. */
+function npcWealth(L,p){
+  if(!p||p.alive===false||p.type==='pet')return null;
+  if(p.thrift==null){p.thrift=R(3,20)/100;p.luck=R(50,170)/100;p.pk=R(8,22)}
+  const k=(COUNTRIES[L.country]||COUNTRIES.France).cost*.6+.4;
+  if(p.age<18)return {inc:0,cash:Math.round(Math.min(p.age,17)*p.pk*k),pocket:1};
+  const base=(NPC_PAY[(p.job||'').toLowerCase()]||28000)*(p.type==='boss'?2.2:1)*k;
+  const ret=p.age>=65;
+  const inc=Math.round(base*(ret?.55:1)*(p.fame>=40?1+p.fame/25:1));
+  const worked=Math.max(0,Math.min(p.age,64)-(p.age<23?p.age:22));
+  const cash=Math.round((base*worked*p.thrift*p.luck+base*.15)*(ret?.9:1));
+  return {inc,cash,ret};
+}
 function person(g,age,last,country,parents){
   return {id:nid(),first:rname(g,country),last:last||rlast(country),gender:g,age,rel:R(55,95),alive:true,looks:R(10,100),smarts:R(10,100),health:R(60,100),crazy:R(0,70),fame:chance(.03)?R(20,80):R(0,8),ill:[],type:'friend',look:genLook(parents&&parents[0]&&parents[0].look,parents&&parents[1]&&parents[1].look,g),job:age>=22?pick(NPC_JOBS):''};
 }
@@ -12189,9 +12203,9 @@ function renderMain(){
   if(!G){app.hidden=true;if(su.hidden){buildSetup();su.hidden=false}return}
   su.hidden=true;app.hidden=false;
   const L=cur();app.style.setProperty('--pc',`var(--p${G.turn+1})`);
-  $('#players').innerHTML=G.mode===2?G.players.map((p,i)=>`<span class="chip${i===G.turn?' on':''}" style="--c:var(--p${i+1})"><span class="cav">${avatar(p,{happy:p.st.happy})}</span>${esc(p.first)} · ${p.age}</span>`).join(''):'';
+  $('#players').innerHTML=G.mode===2?G.players.map((p,i)=>`<span class="chip${i===G.turn?' on':''}" style="--c:var(--p${i+1})"><span class="cav">${avatar(p,{happy:p.st.happy})}</span><span class="ctx"><b>${esc(p.first)}</b><small>${fmtk(p.money)}</small></span></span>`).join(''):'';
   const pt=L.partner?partnerOf(L):null;
-  $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small>${fmt(L.money)}</div>`;
+  $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small>${fmt(L.money)}${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
   const log=$('#log');
   log.innerHTML=L.log.map(b=>`<div class="yr"><div class="ya">${b.age}<small>${b.age>1?'ans':'an'}</small></div><div class="yl">${b.lines.map(logLine).join('')}</div></div>`).join('')+(L.alive?'':obitHtml(L));
   if(L.alive)log.scrollTop=log.scrollHeight;else{const ob=log.querySelector('.obit');if(ob)log.scrollTop=ob.offsetTop-30}
@@ -12453,6 +12467,7 @@ function personProfile(L,p,extra={}){
   if(p.type==='ex'&&p.together)rows.push(['Années ensemble',String(p.together)]);
   if(extra.kids!=null)rows.push(['Enfants',String(extra.kids)]);else if(kidsOf!=null)rows.push(['Enfants',String(kidsOf)]);
   rows.push(['Profession',extra.job||jobOfNpc(p)]);
+  const w=extra.noWealth?null:npcWealth(L,p);if(w){if(w.pocket)rows.push(['Argent de poche',`≈ ${fmt(w.cash)}`]);else{rows.push([w.ret?'Retraite':'Revenus',`≈ ${fmtk(w.inc)} par an`]);rows.push(['Patrimoine estimé',`≈ ${fmtk(w.cash)}`])}}
   if(p.alive!==false)rows.push(['Maladies',ill.length?cap(ill.join(', ')):'Aucune']);
   if(extra.more)rows.push(...extra.more);
   const bars=p.alive===false?[]:[['Relation',extra.rel!=null?extra.rel:p.rel],['Apparence',p.looks??50],['Intelligence',p.smarts??50],['Santé',p.health??70],['Folie',p.crazy??20,'v'],['Gloire',p.fame??0,'g']];
@@ -12476,7 +12491,7 @@ function pPartner(){
   const o=linkedOther(L);const pp=o?{first:o.first,last:o.last,gender:o.gender,age:o.age,look:o.look,alive:o.alive,looks:o.st.looks,smarts:o.st.smarts,health:o.st.health,crazy:o.hid.crazy,fame:o.fame,ill:o.ill,type:'partner'}:p;
   const key=linked?'player'+L.partner.link:p.id;
   const prof=personProfile(L,pp,{role:partnerLabel(L)+(linked?` · joueur ${L.partner.link+1}`:''),relLabel:partnerLabel(L),together:L.age-(L.partner.since??L.age),kids:sharedKids(L,key,L.partner.since),job:linked?jobLabel(o):jobOfNpc(p),rel:L.partner.rel,av:linked?avOf(o,o):avatar(p),
-    more:L.partner.status==='marie'?[['Mariés depuis',An(L.age-(L.partner.wedAge??L.age))],['Contrat de mariage',L.partner.prenup?'Oui':'Non']]:null});
+    more:[].concat(linked?[['Compte',fmt(o.money)],['Patrimoine net',fmtk(netWorth(o))]]:[],L.partner.status==='marie'?[['Mariés depuis',An(L.age-(L.partner.wedAge??L.age))],['Contrat de mariage',L.partner.prenup?'Oui':'Non']]:[]),noWealth:linked});
   return {title:partnerLabel(L),html:prof+group('Ensemble',H)};
 }
 function pBoss(){
