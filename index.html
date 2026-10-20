@@ -388,7 +388,8 @@ details.led-wrap>summary small{display:block;color:var(--muted);font-weight:600;
 </div>
 
 <div id="toast" class="toast" hidden></div>
+<script>window.DV_VERSION='20261020-134506'</script>
 <script src="app.js"></script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}</script>
+<script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=1;location.reload()}});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});setInterval(()=>r.update().catch(()=>{}),600000)}).catch(()=>{})})}</script>
 </body>
 </html>

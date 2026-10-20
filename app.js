@@ -12505,6 +12505,7 @@ function pBoss(){
     act(L,{ic:'🧾',t:'Te plaindre de lui aux RH',key:'b_rh',danger:1,fn:L=>{B.rel=clamp(B.rel-R(15,25));if(chance(.3)){L.job.perf=clamp(L.job.perf+5);return out(L,'Les RH te donnent raison. Ambiance glaciale.')}return out(L,'Les RH classent ta plainte. Ton patron l’apprend.')}}),
     act(L,{ic:'💢',t:'Lui tenir tête en réunion',key:'b_tete',danger:1,fn:L=>{if(chance(.35)){B.rel=clamp(B.rel+5);chg(L,{happy:4});return out(L,'Ton aplomb impressionne.')}B.rel=clamp(B.rel-R(10,18));return out(L,`${B.first} ne te le pardonnera pas de sitôt.`)}})])};
 }
+const wTag=(L,p)=>{const w=p&&p.type!=='pet'?npcWealth(L,p):null;return w&&!w.pocket?` · ≈ ${fmtk(w.cash)}`:''};
 function pRel(){
   const L=cur();let h='';const top=[];
   if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:'Trouver l’amour',s:'Applis, soirées, coups de foudre',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':'',fn:L=>{findLove(L)}}));
@@ -12514,11 +12515,11 @@ function pRel(){
   }
   if(!L.prison)top.push(act(L,{ic:'🤝',t:'Se faire un nouvel ami',s:'École, travail, voisinage',min:4,key:'friend',fn:L=>{const f=addFriend(L);chg(L,{happy:4});return out(L,`Tu te lies d’amitié avec ${f.first}.`)}}));
   h+=group('Rencontres',top);
-  {const B=bossOf(L);if(B)h+=group('Travail',[row({av:avatar(B),t:`${B.first} ${B.last}`,s:`${L.job.mil?'Supérieur':ge(B,'Patron','Patronne')} · ${An(B.age)}`,right:mini(B.rel),a:()=>pushPanel(pBoss)})])}
-  if(L.partner){const p=partnerOf(L);h+=group('Couple',[row({av:avatar(p),t:`${p.first} ${p.last}`,s:`${partnerLabel(L)} · ${An(p.age)}${L.partner.link!=null?` · joueur ${L.partner.link+1}`:''}`,right:mini(L.partner.rel),a:()=>pushPanel(pPartner)})])}
+  {const B=bossOf(L);if(B)h+=group('Travail',[row({av:avatar(B),t:`${B.first} ${B.last}`,s:`${L.job.mil?'Supérieur':ge(B,'Patron','Patronne')} · ${An(B.age)}${wTag(L,B)}`,right:mini(B.rel),a:()=>pushPanel(pBoss)})])}
+  if(L.partner){const p=partnerOf(L);h+=group('Couple',[row({av:avatar(p),t:`${p.first} ${p.last}`,s:`${partnerLabel(L)} · ${An(p.age)}${L.partner.link!=null?` · joueur ${L.partner.link+1} · ${fmtk(linkedOther(L).money)}`:wTag(L,L.partner.p)}`,right:mini(L.partner.rel),a:()=>pushPanel(pPartner)})])}
   for(const [n,f] of [['Parents',p=>p.type==='parent'],['Grands-parents',p=>p.type==='grand'],['Frères et sœurs',p=>p.type==='sibling'],['Enfants',p=>p.type==='child'],['Petits-enfants',p=>p.type==='grandkid'],['Amis et collègues',p=>p.type==='friend'],['Ex',p=>p.type==='ex'],['Ennemis',p=>p.type==='enemy'],['Animaux',p=>p.type==='pet']]){
     const list=L.family.filter(f);
-    if(list.length)h+=group(n,list.map(p=>row({av:avatar(p),t:p.type==='pet'?p.first:`${p.first} ${p.last}`,s:`${role(p)} · ${p.alive?An(p.age):(p.gender==='F'?'décédée':'décédé')}`,right:p.alive?mini(p.rel):'',a:()=>pushPanel(()=>pPerson(p.id))})));
+    if(list.length)h+=group(n,list.map(p=>row({av:avatar(p),t:p.type==='pet'?p.first:`${p.first} ${p.last}`,s:`${role(p)} · ${p.alive?An(p.age):(p.gender==='F'?'décédée':'décédé')}${wTag(L,p)}`,right:p.alive?mini(p.rel):'',a:()=>pushPanel(()=>pPerson(p.id))})));
   }
   return {title:'Relations',html:h};
 }
@@ -12736,7 +12737,7 @@ function pMenu(){
     +group('Personnage',[nav('🪪','Fiche personnage','Toutes tes statistiques',pSheet),nav('🌳','Arbre généalogique','Ta famille',pTree),nav('⏳','Machine à remonter le temps','Reviens en arrière',pTime)])
     +group('Partie',[G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
       row({ic:'🗑️',t:'Nouvelle partie',s:'Efface la partie en cours',danger:1,a:()=>pushPanel(confirmP('Nouvelle partie ?','La partie en cours, les rubans et les défis seront effacés de ce navigateur.',()=>{G=null;try{localStorage.removeItem(KEY)}catch(e){}closeSheet();return ''},'Tout effacer'))})])
-    +`<h3 class="sec">Comment jouer</h3><div class="card"><div class="cs">Le bouton <b>Âge</b> fait passer une année. Entre deux années, explore les onglets : études et métier, biens, relations, activités. Touche ton avatar pour voir ta fiche complète. À deux, vous jouez chacun votre tour et vous pouvez vous déclarer votre flamme, vous marier et avoir des enfants ensemble. Tout est débloqué : mode Dieu, machine à remonter le temps, carrières spéciales, royauté, zoo, Bourse, agent secret, mouvement spirituel, marché noir. La partie est sauvegardée automatiquement dans ce navigateur.</div></div>`};
+    +`<p class="cs" style="text-align:center;opacity:.6;margin:14px 0 0">Double Vie · version ${window.DV_VERSION||'locale'}</p>`+`<h3 class="sec">Comment jouer</h3><div class="card"><div class="cs">Le bouton <b>Âge</b> fait passer une année. Entre deux années, explore les onglets : études et métier, biens, relations, activités. Touche ton avatar pour voir ta fiche complète. À deux, vous jouez chacun votre tour et vous pouvez vous déclarer votre flamme, vous marier et avoir des enfants ensemble. Tout est débloqué : mode Dieu, machine à remonter le temps, carrières spéciales, royauté, zoo, Bourse, agent secret, mouvement spirituel, marché noir. La partie est sauvegardée automatiquement dans ce navigateur.</div></div>`};
 }
 
 /* ---------- Écran de départ ---------- */
