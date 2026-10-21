@@ -56,10 +56,11 @@ const FX=(()=>{
   }
 
   /* ---------- Réactions au journal de l’année ---------- */
-  const WIN=/(^|\s)(🎓|💒|👶|🎉|🏆|🥇|🎂|💍|🎊)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|félicitations|enceinte|accouch/i;
+  const WIN=/(^|\s)(🎓|💒|👶|💍|🏆)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|accouch/i;
   const BAD=/(^|\s)(☠️|🕯️|🚑|🔒)|décès|est mort|est morte|meurt|licenci|accident|divorc|te quitte|condamn|incendie/i;
   function reactions(txt){
-    if(WIN.test(txt)){confetti();play('win');buzz([30,40,30])}
+    const now=Date.now();
+    if(WIN.test(txt)){if(now-(reactions.t||0)>8000){reactions.t=now;confetti();play('win');buzz([30,40,30])}}
     else if(BAD.test(txt)){play('bad');buzz([60,40,80])}
   }
 

@@ -374,6 +374,17 @@ details.led-wrap>summary small{display:block;color:var(--muted);font-weight:700;
 .tile b{display:block;font-family:var(--display);font-weight:800;font-size:19px;line-height:1.1;overflow-wrap:anywhere}
 .tile small{display:block;color:var(--muted);font-size:13px;font-weight:700;line-height:1.3;margin-top:3px;overflow-wrap:anywhere}
 
+/* ---------- Idées rapides ---------- */
+.qa{flex:none;display:flex;align-items:center;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px}
+.qa::-webkit-scrollbar{display:none}
+.qa[hidden]{display:none}
+.qh{flex:none;font-size:18px}
+.qchip{flex:none;display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:99px;background:var(--surface);border:2px solid var(--ol);box-shadow:0 2px 0 var(--ol);font-weight:800;font-size:13.5px;color:var(--ink);white-space:nowrap}
+.qchip:active{transform:translateY(2px);box-shadow:none}
+.qchip .qe{font-size:17px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.lockn{margin:8px 4px 0;font-size:12.5px;font-weight:700;color:var(--muted);text-align:center}
+@media (max-height:700px){.qa{display:none}}
+
 /* ---------- Effets ---------- */
 .fxl{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
 .cf{position:absolute;top:0;display:block}
@@ -397,6 +408,7 @@ details.led-wrap>summary small{display:block;color:var(--muted);font-weight:700;
     <button id="menuBtn" class="icon-btn" type="button">Menu</button>
   </header>
   <section id="idcard" class="idcard"></section>
+  <nav id="qa" class="qa" aria-label="Idées rapides" hidden></nav>
   <main id="log" class="log" aria-live="polite"></main>
   <section id="stats" class="stats"></section>
   <nav class="tabs">

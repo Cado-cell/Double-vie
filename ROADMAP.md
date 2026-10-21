@@ -57,12 +57,36 @@
 4. **Les choix ont du poids visible** : chaque grande décision laisse une trace dans le bilan de fin de vie.
 5. **Jeu d'abord, appli ensuite** : couleurs, sons, animations, récompenses.
 6. **Qualité automatisée** : chaque ajout passe des tests de simulation (pas de blocage, pas de répétition, équilibre).
+7. **Simple et intuitif avant tout** : on ne se perd jamais dans les menus. Voir la règle de simplicité ci-dessous, valable pour chaque chantier.
 
 ---
 
 ## 4. Backlog hiérarchisé (du plus gros au plus petit)
 
 *Effort : XL ≈ 6+ lots · L ≈ 3-5 lots · M ≈ 1-2 lots · S ≈ moins d'un lot · XS ≈ quelques minutes. Un « lot » = une séance de travail de l'ordre d'une conversation.*
+
+### Règle de simplicité (transversale, à respecter dans chaque lot)
+
+1. **Peu de touches** : toute action courante à 2 touches maximum depuis l'écran principal, toute action à 4 maximum.
+2. **Listes courtes** : 8 lignes visibles au plus ; au-delà, regrouper (catégories, « Pour toi », « Voir tout »).
+3. **Rien de grisé sans raison** : les actions réservées à un âge sont masquées (une ligne rappelle qu'elles existent) ; une action grisée doit afficher en une ligne ce qui manque.
+4. **Le jeu propose** : toute nouvelle fonction pertinente apparaît d'abord dans « Idées rapides » / « Juste pour toi ».
+5. **Mots simples** : pas de jargon, sous-titres de 12 mots maximum.
+6. **Découverte progressive** : les extensions avancées (espion, marché noir, secte, zoo, bourse…) ne s'affichent pas d'emblée ; elles apparaissent quand le jeu les suggère ou dans « Plus d'aventures ».
+7. **Mesurer** : `node tests/audit_nav.js` avant/après chaque lot ; le nombre de panneaux profonds ne doit pas augmenter sans raison.
+
+*Mesure du 21/10 (personnage de 30 ans) : 116 panneaux, 705 actions, la plupart à 4 touches ; listes de 55 offres d'emploi, 58 pays, 32 articles de contrebande, 24 lignes de journal financier. Objectif : diviser par deux le nombre d'actions visibles d'emblée et ramener les actions courantes à 2 touches.*
+
+
+### NIVEAU 0 — Simplicité (prioritaire, avant tout nouveau contenu)
+
+- [x] **S1. Idées rapides, verrous d'âge masqués, récents** *(fait le 21/10 : trois raccourcis sous la carte du personnage, « Juste pour toi » et « Récents » dans Activités, actions réservées à un âge masquées : 56 éléments grisés à 8 ans → 1)*.
+- [ ] **S2. Offres d'emploi (55 lignes)** : « Pour toi » (6 métiers accessibles les mieux adaptés), puis « Tous les métiers » regroupés par secteur ; les métiers hors de portée sont repliés avec la condition en une ligne.
+- [ ] **S3. Émigrer (58 pays)** : 8 destinations populaires, puis les pays par continent.
+- [ ] **S4. Listes très longues des extensions** (contrebande 32, journal financier 24, matrice de volatilité 21, études supérieures 26) : résumé d'abord, détail à la demande.
+- [ ] **S5. Découverte progressive** : un seul bouton « Plus d'aventures » dans Activités qui regroupe les extensions avancées ; elles remontent en « Juste pour toi » quand le moment s'y prête.
+- [ ] **S6. Garde-fou automatique** : un test qui échoue si une liste dépasse 30 lignes ou si une action courante demande plus de 3 touches.
+- [ ] **S7. Parcours à 2 touches** pour les actions les plus utilisées (passer du temps avec un proche, étudier, travailler, soigner) : boutons directs dans les fiches de personnes et sur l'écran principal.
 
 ### NIVEAU 1 — Très gros chantiers (XL)
 
@@ -132,7 +156,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → #13 prise en main → #15 bilan partageable → petits chantiers #20, #21, #22, #23 (puis #17b).
+1. **Vague 1 — Fondations et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S2 à S7 (simplicité)** → #13 prise en main → #15 bilan partageable → petits chantiers #20, #21, #22, #23 (puis #17b).
 2. **Vague 2 — Ce qui nous distingue** : #1 Duo 2.0 (écran de passage, moments à deux, vie secrète, jokers, bilan comparatif) → Rêves (#2, partie objectifs).
 3. **Vague 3 — Profondeur et contenu** : #2 (mémoire, personnages récurrents) → #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
 4. **Vague 4 — Durée de vie** : #7 rejouabilité → #8 ères → #9 santé → #10 foyer → #12, #14, #16, #18, #19.

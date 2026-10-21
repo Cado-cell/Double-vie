@@ -12318,10 +12318,11 @@ const FX=(()=>{
   }
 
   /* ---------- Réactions au journal de l’année ---------- */
-  const WIN=/(^|\s)(🎓|💒|👶|🎉|🏆|🥇|🎂|💍|🎊)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|félicitations|enceinte|accouch/i;
+  const WIN=/(^|\s)(🎓|💒|👶|💍|🏆)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|accouch/i;
   const BAD=/(^|\s)(☠️|🕯️|🚑|🔒)|décès|est mort|est morte|meurt|licenci|accident|divorc|te quitte|condamn|incendie/i;
   function reactions(txt){
-    if(WIN.test(txt)){confetti();play('win');buzz([30,40,30])}
+    const now=Date.now();
+    if(WIN.test(txt)){if(now-(reactions.t||0)>8000){reactions.t=now;confetti();play('win');buzz([30,40,30])}}
     else if(BAD.test(txt)){play('bad');buzz([60,40,80])}
   }
 
@@ -12425,10 +12426,17 @@ function openPanel(f){STACK=[f];lastTop=null;showSheet()}
 function pushPanel(f){STACK.push(f);showSheet()}
 function back(){STACK.pop();STACK.length?showSheet():closeSheet()}
 function closeSheet(){STACK=[];lastTop=null;$('#sheet').hidden=true}
+const RECENTS={};
+function trackRecent(f,title){
+  if(!G||!title||STACK[0]!==pAct||STACK.length<3)return;
+  const R=RECENTS[G.turn]||(RECENTS[G.turn]=[]),i=R.findIndex(x=>x.t===title);if(i>=0)R.splice(i,1);
+  R.unshift({t:title,f,ic:'🕘'});RECENTS[G.turn]=R.slice(0,3);
+}
 function showSheet(){
   const f=STACK[STACK.length-1];if(!f||!G){closeSheet();return}
   let r;try{r=f()}catch(e){console.error(e);r={title:'Oups',html:note('Ce panneau a rencontré un problème.')}}
   const b=$('#pbody');const keep=lastTop===f?b.scrollTop:0;
+  trackRecent(f,r.title);
   $('#ptitle').textContent=r.title;b.innerHTML=r.html;$('#pback').hidden=STACK.length<2;$('#sheet').hidden=false;
   if(r.after)r.after(b);b.scrollTop=keep;lastTop=f;
 }
@@ -12448,21 +12456,28 @@ function toggleIcons(){ICMODE.mode=ICMODE.mode==='emoji'?'line':'emoji';try{loca
 function icTile(ic){if(!ic)return '';const s=ico(ic);return s?`<span class="ic h${hueOf(ic)}">${s}</span>`:`<span class="ic e h${hueOf(ic)}">${ic}</span>`}
 function emoSplit(t){const m=String(t).match(EMO_RE);return m?[m[1],String(t).slice(m[0].length)]:[null,String(t)]}
 function emoInline(t){const [e,r]=emoSplit(t);if(!e)return esc(r);const s=ico(e);return (s||esc(e))+' '+esc(r)}
-function row(o){const ic=o.av?`<span class="ic av">${o.av}</span>`:icTile(o.ic);return `<button type="button" class="row${o.danger?' danger':''}" ${o.dis?'disabled':''} data-a="${o.dis?-1:A(o.a)}">${ic}<span class="rt"><b>${esc(o.t)}</b>${o.s?`<small>${esc(o.s)}</small>`:''}</span>${o.right==='›'?'<span class="rr chev">›</span>':o.right?`<span class="rr">${o.right}</span>`:''}</button>`}
+function row(o){const ic=o.av?`<span class="ic av">${o.av}</span>`:icTile(o.ic);return `<button type="button" class="row${o.danger?' danger':''}"${o.lock?' data-lock="1"':''} ${o.dis?'disabled':''} data-a="${o.dis?-1:A(o.a)}">${ic}<span class="rt"><b>${esc(o.t)}</b>${o.s?`<small>${esc(o.s)}</small>`:''}</span>${o.right==='›'?'<span class="rr chev">›</span>':o.right?`<span class="rr">${o.right}</span>`:''}</button>`}
 function act(L,o){
   let s=o.s||'',dis=false;
-  if(o.min&&L.age<o.min){s=`Dès ${o.min} ans`;dis=true}
+  let lock=false;
+  if(o.min&&L.age<o.min){s=`Dès ${o.min} ans`;dis=true;lock=true}
   else if(o.key&&L.used[o.key]){s='Déjà fait cette année';dis=true}
   else if(o.dis){s=o.dis;dis=true}
   else if(o.cost&&L.money<o.cost){s=`${fmt(o.cost)} · fonds insuffisants`;dis=true}
   const a=o.nav?()=>pushPanel(o.nav):()=>run(()=>{if(o.key){L.used[o.key]=1;track(L,'k_'+o.key)}if(o.cost)L.money-=o.cost;return o.fn(L)});
-  return row({ic:o.ic,av:o.av,t:o.t,s,dis,a,right:o.nav?'›':o.right||'',danger:o.danger});
+  return row({ic:o.ic,av:o.av,t:o.t,s,dis,a,right:o.nav?'›':o.right||'',danger:o.danger,lock});
 }
 const nav=(ic,t,s,f,dis)=>row({ic,t,s,right:'›',a:()=>pushPanel(f),dis});
 function tile(o){const ic=o.av?`<span class="ic av">${o.av}</span>`:icTile(o.ic);return `<button type="button" class="tile" ${o.dis?'disabled':''} data-a="${o.dis?-1:A(o.a)}">${ic}<span><b>${esc(o.t)}</b>${o.s?`<small>${esc(o.s)}</small>`:''}</span></button>`}
 const tiles=list=>{list=list.filter(Boolean);return list.length?`<div class="tiles">${list.join('')}</div>`:''};
 const ntile=(ic,t,s,f,dis)=>tile({ic,t,s,a:()=>pushPanel(f),dis});
-function group(t,rows){rows=rows.filter(Boolean);if(!rows.length)return '';return `${t?`<h3 class="sec">${esc(t)}</h3>`:''}<div class="list">${rows.join('')}</div>`}
+/* Les actions réservées à un âge qu'on n'a pas encore sont masquées : une seule ligne rappelle qu'elles existent. */
+function group(t,rows){rows=rows.filter(Boolean);if(!rows.length)return '';
+  const keep=rows.filter(r=>!/data-lock="1"/.test(r)),n=rows.length-keep.length;
+  const note=n?`<p class="lockn">🔒 ${n} ${n>1?'actions se débloquent':'action se débloque'} en grandissant</p>`:'';
+  const head=t?`<h3 class="sec">${esc(t)}</h3>`:'';
+  return keep.length?`${head}<div class="list">${keep.join('')}</div>${note}`:(note?`${head}${note}`:'');
+}
 const note=t=>`<p class="note">${esc(t)}</p>`;
 function confirmP(title,text,fn,label){return ()=>({title,html:note(text)+group('',[row({ic:'⚠️',t:label||'Confirmer',danger:1,a:()=>{STACK.pop();run(fn)}}),row({ic:'↩️',t:'Annuler',a:back})])})}
 
@@ -12527,6 +12542,14 @@ function obitHtml(L){
 }
 function badges(L){const b=[`${L.zodiac}`];if(L.royal&&!L.royal.exiled)b.push('👑 '+(L.royal.throne?'Souverain':'Royal'));if(L.fame>=20)b.push(`⭐ ${L.fame} %`);if(L.prison)b.push(`🔒 ${An(L.prison)}`);if(L.ill.length)b.push('🤒 '+L.ill.length);if(L.social.verified)b.push('✔️');for(const x of modCall('badges',L))b.push(...[].concat(x));return b.map(x=>`<span class="bdg">${emoInline(x)}</span>`).join('')}
 function logLine(x){const [e,r]=emoSplit(x);if(!e)return `<p><span class="le">·</span><span>${esc(r)}</span></p>`;const s=ico(e);return `<p>${s?`<span class="li h${hueOf(e)}">${s}</span>`:`<span class="le">${esc(e)}</span>`}<span>${esc(r)}</span></p>`}
+/* Idées rapides : jusqu'à 3 raccourcis d'après la situation, à une touche de l'écran principal. */
+function quickActs(L){
+  if(!L.alive||L.prison||!G)return [];
+  const q=actPick(L,actItems(L)).map(([i])=>({ic:i[1],t:i[2],f:i[4]}));
+  if(inSchool(L)){if(!q.some(x=>x.f===pWork))q.unshift({ic:'📚',t:'Études',f:pWork})}
+  else if(L.age>=16&&L.age<65&&!L.job&&!q.some(x=>x.f===pWork))q.unshift({ic:'💼',t:'Emploi',f:pWork});
+  return q.slice(0,3);
+}
 function renderMain(){
   const app=$('#app'),su=$('#setup');
   if(!G){app.hidden=true;if(su.hidden){buildSetup();su.hidden=false}return}
@@ -12535,6 +12558,7 @@ function renderMain(){
   $('#players').innerHTML=G.mode===2?G.players.map((p,i)=>`<span class="chip${i===G.turn?' on':''}" style="--c:var(--p${i+1})"><span class="cav">${avatar(p,{happy:p.st.happy})}</span><span class="ctx"><b>${esc(p.first)}</b><small>${fmtk(p.money)}</small></span></span>`).join(''):'';
   const pt=L.partner?partnerOf(L):null;
   $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small><span class="cn" data-v="${Math.round(L.money)}">${fmt(L.money)}</span>${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
+  {const qa=$('#qa');const q=quickActs(L);qa.innerHTML=q.length?'<span class="qh" aria-hidden="true">💡</span>'+q.map(x=>`<button type="button" class="qchip" data-a="${A(()=>openPanel(x.f))}"><span class="qe">${x.ic}</span>${esc(x.t)}</button>`).join(''):'';qa.hidden=!q.length}
   const log=$('#log');
   log.innerHTML=L.log.map(b=>`<div class="yr"><div class="ya">${b.age}<small>${b.age>1?'ans':'an'}</small></div><div class="yl">${b.lines.map(logLine).join('')}</div></div>`).join('')+(L.alive?'':obitHtml(L));
   if(L.alive)log.scrollTop=log.scrollHeight;else{const ob=log.querySelector('.obit');if(ob)log.scrollTop=ob.offsetTop-30}
@@ -12907,9 +12931,10 @@ const actCatPanel=id=>()=>{const L=cur();const cat=ACT_CATS.find(c=>c[0]===id);c
 function pAct(){
   const L=cur();if(L.prison)return pPrison();
   const items=actItems(L);
+  const rec=(RECENTS[G.turn]||[]).map(x=>tile({ic:x.ic,t:x.t,s:'Utilisé récemment',a:()=>pushPanel(x.f)}));
   const ts=ACT_CATS.map(([id,ic,t])=>{const its=items.filter(i=>i[0]===id);const av=its.filter(i=>(i[5]||0)<=L.age);if(!av.length)return '';const names=av.map(i=>i[2]);return tile({ic,t,s:names.slice(0,3).join(', ')+(names.length>3?'…':''),a:()=>pushPanel(actCatPanel(id))})});
   const sug=actPick(L,items).map(([i,why])=>tile({ic:i[1],t:i[2],s:why,a:()=>pushPanel(i[4])}));
-  return {title:'Activités',html:(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
+  return {title:'Activités',html:(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+(rec.length?`<h3 class="sec">Récents</h3>${tiles(rec)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
 }
 /* Suggestions du moment, d’après la situation du personnage. */
 function actPick(L,items){
