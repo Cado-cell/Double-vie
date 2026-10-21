@@ -4,12 +4,12 @@
 // Charge le jeu dans Chromium, vérifie l'enregistrement du module, parcourt ses panneaux, déclenche ses évènements JSON et fait vieillir.
 const path=require('path'),fs=require('fs');
 const {chromium}=require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright');
-const DIR=path.join(__dirname,'src');
+const DIR=path.join(__dirname,'..','src');
 (async()=>{
  const file=process.argv[2],id=process.argv[3]||'all',rounds=+process.argv[4]||30;
  if(!file||!fs.existsSync(path.join(DIR,file))){console.log('Fichier introuvable : '+file);process.exit(2)}
  let h=fs.readFileSync(path.join(DIR,'deux-vies.html'),'utf8');
- const CORE=['data.js','avatar.js','icons.js','engine.js','events.js','packs.js','games.js','ui.js'];
+ const CORE=['data.js','avatar.js','icons.js','engine.js','events.js','packs.js','games.js','fx.js','tuto.js','share.js','ui.js'];
  h=h.replace(/<script src="([^"]+)"><\/script>\n?/g,(m,src)=>CORE.includes(src)?m:'');
  h=h.replace('<script src="games.js"></script>','<script src="'+file+'"></script>\n<script src="games.js"></script>');
  const TEST='test_'+file.replace(/\W/g,'_')+'.html';

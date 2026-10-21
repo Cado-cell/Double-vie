@@ -110,7 +110,7 @@ function advice(B,S,r){
   return a.slice(0,3);
 }
 function reportHtml(B,S,r){
-  const rows=[['Chiffre d’affaires',fmtk(r.rev)],['Bénéfice',sgn(r.profit)],['Part de marché',pc(r.msh)],['Ventes',`${fmtn(r.sold)} ${S.u}`],['Production',`${fmtn(r.units)} ${S.u}`],['Stock restant',`${fmtn(B.stock)} ${S.u}`],['Masse salariale',fmtk(r.payroll)],['Trésorerie',sgn(B.cash)],['Valorisation',fmtk(B.value)]];
+  const rows=[['Chiffre d’affaires',fmtk(r.rev)],['Bénéfice',sgn(r.profit)],['Part de marché',pc(r.msh)],['Ventes',`${fmtn(r.sold)} ${S.u}`],['Production',`${fmtn(r.units)} ${S.u}`],['Stock restant',`${fmtn(B.stock)} ${S.u}`],['Masse salariale',fmtk(r.payroll)],['Argent en caisse',sgn(B.cash)],['Valeur de l’entreprise',fmtk(B.value)]];
   return '<table style="width:100%;border-collapse:collapse">'+rows.map(([a,b])=>`<tr><td style="padding:3px 0;opacity:.75">${esc(a)}</td><td style="text-align:right"><b>${esc(b)}</b></td></tr>`).join('')+'</table>'
     +'<p style="margin-top:10px"><b>Conseils du directeur financier</b></p>'+advice(B,S,r).map(t=>`<p style="margin:4px 0">• ${esc(t)}</p>`).join('');
 }
@@ -176,9 +176,9 @@ function bizYear(L){
     L.biz=null;chg(L,{happy:-15,stress:10});track(L,'bizFail');return;
   }
   const lines=[`📊 ${B.name} : chiffre d’affaires ${fmtk(rev)}, ${profit>=0?'bénéfice':'perte'} ${fmtk(Math.abs(profit))}.`];
-  if(divMe>0)lines.push(`Tu perçois ${fmt(divMe)} de dividendes.`);
+  if(divMe>0)lines.push(`Tu perçois ${fmt(divMe)} de part des bénéficess.`);
   if(quits)lines.push(`${quits} salarié${quits>1?'s ont':' a'} démissionné.`);
-  if(dropped(B,k))lines.push('Faute de trésorerie, le lancement marketing a été revu à la baisse.');
+  if(dropped(B,k))lines.push('Faute de argent en caisse, le lancement marketing a été revu à la baisse.');
   if(buzz)lines.push('Bad buzz : l’opération influenceurs vire au fiasco sur les réseaux.');
   say(L,lines.join(' '));
   B.rep=reportHtml(B,S,res);B.repAge=L.age;
@@ -198,7 +198,7 @@ function pBiz(){
   const fc=Math.round(fcast(B,S,c,B.launch));
   const ex=statLine('Moral des équipes',B.morale)+statLine('Image de marque',B.brand)+statLine('Technologie et R&D',B.tech);
   return {title:B.name,html:card(`${B.sector}${B.ipo?' · cotée en Bourse':''}`,fmtk(B.value),`Tu détiens ${B.share} % · ta part vaut ${fmtk(B.value*B.share/100)} · ${An(B.y)} d’existence`,ex)
-    +note(`Trésorerie ${fmtk(B.cash)} · dernier chiffre d’affaires ${fmtk(B.rev)} · ${B.profit>=0?'bénéfice':'perte'} ${fmtk(Math.abs(B.profit))} · part de marché ${pc(B.msh)} · ${B.emp+1} personne${B.emp?'s':''}`)
+    +note(`Argent en caisse ${fmtk(B.cash)} · dernier chiffre d’affaires ${fmtk(B.rev)} · ${B.profit>=0?'bénéfice':'perte'} ${fmtk(Math.abs(B.profit))} · part de marché ${pc(B.msh)} · ${B.emp+1} personne${B.emp?'s':''}`)
     +note(`Demande attendue cette année : environ ${fmtn(fc)} ${S.u}.`)
     +group('Piloter l’année',[
       nav('🧮','Allocation du capital',`R&D ${B.alloc.rd} % · marketing ${B.alloc.mk} % · production ${B.alloc.prod} % · réserve ${B.alloc.res} %`,pAlloc),
@@ -228,11 +228,11 @@ function pAlloc(){
   const cash=Math.max(0,B.cash);const A=B.alloc;
   const rows=[];
   for(const k of ['rd','mk','prod','res'])rows.push(row({ic:ALN[k][0],t:`${ALN[k][1]} : ${A[k]} %`,s:`≈ ${fmtk(cash*A[k]/100)} sur l’année · toucher pour +10 points`,right:'+10',a:()=>run(()=>{const t=shift(B,k,10);return t?`${ALN[k][1]} : ${A[k]} %`:'Rien à retirer ailleurs.'})}),row({ic:'➖',t:`Retirer 10 points à ${ALN[k][1].toLowerCase()}`,dis:A[k]<=0,a:()=>run(()=>{shift(B,k,-10);return `${ALN[k][1]} : ${A[k]} %`})}));
-  return {title:'Allocation du capital',html:note('Chaque année, ta trésorerie est répartie : la R&D améliore ton produit et réduit tes coûts, le marketing nourrit la marque, la production finance les stocks, la réserve ne bouge pas.')
-    +card('Trésorerie',fmtk(B.cash),`R&D ${A.rd} % · marketing ${A.mk} % · production ${A.prod} % · réserve ${A.res} %`)
+  return {title:'Allocation du capital',html:note('Chaque année, ta argent en caisse est répartie : la R&D améliore ton produit et réduit tes coûts, le marketing nourrit la marque, la production finance les stocks, la réserve ne bouge pas.')
+    +card('Argent en caisse',fmtk(B.cash),`R&D ${A.rd} % · marketing ${A.mk} % · production ${A.prod} % · réserve ${A.res} %`)
     +group('Répartitions types',PRESETS.map(([n,v])=>row({ic:'🧮',t:n,s:`R&D ${v.rd} · marketing ${v.mk} · production ${v.prod} · réserve ${v.res}`,a:()=>run(()=>{B.alloc=Object.assign({},v);return `Allocation : ${n.toLowerCase()}.`})})))
     +group('Réglage fin',rows)
-    +group('Dividendes',[0,30,60].map(p=>row({ic:'💶',t:p?`Verser ${p} % du bénéfice net`:'Ne rien verser',s:p?'Imposable pour toi, mais ça fait plaisir':'Tout reste dans l’entreprise',right:B.pay===p?'✓':'',a:()=>run(()=>{B.pay=p;return p?`Dividendes : ${p} % du bénéfice net.`:'Plus de dividendes.'})})))};
+    +group('Part des bénéficess',[0,30,60].map(p=>row({ic:'💶',t:p?`Verser ${p} % du bénéfice net`:'Ne rien verser',s:p?'Imposable pour toi, mais ça fait plaisir':'Tout reste dans l’entreprise',right:B.pay===p?'✓':'',a:()=>run(()=>{B.pay=p;return p?`Part des bénéficess : ${p} % du bénéfice net.`:'Plus de part des bénéficess.'})})))};
 }
 function pStock(){
   const L=cur();const B=bz(L);if(!B)return {title:'Stocks',html:note('Pas d’entreprise.')};
@@ -246,7 +246,7 @@ function pStock(){
 }
 function pLaunch(){
   const L=cur();const B=bz(L);if(!B)return {title:'Marketing',html:note('Pas d’entreprise.')};
-  return {title:'Lancement marketing',html:note('Un lancement multiplie la demande de l’année et laisse une trace dans les esprits. Le coût est prélevé sur la trésorerie en fin d’année ; sans fonds suffisants, l’opération est revue à la baisse.')
+  return {title:'Lancement marketing',html:note('Un lancement multiplie la demande de l’année et laisse une trace dans les esprits. Le coût est prélevé sur la argent en caisse en fin d’année ; sans fonds suffisants, l’opération est revue à la baisse.')
     +group('Choisir un lancement',LAUNCH.map((l,i)=>row({ic:l.ic,t:l.n,s:`${l.s} Coût : ${fmtk(launchCost(B,i))}`,right:B.launch===i?'✓':'',a:()=>run(()=>{B.launch=i;return `Lancement : ${l.n.toLowerCase()}.`})})))};
 }
 function pTeam(){
@@ -266,14 +266,14 @@ function pGrowth(){
   return {title:'Croissance externe',html:note('Rachète un concurrent pour grossir d’un coup, ou fais entrer des investisseurs au capital.')
     +group('Options',[
       act(L,{ic:'🥊',t:'Racheter un concurrent',s:`${fmt(costA)} · demande +25 %, équipe élargie, moral secoué`,cost:costA,key:'bz_acq',fn:L=>{const ne=Math.max(1,Math.round(B.emp*.2));B.emp+=ne;B.dem*=1.25;B.morale=clamp(B.morale-6);B.brand=clamp(B.brand+3);track(L,'bizBought');return out(L,`🥊 Tu absorbes un concurrent de ${B.sector.toLowerCase()} et ${ne} de ses salariés.`)}}),
-      act(L,{ic:'🦄',t:'Lever des fonds',s:`Cède 20 % pour environ ${fmtk(B.value*.2*.85)} de trésorerie`,key:'bz_vc',dis:B.share<=30?'Tu ne contrôlerais plus ta société':'',fn:L=>{const g=Math.round(B.value*.2*.85);B.share-=20;B.cash+=g;B.value=bval(B,S);return out(L,`🦄 Des investisseurs injectent ${fmt(g)} contre 20 % du capital.`)}})])};
+      act(L,{ic:'🦄',t:'Lever des fonds',s:`Cède 20 % pour environ ${fmtk(B.value*.2*.85)} de argent en caisse`,key:'bz_vc',dis:B.share<=30?'Tu ne contrôlerais plus ta société':'',fn:L=>{const g=Math.round(B.value*.2*.85);B.share-=20;B.cash+=g;B.value=bval(B,S);return out(L,`🦄 Des investisseurs injectent ${fmt(g)} contre 20 % du capital.`)}})])};
 }
 function pExit(){
   const L=cur();const B=bz(L);if(!B)return {title:'Cession',html:note('Pas d’entreprise.')};
   const S=sect(B);const mine=Math.round(B.value*B.share/100);
-  return {title:'Cession et Bourse',html:card('Valorisation',fmtk(B.value),`Ta part (${B.share} %) : ${fmtk(mine)}`)
+  return {title:'Cession et Bourse',html:card('Valeur de l’entreprise',fmtk(B.value),`Ta part (${B.share} %) : ${fmtk(mine)}`)
     +group('Sortir ou grandir',[
-      act(L,{ic:'🔔',t:'Introduction en Bourse',s:B.ipo?'Déjà cotée':'Mise sur le marché de 25 % du capital · valorisation minimale : 5 M€',dis:B.ipo?'Déjà cotée':B.value<5e6?'Valorisation minimale : 5 M€':'',fn:L=>{const g=Math.round(B.value*.25*.95);B.ipo=1;B.share=Math.max(1,Math.round(B.share*.75));B.cash+=g;B.px=.08;B.value=bval(B,S);chg(L,{fame:10,happy:8});track(L,'ipo');return out(L,`🔔 ${B.name} entre en Bourse. Tu sonnes la cloche, 25 % du capital passe au public et ${fmt(g)} entrent en caisse.`)}}),
+      act(L,{ic:'🔔',t:'Introduction en Bourse',s:B.ipo?'Déjà cotée':'Mise sur le marché de 25 % du capital · valeur minimale : 5 M€',dis:B.ipo?'Déjà cotée':B.value<5e6?'Valeur minimale : 5 M€':'',fn:L=>{const g=Math.round(B.value*.25*.95);B.ipo=1;B.share=Math.max(1,Math.round(B.share*.75));B.cash+=g;B.px=.08;B.value=bval(B,S);chg(L,{fame:10,happy:8});track(L,'ipo');return out(L,`🔔 ${B.name} entre en Bourse. Tu sonnes la cloche, 25 % du capital passe au public et ${fmt(g)} entrent en caisse.`)}}),
       row({ic:'🤝',t:'Vendre l’entreprise',s:`Tu toucherais environ ${fmtk(mine)}`,a:()=>pushPanel(confirmP(`Vendre ${B.name} ?`,'Un repreneur est prêt à signer. Il te faudra tourner la page.',()=>{const g=Math.round(B.value*B.share/100*R(92,108)/100);earn(L,g,1);L.biz=null;chg(L,{happy:6});track(L,'bizSold');return out(L,`🤝 Tu vends ${B.name} pour ${fmt(g)}. Tu gardes le logo en souvenir.`)},'Vendre'))})])};
 }
 

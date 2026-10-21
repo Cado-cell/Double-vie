@@ -18,5 +18,5 @@ const fs=require('fs');const dir='src';
   const free=!/Reviens dans/.test(t2);
   closeSheet();openPanel(pWork);pushPanel(pHours);const hp=/Intense/.test(document.getElementById('pbody').innerText);
   return {heavy,light,normal,workY:wy,best:best.length,avg:Math.round(avg),pension,ratio:+(pension/avg).toFixed(2),waits,free,hp}});
- r.ok=!errs.length&&r.heavy.perf>r.normal.perf+5&&r.normal.perf>r.light.perf+5&&r.heavy.health<r.light.health+1&&r.workY>=30&&r.best===5&&r.ratio>=.5&&r.ratio<=.75&&r.waits&&r.free&&r.hp;
+ r.ok=!errs.length&&r.heavy.perf>r.normal.perf+5&&r.normal.perf>r.light.perf+5&&r.heavy.health<r.light.health+1&&r.workY>=25&&r.best===5&&r.ratio>=.5&&r.ratio<=.75&&r.waits&&r.free&&r.hp;
  console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

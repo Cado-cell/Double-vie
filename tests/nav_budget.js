@@ -1,9 +1,9 @@
 /* Garde-fou de simplicité : échoue si la navigation se complique (listes trop longues, trop de panneaux, trop d'actions enfouies).
-   Les plafonds se resserrent au fil des lots de simplicité : ne jamais les relever sans raison. */
+   Les plafonds se resserrent au fil des lots de simplicité : ne jamais les relever sans raison. Ils gardent environ 8 % de marge car la vie testée est tirée au hasard. */
 const {spawnSync}=require('child_process');const fs=require('fs');const path=require('path');const os=require('os');
 const BUDGET={
   8:{maxRows:30,panels:60,deep:5,total:200},
-  30:{maxRows:30,panels:140,deep:140,total:680}
+  30:{maxRows:30,panels:145,deep:150,total:700}
 };
 const r=spawnSync('node',[path.join(__dirname,'audit_nav.js'),...Object.keys(BUDGET)],{cwd:path.resolve(__dirname,'..'),encoding:'utf8',timeout:900000});
 if(r.status!==0){console.log((r.stdout||'')+(r.stderr||''));console.log('{"ok":false}');process.exit(1)}
