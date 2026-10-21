@@ -53,7 +53,7 @@
 
 1. **Un tap, un moment** : jamais plus de 10 secondes sans qu'il se passe quelque chose de drôle, touchant ou surprenant.
 2. **Des histoires, pas des tirages** : les événements se souviennent (rivalités, secrets, promesses) et réagissent à qui tu es.
-3. **À deux, on s'influence** : l'autre joueur est un personnage de ta vie, pas juste un second compteur.
+3. **À deux, chacun chez soi, on se compare et on se croise** : mêmes défis, bilans comparés, personnage de l'autre qui passe dans ta vie.
 4. **Les choix ont du poids visible** : chaque grande décision laisse une trace dans le bilan de fin de vie.
 5. **Jeu d'abord, appli ensuite** : couleurs, sons, animations, récompenses.
 6. **Qualité automatisée** : chaque ajout passe des tests de simulation (pas de blocage, pas de répétition, équilibre).
@@ -90,27 +90,26 @@
 
 ### NIVEAU 1 — Très gros chantiers (XL)
 
-- [ ] **1. Mode Duo 2.0 — « La Double Vie »** *(impact fun : 5/5 — le vrai argument face à BitLife)*
-  - **Vie secrète** : chaque joueur peut cacher un second fil (liaison, métier clandestin, enfant caché, dettes de jeu, identité d'espion…) ; l'autre accumule des soupçons, peut enquêter, risque de découvrir.
-  - **Écran « Passe le téléphone »** qui masque le tour précédent (indispensable pour les secrets).
-  - **Moments à deux** : décisions prises en secret par chacun puis révélées (coopérer / trahir / mentir), en couple, entre amis, entre collègues.
-  - **Jokers** (3 par vie) : forcer un événement, relancer une année, saboter ou aider l'autre ; gagnés par de bonnes actions.
-  - **Foyer partagé** : compte commun, logement commun, enfants communs, héritage croisé, mariage avec cérémonie.
-  - **Défis et rivalité** : « premier millionnaire », « le plus aimé », « la plus belle carrière » ; **bilan comparatif** à la fin (prix décernés : le plus généreux, le plus chanceux…).
-  - **Mode synchrone** (optionnel) : les deux avancent d'un an ensemble et les événements se croisent.
+- [ ] **1. Jeu à deux, chacun de son côté (asynchrone, sans serveur)** *(impact : 4/5 — remplace l'ancien « Mode Duo 2.0 »)*
+  - **Code de défi** : un court code à s'envoyer par message ; il donne le même départ (famille, naissance) et les mêmes **événements du monde** année après année (crises, innovations) ; chacun vit sa propre vie, puis on compare.
+  - **Carte de bilan partageable** (image + code) à s'envoyer, et **comparaison côte à côte** de deux bilans (richesse, bonheur, amour, héritage, aventures, prix décernés : le plus généreux, le plus chanceux…).
+  - **Échange de personnage par code** : le personnage de l'autre joueur apparaît dans ta vie comme ami, rival ou conjoint (avatar, métier, traits), avec des événements liés ; il devient un vrai agent du chantier 2b.
+  - **Défis communs** (« premier millionnaire », « la plus belle carrière ») comparés à la fin.
+  - **Pas de temps réel** : cela demanderait un serveur ; ce n'est pas nécessaire pour vous deux.
+  - *Mode « deux joueurs sur le même téléphone » : il reste tel quel. On n'y investit plus (secrets, écran « passe le téléphone », jokers) tant que ce n'est pas demandé.*
 - [ ] **2. Moteur d'histoires et mémoire** *(impact : 5/5)*
   - Mémoire des événements marquants (étiquettes de souvenirs) pour des **rappels** : « Ça fait 10 ans que tu as quitté Théo… ».
   - **Personnages récurrents** avec personnalité : le rival d'école, le meilleur ami d'enfance, l'ex qui revient, le voisin pénible.
   - **Arcs sur plusieurs années** (chaînes 3 à 6 étapes avec bifurcations réelles) ; objectif : passer de 52 à 200 chaînes.
   - **Rêves / objectifs de vie** (comme les aspirations des Sims) : choisis 1 à 3 rêves, jauge de satisfaction, regrets à la fin.
   - **Personnalité cachée** (traits qui influencent les probabilités et les options proposées, récompense de la cohérence façon Alter Ego).
-- [ ] **2b. Personnages vivants — agents locaux** *(impact : 5/5, s'appuie sur 2 et prépare 1 et 4 ; fonctionne hors connexion, gratuit, testable)*
+- [ ] **2b. Personnages vivants — agents locaux** *(impact : 5/5, s'appuie sur 2 et prépare 1 et 4 ; fonctionne hors connexion, gratuit, testable ; concerne les personnages de TA vie, pas le multijoueur)*
   - **Fiche de personnalité** par personnage (extraversion, gentillesse, ambition, impulsivité, loyauté, humour) + **buts** (carrière, famille, argent, aventure) + **humeur**.
   - **Mémoire** : chaque personnage retient ce que tu lui as fait (cadeau, trahison, oubli d'anniversaire, aide) avec un poids qui s'estompe ; **opinions** envers chaque personne (affection, respect, jalousie).
   - **Cycle annuel autonome** : chaque personnage choisit une action d'après sa personnalité, ses buts et ses opinions (te rappeler, demander de l'argent, se brouiller, se marier, déménager, te déshériter…) ; ce qui te concerne devient un événement, le reste alimente l'arbre familial et les rumeurs.
   - **Rappels** : « Mamie ne t'a pas vu depuis 3 ans » → héritage modifié ; « Théo se souvient que tu l'as aidé ».
   - **Dialogues** générés par grammaire (intention × personnalité × relation), des centaines de variantes, sans connexion.
-  - **Duo** : les personnages qui connaissent les deux joueurs ont un avis sur chacun (jalousie, rumeurs, secrets ébruités).
+  - **Personnage échangé** (chantier 1) : le personnage de l'autre joueur, importé par code, se comporte comme n'importe quel agent de ta vie.
   - Garde-fous : budget de calcul par année, tests de simulation (pas de comportement absurde, pas de boucle), graine aléatoire fixe pour reproduire un bug.
 - [ ] **2c. Couche IA en ligne (expérimentale, optionnelle)** *(à décider avec toi avant tout travail)* : conversation libre avec un proche et variations de texte par un modèle de langage. Le **simulateur reste la vérité** (il décide ce qui arrive), le modèle ne fait que **parler** ; hors connexion ou en cas d'échec, retour automatique aux dialogues locaux. Prérequis : un petit serveur intermédiaire qui garde la clé secrète (le dépôt étant public, aucune clé ne peut être dans le jeu), un plafond de dépense, un interrupteur dans les réglages, et l'accord sur la vie privée (le texte envoyé quitte le téléphone). Alternative sur téléphone (modèle de 300 à 700 Mo téléchargé dans le navigateur) : possible mais inégale selon les appareils, non recommandée pour l'instant.
 - [ ] **3. Contenu ×3 + pipeline qualité** *(impact : 5/5)*
@@ -165,10 +164,13 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S2 à S7 (simplicité)** → #13 prise en main → #15 bilan partageable → petits chantiers #20, #21, #22, #23 (puis #17b).
-2. **Vague 2 — Ce qui nous distingue** : #1 Duo 2.0 (écran de passage, moments à deux, vie secrète, jokers, bilan comparatif) → Rêves (#2, partie objectifs).
-3. **Vague 3 — Profondeur et contenu** : #2 (mémoire, personnages récurrents) → **2b personnages vivants** (socle commun avec le mode Duo) → #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
-4. **Vague 4 — Durée de vie** : #7 rejouabilité → #8 ères → #9 santé → #10 foyer → #12, #14, #16, #18, #19.
+1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S2 à S7 (simplicité)** → #13 prise en main → #15 bilan partageable (carte image) → petits chantiers #20, #21, #22, #23 → #17b.
+2. **Vague 2 — Des personnages et une vie qui ont du relief** : Rêves / objectifs de vie et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
+3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
+4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
+5. **Vague 5 — Durée de vie** : #8 ères → #9 santé → #10 foyer → #12, #14, #16, #18, #19.
+
+*Option à tout moment, si tu la demandes : couche IA en ligne (2c).*
 
 ---
 
