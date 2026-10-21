@@ -2675,7 +2675,7 @@ function sellAmt(L,id,amt){
 function openTurbo(L,id,s){
   const I=invSt(L),M=mkGet(),A=DEF[id];if(!A||!(s>0))return '';
   I.tb.push({id:nid(),a:id,s:Math.round(s),p0:priceOf(id),y:M.y,k:'short'});I.n++;track(L,'trades');
-  return `🎯 Tu paries ${fmt(s)} sur la baisse de ${A.n} : un turbo baissier qui peut doubler ta mise si le cours s’effondre, et s’annule s’il double.`;
+  return `🎯 Tu paries ${fmt(s)} sur la baisse de ${A.n} : un pari à la baisse : ta mise peut doubler si le cours s’effondre, et tu la perds s’il double.`;
 }
 function buyBond(L,o,amt){
   const I=invSt(L),M=mkGet();
@@ -2806,7 +2806,7 @@ function pMarket(){
   h+=group('Conseil et outils',[
     nav('💼','Conseiller financier',I.tip?'Un tuyau est en cours':'Un tuyau par an, plus ou moins fiable',pAdvisor),
     nav('📰','Journal financier','Les gros titres des dernières années',pNews),
-    nav('🧮','Matrice de volatilité','Risque, bêta et corrélations',pVol),
+    nav('🧮','Risque des placements','Lesquels bougent le plus',pVol),
     act(L,{ic:'⚡',t:'Séance de day trading',s:'Dix décisions en direct, une fois par an',key:'inv_day',dis:L.prison?'En prison':L.money<1000?'Il faut au moins 1 000 € de liquidités':'',fn:L=>{
       modal({title:'Day trading',icon:'⚡',text:'Tu t’installes devant trois écrans et un café serré. Quelle mise engages-tu pour cette séance ?',choices:[1000,10000,50000].filter(s=>L.money>=s).map(s=>({t:`Miser ${fmt(s)}`,fn:()=>{if(L.money<s)return 'Fonds insuffisants.';L.money-=s;dayTrade(L,s);return ''}})).concat([{t:'Finalement non',fn:()=>{delete L.used.inv_day;return 'Tu refermes la plateforme sans rien toucher.'}}])});return ''}})]);
   h+=note('Frais de courtage : 0,5 % sur les actions, 1 % sur les matières premières, 1,5 % sur les crypto-monnaies. Les plus-values réalisées sont soumises à la flat tax de 30 % l’année suivante, les moins-values se reportent.');
@@ -2849,7 +2849,7 @@ const pAsset=id=>()=>{
   for(const amt of [1000,10000])S.push(act(L,{ic:'💶',t:`Vendre pour ${fmt(amt)}`,dis:q*p*(1-f)<amt?'Position insuffisante':'',fn:L=>out(L,sellAmt(L,id,amt))}));
   S.push(act(L,{ic:'🧺',t:'Tout vendre',s:q>0?`Environ ${fmt(q*p*(1-f))} encaissés`:'',dis:q>0?'':'Aucune position',danger:1,fn:L=>out(L,sellQ(L,id,q))}));
   h+=group('Vendre',S);
-  h+=group('Parier sur la baisse',[1000,10000].map(amt=>act(L,{ic:'🎯',t:`Turbo baissier de ${fmt(amt)}`,s:'Dénoué dans un an : jusqu’à ×2 si le cours s’effondre, perdu s’il double',cost:amt,fn:L=>out(L,openTurbo(L,id,amt))})));
+  h+=group('Parier sur la baisse',[1000,10000].map(amt=>act(L,{ic:'🎯',t:`Pari à la baisse de ${fmt(amt)}`,s:'Dénoué dans un an : jusqu’à ×2 si le cours s’effondre, perdu s’il double',cost:amt,fn:L=>out(L,openTurbo(L,id,amt))})));
   return {title:A.n,html:h};
 };
 function pBonds(){
@@ -2903,14 +2903,14 @@ function corrTable(M){
   const avg=x=>x.reduce((s,v)=>s+v,0)/x.length;
   const cor=(x,y)=>{const mx=avg(x),my=avg(y);let a=0,b=0,c=0;for(let i=0;i<x.length;i++){a+=(x[i]-mx)*(y[i]-my);b+=(x[i]-mx)**2;c+=(y[i]-my)**2}return b&&c?a/Math.sqrt(b*c):0};
   const cell=v=>`<td style="padding:6px 2px;border-radius:6px;background:color-mix(in srgb,var(${v>=0?'--good':'--bad'}) ${Math.round(Math.abs(v)*55)}%,transparent);font-family:var(--mono)">${v.toFixed(2).replace('.',',').replace('-','−')}</td>`;
-  return `<div class="card"><div class="ck">Corrélations sur ${An(n)}</div><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;text-align:center"><tr><th></th>${groups.map(g=>`<th style="font-weight:600;color:var(--muted)">${esc(g[0])}</th>`).join('')}</tr>${groups.map((g,i)=>`<tr><th style="text-align:left;font-weight:600;color:var(--muted)">${esc(g[0])}</th>${groups.map((_,j)=>cell(i===j?1:cor(ser[i],ser[j]))).join('')}</tr>`).join('')}</table><div class="cs">Proche de 1 : ces actifs montent et baissent ensemble. Négatif : l’un compense l’autre.</div></div>`;
+  return `<div class="card"><div class="ck">Qui bouge avec qui (sur ${An(n)})</div><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;text-align:center"><tr><th></th>${groups.map(g=>`<th style="font-weight:600;color:var(--muted)">${esc(g[0])}</th>`).join('')}</tr>${groups.map((g,i)=>`<tr><th style="text-align:left;font-weight:600;color:var(--muted)">${esc(g[0])}</th>${groups.map((_,j)=>cell(i===j?1:cor(ser[i],ser[j]))).join('')}</tr>`).join('')}</table><div class="cs">Proche de 1 : ces actifs montent et baissent ensemble. Négatif : l’un compense l’autre.</div></div>`;
 }
-function volRows(cat){return LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`σ ${Math.round(A.v*100)} % (${volLab(A.v)}) · β ${A.beta.toFixed(2).replace('.',',').replace('-','−')}${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
+function volRows(cat){return LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`Bouge de ${Math.round(A.v*100)} % par an (${volLab(A.v)})${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
     right:`<span class="bar" style="width:64px"><i style="width:${lim(A.v*70,4,100)}%;background:var(${A.v<.3?'--good':A.v<.6?'--warn':'--bad'})"></i></span>`,a:()=>pushPanel(pAsset(A.id))}))}
 function pVol(){
   const M=mkGet();
   const ts=['stock','crypto','com'].map(cat=>{const n=LIST.filter(A=>A.cat===cat).length;return n?ntile(cat==='stock'?'📈':cat==='crypto'?'🪙':'🛢️',CATN[cat],`${n} actifs · risque et bêta`,()=>pVolCat(cat)):''});
-  return {title:'Matrice de volatilité',html:note('σ : amplitude des variations annuelles. β : sensibilité au marché (négatif : valeur refuge).')+corrTable(M)+tiles(ts)};
+  return {title:'Risque des placements',html:note('Plus le pourcentage est haut, plus le prix bouge d’une année à l’autre.')+corrTable(M)+tiles(ts)};
 }
 function pVolCat(cat){return {title:CATN[cat],html:group('',volRows(cat))}}
 
@@ -10203,6 +10203,8 @@ const TR={
   soc:{n:'Sociable',ic:'🥳',r:1,good:1,x:[],d:'Le roi (ou la reine) des soirées. Les relations s’érodent moins vite.'}
 };
 const KEYS=Object.keys(TR);
+/* Traits proposés à la création du personnage (les qualités seulement). */
+window.TRAIT_CHOICES=KEYS.filter(k=>TR[k].good).map(k=>[k,TR[k].ic+' '+TR[k].n]);
 /* compteur de pratique -> [trait, seuil] */
 const LEARN={k_med:['med',6],k_lib:['rat',6],k_study:['int',8],k_gym:['soi',8],k_party:['soc',8],k_walk:['opti',10],k_yoga:['med',8],k_doc:['tha',8]};
 const conflicts=(t,k)=>KEYS.filter(o=>t[o]&&(TR[o].x.includes(k)||TR[k].x.includes(o)));
@@ -10220,7 +10222,9 @@ function born(L,opts){
   if(!L)return;
   if(!L.traits||typeof L.traits!=='object')L.traits={};
   if(opts&&opts.family)return;
-  const n=R(0,3);
+  const chosen=opts&&opts.trait&&TR[opts.trait]?opts.trait:null;
+  if(chosen)add(L,chosen);
+  const n=chosen?R(0,2):R(0,3);
   for(let i=0;i<n;i++){
     const k=pick(KEYS);
     if(L.traits[k]||conflicts(L.traits,k).length)continue;
@@ -12146,6 +12150,63 @@ EVENT_DB.push(...[
 
 ;
 
+/* ===== events_db4.js ===== */
+/* Deux Vies — évènements 4 : jalons de la petite enfance (préfixe evt4_). */
+(()=>{
+EVENT_DB.push(...[
+{id:'evt4_premiers_mots',category:'childhood',icon:'🗣️',once:true,conditions:{min_age:1,max_age:1},probability_weight:1.2,
+ prompt_text:'Ça y est : tu prononces tes tout premiers mots. Toute la famille retient son souffle.',
+ choices:[
+  {choice_text:'« Maman ! »',consequences:{relationship_parents_modifier:6,happiness_modifier:4,result_text:'Ta mère pleure de joie, ton père fait semblant de ne pas être jaloux.'}},
+  {choice_text:'« Papa ! »',consequences:{relationship_parents_modifier:6,happiness_modifier:4,result_text:'Ton père fait le tour de la maison en criant victoire.'}},
+  {choice_text:'« Encore ! »',consequences:{smarts_modifier:2,happiness_modifier:3,result_text:'Premier mot : une demande. Tu as déjà compris comment ça marche.'}}]},
+{id:'evt4_premiers_pas',category:'childhood',icon:'👣',once:true,conditions:{min_age:1,max_age:2},probability_weight:1.1,
+ prompt_text:'Tu te mets debout, tu lâches le canapé… et tu fais ton premier pas !',
+ choices:[
+  {choice_text:'Foncer vers les bras de tes parents.',consequences:{relationship_parents_modifier:5,happiness_modifier:5,health_modifier:1,result_text:'Trois pas, une chute, des applaudissements. Ta carrière de marcheur est lancée.'}},
+  {choice_text:'Courir droit vers le chat.',consequences:{happiness_modifier:3,smarts_modifier:1,result_text:'Le chat s’enfuit. Toi, tu as découvert la vitesse.'}},
+  {choice_text:'Te rasseoir : c’était assez d’efforts.',consequences:{happiness_modifier:1,result_text:'Tu as fait ton exploit de la journée. La suite attendra demain.'}}]},
+{id:'evt4_caprice_super',category:'childhood',icon:'😭',conditions:{min_age:2,max_age:4},probability_weight:0.9,
+ prompt_text:'Au supermarché, tes parents refusent le paquet de bonbons. Tout le rayon te regarde.',
+ choices:[
+  {choice_text:'Te jeter par terre en hurlant.',consequences:{relationship_parents_modifier:-5,happiness_modifier:-2,result_text:'Tes parents poussent le caddie sans te regarder. Le caissier te félicite pour ta performance.'}},
+  {choice_text:'Faire les yeux de chat potté.',consequences:{relationship_parents_modifier:2,happiness_modifier:3,result_text:'Ça marche : un seul bonbon, mais un bonbon quand même.'}},
+  {choice_text:'Accepter et choisir un fruit.',consequences:{relationship_parents_modifier:5,health_modifier:2,karma_modifier:1,result_text:'Tes parents n’en reviennent pas. Ils t’offrent une compote.'}}]},
+{id:'evt4_maternelle',category:'childhood',icon:'🎒',once:true,conditions:{min_age:3,max_age:3},probability_weight:1.2,
+ prompt_text:'Premier jour de maternelle. Ta mère a les yeux humides, toi tu serres ton doudou.',
+ choices:[
+  {choice_text:'Lâcher sa main et courir vers le toboggan.',consequences:{happiness_modifier:5,add_friend:1,result_text:'Tu te fais un copain avant même la fin de la matinée.'}},
+  {choice_text:'T’accrocher à sa jambe.',consequences:{relationship_parents_modifier:4,happiness_modifier:-2,result_text:'Il faudra deux adultes pour te décrocher. Tu t’y feras, promis.'}},
+  {choice_text:'Te cacher dans la cabane à jouets.',consequences:{happiness_modifier:2,smarts_modifier:1,result_text:'La maîtresse te retrouve une heure plus tard, endormi, un cube sur la tête.'}}]},
+{id:'evt4_ami_imaginaire',category:'childhood',icon:'👻',once:true,conditions:{min_age:3,max_age:6},probability_weight:0.6,
+ prompt_text:'Tu as un nouvel ami que personne d’autre ne voit. Il s’appelle Monsieur Patate et il a des opinions.',
+ choices:[
+  {choice_text:'Lui mettre un couvert à table.',consequences:{happiness_modifier:4,relationship_parents_modifier:2,result_text:'Tes parents jouent le jeu. Monsieur Patate refuse les légumes.'}},
+  {choice_text:'Lui confier tes secrets.',consequences:{happiness_modifier:3,smarts_modifier:2,result_text:'Il est un excellent confident. Il ne répète rien.'}},
+  {choice_text:'Le présenter à la maîtresse.',consequences:{happiness_modifier:1,result_text:'La maîtresse hoche la tête avec beaucoup de sérieux. Tu es ravi.'}}]},
+{id:'evt4_velo',category:'childhood',icon:'🚲',once:true,conditions:{min_age:5,max_age:7},probability_weight:1.0,
+ prompt_text:'Papa retire les petites roues de ton vélo. « Je te tiens ! » dit-il. Tu sens bien qu’il ne te tient plus.',
+ choices:[
+  {choice_text:'Pédaler de toutes tes forces.',consequences:{health_modifier:2,happiness_modifier:6,relationship_parents_modifier:4,result_text:'Tu roules ! Tu roules ! Et tu ne sais pas encore freiner.'}},
+  {choice_text:'Tomber trois fois, puis réussir.',consequences:{health_modifier:-1,happiness_modifier:6,discipline_modifier:2,result_text:'Genoux écorchés, sourire immense : tu as appris à ne jamais abandonner.'}},
+  {choice_text:'Garder les petites roues encore un peu.',consequences:{happiness_modifier:1,result_text:'Pas de honte : tu y viendras à ton rythme.'}}]},
+{id:'evt4_cp',category:'childhood',icon:'📖',once:true,conditions:{min_age:6,max_age:6},probability_weight:1.2,
+ prompt_text:'Rentrée au CP. La maîtresse t’annonce que cette année, tu vas apprendre à lire. Tu as hâte, et un peu peur.',
+ choices:[
+  {choice_text:'Lever le doigt à chaque question.',consequences:{smarts_modifier:3,happiness_modifier:2,result_text:'Tu es déjà le chouchou. Tes camarades te trouvent un peu bruyant.'}},
+  {choice_text:'Compter les mouches au plafond.',consequences:{smarts_modifier:-1,happiness_modifier:2,result_text:'Le plafond n’a plus de secret pour toi. Les lettres, c’est pour plus tard.'}},
+  {choice_text:'Partager ton goûter avec ton voisin de table.',consequences:{add_friend:1,happiness_modifier:4,karma_modifier:1,result_text:'Un biscuit, un ami. L’école commence bien.'}}]},
+{id:'evt4_anniv_copains',category:'childhood',icon:'🎂',conditions:{min_age:4,max_age:10},probability_weight:0.9,
+ prompt_text:'C’est ton anniversaire ! Tes parents organisent un goûter avec tes copains, des ballons et un gâteau bien trop gros.',
+ choices:[
+  {choice_text:'Souffler les bougies d’un seul coup.',consequences:{happiness_modifier:6,add_friend:1,relationship_parents_modifier:3,result_text:'Un vœu, des applaudissements et de la crème sur le nez.'}},
+  {choice_text:'Faire une bataille de gâteau.',consequences:{happiness_modifier:7,relationship_parents_modifier:-4,result_text:'Un souvenir légendaire. Tes parents, eux, nettoient encore le plafond.'}},
+  {choice_text:'Offrir une part à chacun, très sérieusement.',consequences:{happiness_modifier:3,karma_modifier:2,smarts_modifier:1,result_text:'Tout le monde est servi à égalité. Tu feras un excellent notaire.'}}]}
+]);
+})();
+
+;
+
 /* ===== games.js ===== */
 /* Deux Vies — mini-jeux (s’affichent dans la fenêtre modale) */
 
@@ -13322,12 +13383,13 @@ function formHtml(px,d,label,color){
   <div class="two"><label class="f">Prénom<input id="${px}-first" value="${esc(d.first)}" autocomplete="off" maxlength="30"></label><label class="f">Nom<input id="${px}-last" value="${esc(d.last)}" autocomplete="off" maxlength="30"></label></div>
   <div class="two"><label class="f">Genre<select id="${px}-gender">${opt('F','Femme',d.gender)}${opt('H','Homme',d.gender)}</select></label><label class="f">Attirance<select id="${px}-likes">${opt('H','Hommes',d.likes)}${opt('F','Femmes',d.likes)}${opt('both','Les deux',d.likes)}</select></label></div>
   <div class="two"><label class="f">Pays de naissance<select id="${px}-country">${Object.keys(COUNTRIES).map(c=>opt(c,c+(COUNTRIES[c].mon?' 👑':''),d.country)).join('')}</select></label><label class="f">Talent<select id="${px}-talent">${opt('rand','Au hasard',d.talent)}${opt('','Aucun',d.talent)}${Object.entries(TALENTS).map(([k,n])=>opt(k,n,d.talent)).join('')}</select></label></div>
+  ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>`:''}
   <label class="chk"><input type="checkbox" id="${px}-royal"${d.royal?' checked':''}> Naître dans une famille royale <small>(pays marqués 👑)</small></label>
   <details class="led-wrap"><summary><span class="sav" id="${px}-sav">${AVATAR_R.render(LED[px].look,{age:24,gender:d.gender,mood:85})}</span><span>Apparence<small>Coiffure, couleurs, tenue : touche pour personnaliser</small></span></summary><div class="led" data-led="${px}">${ledInner(px)}</div></details></div>`;
 }
 function refill(px){const d=rndForm(pick(['H','F']));if(LED[px]){LED[px].look=AVATAR_R.random(d.gender);LED[px].ctx.gender=d.gender;ledRefresh(px)}for(const k of ['first','last','gender','likes']){const el=document.getElementById(`${px}-${k}`);if(el)el.value=d[k]}}
 function readForm(px){const v=k=>{const el=document.getElementById(`${px}-${k}`);return el?el.value.trim():''};const g=v('gender')||'F';const c=v('country')||'France';const t=v('talent');const roy=document.getElementById(`${px}-royal`);
-  return {first:v('first').slice(0,30)||rname(g,c),last:v('last').slice(0,30)||rlast(c),gender:g,likes:v('likes')||(g==='H'?'F':'H'),country:c,talent:t==='rand'?undefined:(t||null),royal:!!(roy&&roy.checked&&COUNTRIES[c].mon),look:LED[px]?Object.assign({},LED[px].look):undefined}}
+  return {first:v('first').slice(0,30)||rname(g,c),last:v('last').slice(0,30)||rlast(c),gender:g,likes:v('likes')||(g==='H'?'F':'H'),country:c,talent:t==='rand'?undefined:(t||null),trait:v('trait')&&v('trait')!=='rand'?v('trait'):undefined,royal:!!(roy&&roy.checked&&COUNTRIES[c].mon),look:LED[px]?Object.assign({},LED[px].look):undefined}}
 function pNewLife(idx){delete LED.nl;return ()=>({title:idx>=G.players.length?'Second joueur':'Nouvelle vie',html:`<div class="forms" style="margin-top:12px">${formHtml('nl',rndForm(pick(['H','F'])),`Joueur ${idx+1}`,`p${idx+1}`)}</div>`+group('',[row({ic:'🌱',t:'Commencer cette vie',a:()=>{const L=makeLife(readForm('nl'));if(idx>=G.players.length){G.players.push(L);G.mode=2}else{if(G.snaps)delete G.snaps[G.players[idx].id];G.players[idx]=L}closeSheet();save();render();toast(`${L.first} vient de naître.`)}})])})}
 function pMenu(){
   const nR=Object.values(G.ribbons).filter(Boolean).length,nC=Object.keys(G.challenges).length;

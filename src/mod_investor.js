@@ -245,7 +245,7 @@ function sellAmt(L,id,amt){
 function openTurbo(L,id,s){
   const I=invSt(L),M=mkGet(),A=DEF[id];if(!A||!(s>0))return '';
   I.tb.push({id:nid(),a:id,s:Math.round(s),p0:priceOf(id),y:M.y,k:'short'});I.n++;track(L,'trades');
-  return `🎯 Tu paries ${fmt(s)} sur la baisse de ${A.n} : un turbo baissier qui peut doubler ta mise si le cours s’effondre, et s’annule s’il double.`;
+  return `🎯 Tu paries ${fmt(s)} sur la baisse de ${A.n} : un pari à la baisse : ta mise peut doubler si le cours s’effondre, et tu la perds s’il double.`;
 }
 function buyBond(L,o,amt){
   const I=invSt(L),M=mkGet();
@@ -376,7 +376,7 @@ function pMarket(){
   h+=group('Conseil et outils',[
     nav('💼','Conseiller financier',I.tip?'Un tuyau est en cours':'Un tuyau par an, plus ou moins fiable',pAdvisor),
     nav('📰','Journal financier','Les gros titres des dernières années',pNews),
-    nav('🧮','Matrice de volatilité','Risque, bêta et corrélations',pVol),
+    nav('🧮','Risque des placements','Lesquels bougent le plus',pVol),
     act(L,{ic:'⚡',t:'Séance de day trading',s:'Dix décisions en direct, une fois par an',key:'inv_day',dis:L.prison?'En prison':L.money<1000?'Il faut au moins 1 000 € de liquidités':'',fn:L=>{
       modal({title:'Day trading',icon:'⚡',text:'Tu t’installes devant trois écrans et un café serré. Quelle mise engages-tu pour cette séance ?',choices:[1000,10000,50000].filter(s=>L.money>=s).map(s=>({t:`Miser ${fmt(s)}`,fn:()=>{if(L.money<s)return 'Fonds insuffisants.';L.money-=s;dayTrade(L,s);return ''}})).concat([{t:'Finalement non',fn:()=>{delete L.used.inv_day;return 'Tu refermes la plateforme sans rien toucher.'}}])});return ''}})]);
   h+=note('Frais de courtage : 0,5 % sur les actions, 1 % sur les matières premières, 1,5 % sur les crypto-monnaies. Les plus-values réalisées sont soumises à la flat tax de 30 % l’année suivante, les moins-values se reportent.');
@@ -419,7 +419,7 @@ const pAsset=id=>()=>{
   for(const amt of [1000,10000])S.push(act(L,{ic:'💶',t:`Vendre pour ${fmt(amt)}`,dis:q*p*(1-f)<amt?'Position insuffisante':'',fn:L=>out(L,sellAmt(L,id,amt))}));
   S.push(act(L,{ic:'🧺',t:'Tout vendre',s:q>0?`Environ ${fmt(q*p*(1-f))} encaissés`:'',dis:q>0?'':'Aucune position',danger:1,fn:L=>out(L,sellQ(L,id,q))}));
   h+=group('Vendre',S);
-  h+=group('Parier sur la baisse',[1000,10000].map(amt=>act(L,{ic:'🎯',t:`Turbo baissier de ${fmt(amt)}`,s:'Dénoué dans un an : jusqu’à ×2 si le cours s’effondre, perdu s’il double',cost:amt,fn:L=>out(L,openTurbo(L,id,amt))})));
+  h+=group('Parier sur la baisse',[1000,10000].map(amt=>act(L,{ic:'🎯',t:`Pari à la baisse de ${fmt(amt)}`,s:'Dénoué dans un an : jusqu’à ×2 si le cours s’effondre, perdu s’il double',cost:amt,fn:L=>out(L,openTurbo(L,id,amt))})));
   return {title:A.n,html:h};
 };
 function pBonds(){
@@ -473,14 +473,14 @@ function corrTable(M){
   const avg=x=>x.reduce((s,v)=>s+v,0)/x.length;
   const cor=(x,y)=>{const mx=avg(x),my=avg(y);let a=0,b=0,c=0;for(let i=0;i<x.length;i++){a+=(x[i]-mx)*(y[i]-my);b+=(x[i]-mx)**2;c+=(y[i]-my)**2}return b&&c?a/Math.sqrt(b*c):0};
   const cell=v=>`<td style="padding:6px 2px;border-radius:6px;background:color-mix(in srgb,var(${v>=0?'--good':'--bad'}) ${Math.round(Math.abs(v)*55)}%,transparent);font-family:var(--mono)">${v.toFixed(2).replace('.',',').replace('-','−')}</td>`;
-  return `<div class="card"><div class="ck">Corrélations sur ${An(n)}</div><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;text-align:center"><tr><th></th>${groups.map(g=>`<th style="font-weight:600;color:var(--muted)">${esc(g[0])}</th>`).join('')}</tr>${groups.map((g,i)=>`<tr><th style="text-align:left;font-weight:600;color:var(--muted)">${esc(g[0])}</th>${groups.map((_,j)=>cell(i===j?1:cor(ser[i],ser[j]))).join('')}</tr>`).join('')}</table><div class="cs">Proche de 1 : ces actifs montent et baissent ensemble. Négatif : l’un compense l’autre.</div></div>`;
+  return `<div class="card"><div class="ck">Qui bouge avec qui (sur ${An(n)})</div><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;text-align:center"><tr><th></th>${groups.map(g=>`<th style="font-weight:600;color:var(--muted)">${esc(g[0])}</th>`).join('')}</tr>${groups.map((g,i)=>`<tr><th style="text-align:left;font-weight:600;color:var(--muted)">${esc(g[0])}</th>${groups.map((_,j)=>cell(i===j?1:cor(ser[i],ser[j]))).join('')}</tr>`).join('')}</table><div class="cs">Proche de 1 : ces actifs montent et baissent ensemble. Négatif : l’un compense l’autre.</div></div>`;
 }
-function volRows(cat){return LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`σ ${Math.round(A.v*100)} % (${volLab(A.v)}) · β ${A.beta.toFixed(2).replace('.',',').replace('-','−')}${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
+function volRows(cat){return LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`Bouge de ${Math.round(A.v*100)} % par an (${volLab(A.v)})${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
     right:`<span class="bar" style="width:64px"><i style="width:${lim(A.v*70,4,100)}%;background:var(${A.v<.3?'--good':A.v<.6?'--warn':'--bad'})"></i></span>`,a:()=>pushPanel(pAsset(A.id))}))}
 function pVol(){
   const M=mkGet();
   const ts=['stock','crypto','com'].map(cat=>{const n=LIST.filter(A=>A.cat===cat).length;return n?ntile(cat==='stock'?'📈':cat==='crypto'?'🪙':'🛢️',CATN[cat],`${n} actifs · risque et bêta`,()=>pVolCat(cat)):''});
-  return {title:'Matrice de volatilité',html:note('σ : amplitude des variations annuelles. β : sensibilité au marché (négatif : valeur refuge).')+corrTable(M)+tiles(ts)};
+  return {title:'Risque des placements',html:note('Plus le pourcentage est haut, plus le prix bouge d’une année à l’autre.')+corrTable(M)+tiles(ts)};
 }
 function pVolCat(cat){return {title:CATN[cat],html:group('',volRows(cat))}}
 

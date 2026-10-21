@@ -149,9 +149,9 @@
 ### NIVEAU 4 — Petits chantiers (S)
 
 - [x] 20. **Carrière avancée** *(fait le 21/10 : rythme de travail tranquille / normal / intense, délai de 1 à 2 ans entre deux demandes d'augmentation, retraite = 5 meilleures années × 2 % par année travaillée, entre 25 % et 75 %)*.
-- [ ] 21. **Traits au choix à la création** + petit questionnaire de personnalité optionnel.
-- [ ] 22. **Jalons de l'enfance** : premiers mots, premiers pas, scène de caprice, rentrée en maternelle (avec visage).
-- [ ] 23. **Textes plus simples** : jargon des extensions (bourse, immobilier), phrases plus courtes, accords.
+- [x] 21. **Trait au choix à la création** *(fait le 21/10 : un menu « Trait de caractère » (au hasard ou l'une des 8 qualités) dans le formulaire de naissance)*. Reste : petit questionnaire de personnalité optionnel.
+- [x] 22. **Jalons de l'enfance** *(fait le 21/10 : 8 événements — premiers mots, premiers pas, caprice au supermarché, maternelle, ami imaginaire, vélo sans roulettes, CP, goûter d'anniversaire)*.
+- [ ] 23. **Textes plus simples** *(première passe faite le 21/10 sur la bourse : « turbo baissier » → « pari à la baisse », « matrice de volatilité » → « risque des placements » ; reste : immobilier, entreprise, autres extensions)*.
 - [ ] 24. **Relecture qualité** des modules écrits sans relecteur (carrières spéciales, marché noir, secte, espion, zoo, showbiz…).
 - [ ] 25. Citations, proverbes et « le saviez-vous » dans le bilan de fin de vie.
 - [ ] 26. Raccourcis : « refaire la dernière action », favoris, recherche dans les menus.
@@ -165,7 +165,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → ~~#15 bilan partageable~~ → petits chantiers ~~#20~~, #21, #22, #23 → #17b.
+1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → ~~#15 bilan partageable~~ → petits chantiers ~~#20~~, ~~#21~~, ~~#22~~, #23 → #17b.
 2. **Vague 2 — Des personnages et une vie qui ont du relief** : Rêves / objectifs de vie et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
 3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
 4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.

@@ -20,6 +20,8 @@ const TR={
   soc:{n:'Sociable',ic:'🥳',r:1,good:1,x:[],d:'Le roi (ou la reine) des soirées. Les relations s’érodent moins vite.'}
 };
 const KEYS=Object.keys(TR);
+/* Traits proposés à la création du personnage (les qualités seulement). */
+window.TRAIT_CHOICES=KEYS.filter(k=>TR[k].good).map(k=>[k,TR[k].ic+' '+TR[k].n]);
 /* compteur de pratique -> [trait, seuil] */
 const LEARN={k_med:['med',6],k_lib:['rat',6],k_study:['int',8],k_gym:['soi',8],k_party:['soc',8],k_walk:['opti',10],k_yoga:['med',8],k_doc:['tha',8]};
 const conflicts=(t,k)=>KEYS.filter(o=>t[o]&&(TR[o].x.includes(k)||TR[k].x.includes(o)));
@@ -37,7 +39,9 @@ function born(L,opts){
   if(!L)return;
   if(!L.traits||typeof L.traits!=='object')L.traits={};
   if(opts&&opts.family)return;
-  const n=R(0,3);
+  const chosen=opts&&opts.trait&&TR[opts.trait]?opts.trait:null;
+  if(chosen)add(L,chosen);
+  const n=chosen?R(0,2):R(0,3);
   for(let i=0;i<n;i++){
     const k=pick(KEYS);
     if(L.traits[k]||conflicts(L.traits,k).length)continue;

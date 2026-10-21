@@ -3,6 +3,9 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 21/10/2026 (nuit)
+- Création du personnage : choisis un trait de caractère (Optimiste, Bosseur, Génie…) ou laisse le hasard.
+- Enfance : 8 nouveaux moments (premiers mots, premiers pas, caprice au supermarché, maternelle, ami imaginaire, vélo sans roulettes, CP, goûter d'anniversaire).
+- Bourse : des mots plus simples (« pari à la baisse », « risque des placements »).
 - Carrière : choisis ton rythme de travail (tranquille, normal, intense), attends 1 à 2 ans entre deux demandes d'augmentation, et ta retraite dépend maintenant de tes 5 meilleures années et de ta durée de carrière.
 - Bilan de fin de vie : prix décernés, épitaphe et carte à partager en image (partage du téléphone) ou à enregistrer.
 - Visite guidée de 6 écrans au premier lancement (rejouable dans Menu → Réglages → Revoir la visite guidée) et fenêtre « Quoi de neuf ? » quand une nouveauté est publiée.
