@@ -10,6 +10,7 @@ const {chromium}=require(require('child_process').execSync('npm root -g').toStri
  let ages=0;
  for(let i=0;i<N;i++){
   try{
+  if(await pg.isVisible('#tuto')){await pg.click('#tuto .skip');continue}
   if(await pg.isVisible('#goBtn')){await pg.click('#goBtn');continue}
   if(await pg.isVisible('#modal')){
     const bs=await pg.$$('#mch button:not([disabled])');
@@ -19,7 +20,7 @@ const {chromium}=require(require('child_process').execSync('npm root -g').toStri
     await pg.waitForTimeout(150);continue}
   if(await pg.isVisible('#sheet')){
     const rows=await pg.$$('#pbody button.row:not([disabled]), #pbody button.tile:not([disabled]), #pbody button.btn');
-    if(rows.length&&Math.random()<.75){const r=rnd(rows);const t=await r.innerText();if(/Nouvelle partie|Tout effacer/.test(t)){await pg.click('#pclose');continue}await r.click();continue}
+    if(rows.length&&Math.random()<.75){const r=rnd(rows);const t=await r.innerText();if(/Nouvelle partie|Tout effacer|Revoir la visite guidée/.test(t)){await pg.click('#pclose');continue}await r.click();continue}
     await pg.click('#pclose');continue}
   const ob=await pg.$$('.obit button.row');
   if(ob.length){await rnd(ob).click();if(await pg.isVisible('#sheet')){const r=await pg.$$('#pbody button.row');if(r.length)await r[r.length-1].click()}continue}

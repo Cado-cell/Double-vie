@@ -389,6 +389,9 @@ details.led-wrap>summary small{display:block;color:var(--muted);font-weight:700;
 .tile b{display:block;font-family:var(--display);font-weight:800;font-size:19px;line-height:1.1;overflow-wrap:anywhere}
 .tile small{display:block;color:var(--muted);font-size:13px;font-weight:700;line-height:1.3;margin-top:3px;overflow-wrap:anywhere}
 
+.epi{margin:10px 8px 0!important;font-style:italic;font-weight:700;color:var(--ink-2)!important}
+.awards{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}
+.award{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;background:var(--e3);border:2px solid var(--ol);font-weight:800;font-size:12.5px;color:var(--ink)}
 /* ---------- Idées rapides ---------- */
 .qa{flex:none;display:flex;align-items:center;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px}
 .qa::-webkit-scrollbar{display:none}
@@ -469,7 +472,7 @@ details.led-wrap>summary small{display:block;color:var(--muted);font-weight:700;
 </div>
 
 <div id="toast" class="toast" hidden></div>
-<script>window.DV_VERSION='20261021-222208';window.DV_NEWS=["Visite guidée de 6 écrans au premier lancement (rejouable dans Menu → Réglages → Revoir la visite guidée) et fenêtre « Quoi de neuf ? » quand une nouveauté est publiée.", "Activités : 5 entrées au lieu de 8, les catégories avancées (argent, pouvoir, zone d'ombre, outils) sont dans « Plus d'aventures ». Relations : « À voir en ce moment » propose de passer du temps avec les proches qui en ont…", "Menus plus courts : les offres d'emploi (55 lignes) deviennent « 5 meilleurs pour toi » + 8 secteurs ; Émigrer (58 pays) devient 6 destinations populaires + 6 régions ; études supérieures, leçons, contrebande, journal…", "Plus simple : trois « idées rapides » sous ton personnage (ex. Amour, Santé, Emploi) ouvrent directement le bon menu ; Activités propose « Juste pour toi » et « Récents » ; les actions réservées à un âge que tu n'as pas encore…"]</script>
+<script>window.DV_VERSION='20261021-230811';window.DV_NEWS=["Carrière : choisis ton rythme de travail (tranquille, normal, intense), attends 1 à 2 ans entre deux demandes d'augmentation, et ta retraite dépend maintenant de tes 5 meilleures années et de ta durée de carrière.", "Bilan de fin de vie : prix décernés, épitaphe et carte à partager en image (partage du téléphone) ou à enregistrer.", "Visite guidée de 6 écrans au premier lancement (rejouable dans Menu → Réglages → Revoir la visite guidée) et fenêtre « Quoi de neuf ? » quand une nouveauté est publiée.", "Activités : 5 entrées au lieu de 8, les catégories avancées (argent, pouvoir, zone d'ombre, outils) sont dans « Plus d'aventures ». Relations : « À voir en ce moment » propose de passer du temps avec les proches qui en ont…"]</script>
 <script src="app.js"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=1;location.reload()}});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});setInterval(()=>r.update().catch(()=>{}),600000)}).catch(()=>{})})}</script>
 </body>

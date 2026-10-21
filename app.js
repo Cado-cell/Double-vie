@@ -1737,8 +1737,10 @@ function workYear(L){
   if(L.part){L.part.y++;earn(L,PART_TIME[L.part.k].sal)}
   const j=L.job;if(!j)return;
   if(j.sp){j.y=(j.y||0)+1;const S=SPECIALS[j.c];if(S&&S.year){try{S.year(L)}catch(e){console.error(e)}}else if(!S){L.job=null}return}
-  j.y++;const boss=bossOf(L);if(boss)boss.rel=clamp(boss.rel+R(-3,2)+(j.perf-50)/25);
-  j.perf=clamp(j.perf+R(-7,6)+(L.st.smarts>70?2:0)+(L.st.happy<30?-3:0)+(L.hid.discipline-50)/20+(L.addict.alcool>50?-6:0));
+  j.y++;if(j.raiseWait>0)j.raiseWait--;const boss=bossOf(L);if(boss)boss.rel=clamp(boss.rel+R(-3,2)+(j.perf-50)/25);
+  const hrs=j.hours||'normal';
+  j.perf=clamp(j.perf+R(-7,6)+(L.st.smarts>70?2:0)+(L.st.happy<30?-3:0)+(L.hid.discipline-50)/20+(L.addict.alcool>50?-6:0)+(hrs==='heavy'?6:hrs==='light'?-5:0));
+  if(hrs==='heavy')chg(L,{stress:4,health:-1,happy:-1});else if(hrs==='light')chg(L,{stress:-3,happy:2});
   const lad=ladderOf(j);
   if(j.lvl<lad.length-1&&j.perf>=75&&j.y>=2&&chance(.55*(.6+(boss?boss.rel:50)/125))){
     j.lvl++;j.y=0;j.sal=Math.round(j.sal*(j.mil?MILITARY.step:CAREERS[j.c].step));j.perf=clamp(j.perf-12);chg(L,{happy:8,stress:4});say(L,`📈 Promotion ! Tu deviens ${title(L).toLowerCase()}.`);
@@ -1746,10 +1748,17 @@ function workYear(L){
   }else if((j.perf<=15&&chance(.6))||(boss&&boss.rel<8&&j.perf<45&&chance(.4))){
     say(L,`Tu es ${ge(L,'licencié','licenciée')} de ton poste de ${title(L).toLowerCase()}.`);L.job=null;L.flags.chomage=2;L.flags.fired=1;chg(L,{happy:-12});return;
   }
-  earn(L,salary(L));
+  earn(L,salary(L));trackSalary(L,salary(L));
   if(j.mil)track(L,'militaryYears');
 }
-function calcPension(L){const r=modCall('pension',L).find(x=>typeof x==='number');return r!==undefined?Math.round(r):Math.round(salary(L)*.55)}
+/* Retraite : moyenne des 5 meilleures années × 2 % par année travaillée (25 % à 75 %). Retombe sur 55 % du salaire si l'historique est trop court (anciennes sauvegardes). */
+function trackSalary(L,sal){const t=L.tr;t.workY=(t.workY||0)+1;t.best5=(t.best5||[]).concat(Math.round(sal)).sort((a,b)=>b-a).slice(0,5)}
+function calcPension(L){
+  const r=modCall('pension',L).find(x=>typeof x==='number');if(r!==undefined)return Math.round(r);
+  const t=L.tr||{};
+  if((t.workY||0)>=5&&t.best5&&t.best5.length){const avg=t.best5.reduce((s,v)=>s+v,0)/t.best5.length;return Math.round(avg*Math.max(.25,Math.min(.75,t.workY*.02)))}
+  return Math.round(salary(L)*.55);
+}
 function retire(L){const t=title(L);L.pension=calcPension(L);L.retired=true;L.job=null;chg(L,{happy:10});return out(L,`🏖️ Tu prends ta retraite après une carrière de ${t.toLowerCase()}. Pension : ${fmt(L.pension)} par an.`)}
 
 /* ---------- Famille ---------- */
@@ -12431,6 +12440,92 @@ const TUTO=(()=>{
 
 ;
 
+/* ===== share.js ===== */
+/* Deux Vies — bilan de fin de vie : prix décernés, épitaphe et carte à partager (image). */
+function lifeAwards(L){
+  const t=L.tr||{},nw=netWorth(L),A=[];
+  const add=(score,ic,n,d)=>A.push({score,ic,n,d});
+  if(nw>=1e6)add(9,'💰','Millionnaire',fmtk(nw)+' laissés');
+  if((t.given||0)>=5000)add(8,'💝','Le plus généreux',fmtk(t.given)+' donnés');
+  if((t.kidsMax||0)>=3)add(7,'👨‍👩‍👧‍👦','Grande famille',(t.kidsMax)+' enfants');
+  if((t.marriedYears||0)>=25)add(7,'💍','Fidèle',(t.marriedYears)+' ans de mariage');
+  if((t.marriages||0)>=3)add(5,'💔','Cœur d’artichaut',(t.marriages)+' mariages');
+  if((t.trips||0)>=5)add(6,'🌍','Globe-trotteur',(t.trips)+' voyages');
+  if((t.fameMax||0)>=60||L.fame>=60)add(8,'⭐','Célébrité','connu' +ge(L,'','e')+' de tous');
+  if((t.crimes||0)>=8)add(6,'🕶️','Casier chargé',(t.crimes)+' mauvais coups');
+  if((t.jackpot||0)>=1)add(6,'🍀','Chanceux','un jackpot');
+  if((t.houses||0)>=3)add(5,'🏠','Propriétaire',(t.houses)+' biens');
+  if((t.pets||0)>=3)add(4,'🐾','Ami des bêtes',(t.pets)+' animaux');
+  if((t.scandals||0)>=2)add(5,'📰','Dans les journaux',(t.scandals)+' scandales');
+  if(L.st&&L.st.smarts>=90)add(4,'🧠','Esprit brillant','');
+  if(L.age>=95)add(6,'🎂','Centenaire ou presque',L.age+' ans');
+  A.sort((a,b)=>b.score-a.score);
+  return A.slice(0,3);
+}
+function lifeEpitaph(L){
+  const t=L.tr||{},il=ge(L,'Il','Elle');
+  if(netWorth(L)>=1e6)return `${il} a compté chaque euro, sauf les derniers.`;
+  if((t.kidsMax||0)>=3)return `${il} laisse une grande famille et de gros souvenirs de Noël.`;
+  if((t.crimes||0)>=8)return `${il} n’a jamais été vraiment innocent${ge(L,'','e')}, mais tellement sympathique.`;
+  if((t.trips||0)>=5)return `${il} a vu du pays et en a rapporté des histoires.`;
+  if(L.fame>=50)return 'Ses fans pleurent encore.';
+  if(L.age<30)return `${il} est parti${ge(L,'','e')} trop tôt, mais pas sans avoir fait parler de ${ge(L,'lui','elle')}.`;
+  return `${il} a vécu, tout simplement. C’est déjà beaucoup.`;
+}
+function lifeFacts(L){return [['Patrimoine',fmtk(netWorth(L))],['Dernier métier',cap(String(jobLabel(L)||'Sans emploi'))],['Enfants',String(allKids(L).length)],['Génération',String(L.gen||1)]]}
+
+function cardWrap(x,text,cx,y,maxW,lh,maxLines){
+  const words=String(text).split(' ');let line='',n=0;
+  for(const w of words){const t=line?line+' '+w:w;if(x.measureText(t).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;if(++n>=maxLines-1)break}else line=t}
+  x.fillText(line,cx,y);return y+lh;
+}
+function cardRound(x,X,Y,W,H,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+W,Y,X+W,Y+H,r);x.arcTo(X+W,Y+H,X,Y+H,r);x.arcTo(X,Y+H,X,Y,r);x.arcTo(X,Y,X+W,Y,r);x.closePath()}
+function lifeCard(L){
+  return new Promise((resolve,reject)=>{
+    try{
+      const W=1080,H=1500,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+      const NAVY='#1B1A47',F='"Baloo 2","Arial Rounded MT Bold","Nunito",system-ui,sans-serif';
+      x.fillStyle='#FFF1CC';x.fillRect(0,0,W,H);x.fillStyle='#F8D98C';
+      for(let j=0;j<H;j+=72)for(let i=0;i<W;i+=72){x.beginPath();x.arc(i+10,j+12,3.4,0,7);x.fill()}
+      x.fillStyle=NAVY;x.fillRect(0,0,W,150);x.textAlign='center';x.textBaseline='alphabetic';
+      x.font=`800 84px ${F}`;x.fillStyle='#fff';const w1=x.measureText('Double ').width,w2=x.measureText('Vie').width;
+      x.textAlign='left';x.fillText('Double ',(W-w1-w2)/2,106);x.fillStyle='#FF6FAE';x.fillText('Vie',(W-w1-w2)/2+w1,106);x.textAlign='center';
+      x.fillStyle=NAVY;cardRound(x,60,208,960,1214,44);x.fill();x.fillStyle='#fff';cardRound(x,60,196,960,1214,44);x.fill();x.lineWidth=8;x.strokeStyle=NAVY;x.stroke();
+      const svg=AVATAR_R.render(L.look,{age:L.age,gender:L.gender,mood:62}).replace('<svg ','<svg width="440" height="440" ');
+      const img=new Image();
+      img.onload=()=>{
+        x.save();x.beginPath();x.arc(540,400,165,0,7);x.clip();x.fillStyle='#FFF7E0';x.fillRect(370,230,340,340);x.drawImage(img,315,193,450,450);x.restore();
+        x.lineWidth=10;x.strokeStyle=NAVY;x.beginPath();x.arc(540,400,165,0,7);x.stroke();
+        x.fillStyle=NAVY;x.font=`800 78px ${F}`;x.fillText(`${L.first} ${L.last}`,540,680);
+        x.fillStyle='#6A6896';x.font=`700 40px ${F}`;x.fillText(`${L.age} ans${L.cause?' · '+L.cause:''}`,540,735);
+        const rb=(typeof RIBBONS!=='undefined'&&RIBBONS.find(r=>r.k===L.ribbon))||null;
+        if(rb){x.font=`800 44px ${F}`;const tw=x.measureText(rb.n).width+90;x.fillStyle='#FFC63A';cardRound(x,540-tw/2,770,tw,76,38);x.fill();x.lineWidth=6;x.strokeStyle=NAVY;x.stroke();x.fillStyle=NAVY;x.fillText(`${rb.ic} ${rb.n}`,540,824)}
+        x.fillStyle='#2D2B63';x.font=`italic 700 40px ${F}`;let y=cardWrap(x,'« '+lifeEpitaph(L)+' »',540,915,820,52,3);
+        const facts=lifeFacts(L),gx=[130,560],gy=Math.max(y+10,1030);
+        facts.forEach(([k,v],i)=>{const X=gx[i%2],Y=gy+Math.floor(i/2)*112;x.fillStyle='#FFF7E0';cardRound(x,X,Y,390,96,24);x.fill();x.lineWidth=4;x.strokeStyle='rgba(27,26,71,.25)';x.stroke();
+          x.textAlign='left';x.fillStyle='#6A6896';x.font=`800 24px ${F}`;x.fillText(k.toUpperCase(),X+22,Y+36);x.fillStyle=NAVY;x.font=`800 38px ${F}`;let vv=v;while(x.measureText(vv).width>350&&vv.length>3)vv=vv.slice(0,-2);if(vv!==v)vv+='…';x.fillText(vv,X+22,Y+78);x.textAlign='center'});
+        const aw=lifeAwards(L);if(aw.length){x.font=`800 28px ${F}`;let ax=0;const ws=aw.map(a=>x.measureText(`${a.ic} ${a.n}`).width+40),tot=ws.reduce((s,v)=>s+v,0)+12*(aw.length-1);ax=540-tot/2;
+          aw.forEach((a,i)=>{x.fillStyle='#E5DCFF';cardRound(x,ax,gy+232,ws[i],60,30);x.fill();x.lineWidth=4;x.strokeStyle=NAVY;x.stroke();x.fillStyle=NAVY;x.textAlign='left';x.fillText(`${a.ic} ${a.n}`,ax+20,gy+273);x.textAlign='center';ax+=ws[i]+12})}
+        x.fillStyle=NAVY;x.font=`700 32px ${F}`;x.fillText('Joue à Double Vie · '+location.host+location.pathname.replace(/index\.html$/,''),540,1462);
+        c.toBlob(b=>b?resolve(b):reject(new Error('image')),'image/png');
+      };
+      img.onerror=()=>reject(new Error('avatar'));
+      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    }catch(e){reject(e)}
+  });
+}
+async function shareLife(L,mode){
+  try{
+    const blob=await lifeCard(L);const name=`bilan-${String(L.first).toLowerCase().replace(/[^a-z0-9]+/g,'-')}.png`;
+    const file=new File([blob],name,{type:'image/png'});
+    if(mode==='share'&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mon bilan de vie',text:`Voici la vie de ${L.first} dans Double Vie !`});return}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+    toast(mode==='share'?'Le partage n’est pas disponible ici : l’image est enregistrée.':'Image enregistrée.');
+  }catch(e){if(e&&e.name==='AbortError')return;console.error(e);toast('Impossible de créer l’image.')}
+}
+
+;
+
 /* ===== ui.js ===== */
 /* Deux Vies — interface */
 
@@ -12601,8 +12696,9 @@ function obitHtml(L){
   const ks=kids(L);const rb=RIBBONS.find(r=>r.k===L.ribbon)||RIBBONS[RIBBONS.length-1];const ages=snapAges(L).slice(-6).reverse();
   return `<div class="obit"><div class="obav">${avatar(L,{happy:50})}</div><div class="ok">Repose en paix</div><h2>${esc(L.first)} ${esc(L.last)}</h2><p>${L.age} ans · ${esc(L.cause||'')}</p>
   <div class="ribbon"><span>${rb.ic}</span><div><b>Ruban : ${esc(rb.n)}</b><small>${esc(rb.d)}</small></div></div>
+  <p class="epi">« ${esc(lifeEpitaph(L))} »</p>${(()=>{const a=lifeAwards(L);return a.length?`<div class="awards">${a.map(x=>`<span class="award" title="${esc(x.d)}">${emoInline(x.ic+' '+x.n)}</span>`).join('')}</div>`:''})()}
   <dl><div><dt>Patrimoine</dt><dd>${fmt(netWorth(L))}</dd></div><div><dt>Dernier métier</dt><dd>${esc(jobLabel(L))}</dd></div><div><dt>Enfants</dt><dd>${allKids(L).length}</dd></div><div><dt>Génération</dt><dd>${L.gen}</dd></div></dl>
-  <div class="list">${ks.map(k=>row({av:avatar(k),t:`Continuer en tant que ${k.first}`,s:`${role(k)} · ${An(k.age)}${L.will.heir&&L.will.heir!==k.id?' · non désigné héritier':' · hérite de ta fortune'}`,right:'›',a:()=>{continueAs(G.turn,k.id);save();render()}})).join('')}
+  <div class="list">${row({ic:'📤',t:'Partager mon bilan',s:'Une image à envoyer à ta moitié',a:()=>shareLife(L,'share')})}${row({ic:'💾',t:'Enregistrer l’image',s:'Dans ta galerie',a:()=>shareLife(L,'save')})}${ks.map(k=>row({av:avatar(k),t:`Continuer en tant que ${k.first}`,s:`${role(k)} · ${An(k.age)}${L.will.heir&&L.will.heir!==k.id?' · non désigné héritier':' · hérite de ta fortune'}`,right:'›',a:()=>{continueAs(G.turn,k.id);save();render()}})).join('')}
   ${ages.length?row({ic:'⏳',t:'Remonter le temps',s:`Revenir à ${An(ages[0])} ou avant`,right:'›',a:()=>openPanel(pTime)}):''}
   ${row({ic:'🌱',t:'Commencer une nouvelle vie',s:'Nouveau prénom, nouveau départ',right:'›',a:()=>openPanel(pNewLife(G.turn))})}</div></div>`;
 }
@@ -12661,6 +12757,8 @@ function pTime(){
 }
 
 /* ---------- Métier et école ---------- */
+const HOURS={light:['Tranquille (35 h)','Plus de temps pour toi : bonheur en hausse, performance en baisse.'],normal:['Normal (39 h)','Équilibré : ni fatigue, ni coup de pouce.'],heavy:['Intense (50 h)','Performance en hausse, mais stress et fatigue aussi.']};
+function pHours(){const L=cur();return {title:'Rythme de travail',html:note('Ton rythme joue chaque année sur ta performance, ton stress et ton bonheur.')+group('',Object.entries(HOURS).map(([k,[n,d]])=>row({ic:k==='light'?'🌴':k==='heavy'?'🔥':'⏱️',t:n,s:(L.job&&(L.job.hours||'normal')===k?'Rythme actuel · ':'')+d,a:()=>run(()=>{if(L.job)L.job.hours=k;STACK.pop();return 'Rythme de travail : '+n.toLowerCase()+'.'})})))}}
 function pWork(){
   const L=cur();let h='';
   if(L.prison)return {title:'Prison',html:card('Détention',`Peine restante : ${An(L.prison)}`,'Les activités de détention sont dans l’onglet Activités.')};
@@ -12690,13 +12788,14 @@ function pWork(){
     const H=[];
     if(!L.job.sp){
       const B=bossOf(L);if(B)H.push(row({av:avatar(B),t:`${L.job.mil?'Supérieur':ge(B,'Patron','Patronne')} : ${B.first} ${B.last}`,s:'Relation avec ta hiérarchie',right:mini(B.rel),a:()=>pushPanel(pBoss)}));
+      H.push(row({ic:'⏱️',t:'Rythme de travail',s:`${HOURS[L.job.hours||'normal'][0]} · touche pour changer`,right:'›',a:()=>pushPanel(pHours)}));
       H.push(act(L,{ic:'💪',t:'Travailler plus dur',s:'Performance en hausse, fatigue aussi',key:'work',fn:L=>{L.job.perf=clamp(L.job.perf+R(5,11));chg(L,{happy:-2,health:-1});return out(L,'Tu enchaînes les heures et ça se voit.')}}));
       H.push(act(L,{ic:'😴',t:'Lever le pied',s:'Bonheur en hausse, performance en baisse',key:'slack',fn:L=>{L.job.perf=clamp(L.job.perf-R(4,9));chg(L,{happy:4});return out(L,'Pauses café prolongées et longues réunions.')}}));
-      H.push(act(L,{ic:'💶',t:'Demander une augmentation',key:'raise',fn:L=>{if(chance(L.job.perf/150)){const p=R(4,12);L.job.sal=Math.round(L.job.sal*(1+p/100));return out(L,`Augmentation accordée : +${p} %.`)}L.job.perf=clamp(L.job.perf-5);return out(L,'Ta demande d’augmentation est refusée.')}}));
+      H.push(act(L,{ic:'💶',t:'Demander une augmentation',key:'raise',dis:L.job.raiseWait>0?`Reviens dans ${An(L.job.raiseWait)}`:'',fn:L=>{if(chance(L.job.perf/150)){const p=R(4,12);L.job.sal=Math.round(L.job.sal*(1+p/100));L.job.raiseWait=2;return out(L,`Augmentation accordée : +${p} %. Prochaine demande dans 2 ans.`)}L.job.perf=clamp(L.job.perf-5);L.job.raiseWait=1;return out(L,'Ta demande d’augmentation est refusée. Réessaie l’an prochain.')}}));
       H.push(act(L,{ic:'📈',t:'Demander une promotion',key:'promo',dis:L.job.lvl>=ladderOf(L.job).length-1?'Tu es au sommet':'',fn:L=>{const j=L.job;if(j.perf>=70&&chance(.5)){j.lvl++;j.y=0;j.sal=Math.round(j.sal*(j.mil?MILITARY.step:CAREERS[j.c].step));chg(L,{happy:8});if(j.lvl===ladderOf(j).length-1)track(L,'topCareer');return out(L,`📈 Promotion ! Tu deviens ${title(L).toLowerCase()}.`)}j.perf=clamp(j.perf-3);return out(L,'Pas cette année, te répond-on.')}}));
       H.push(act(L,{ic:'☕',t:'Sympathiser avec un collègue',key:'coll',fn:L=>{const f=addFriend(L,{coworker:1,age:L.age+R(-8,8)});return out(L,`Tu sympathises avec ${f.first} à la machine à café.`)}}));
     }
-    H.push(act(L,{ic:'🏖️',t:L.job.mil?'Prendre ta retraite militaire':'Prendre ta retraite',s:L.job.mil?'Après 15 ans de service':`Pension : ${fmt(calcPension(L))} par an`,min:L.job.mil?0:60,dis:L.job.mil&&L.job.y<15&&(L.tr.militaryYears||0)<15?'Après 15 ans de service':'',nav:confirmP('Prendre ta retraite ?','Tu toucheras 55 % de ton salaire actuel chaque année.',()=>retire(L))}));
+    H.push(act(L,{ic:'🏖️',t:L.job.mil?'Prendre ta retraite militaire':'Prendre ta retraite',s:L.job.mil?'Après 15 ans de service':`Pension : ${fmt(calcPension(L))} par an`,min:L.job.mil?0:60,dis:L.job.mil&&L.job.y<15&&(L.tr.militaryYears||0)<15?'Après 15 ans de service':'',nav:confirmP('Prendre ta retraite ?',`Pension estimée : ${fmt(calcPension(L))} par an, d’après tes 5 meilleures années et ta durée de carrière.`,()=>retire(L))}));
     H.push(row({ic:'🚪',t:L.job.mil?'Quitter l’armée':'Démissionner',danger:1,a:()=>pushPanel(confirmP(L.job.mil?'Quitter l’armée ?':'Démissionner ?','Tu perdras ton salaire. Pas de chômage après une démission.',()=>{const t=title(L);L.job=null;chg(L,{happy:2});return out(L,`Tu quittes ton poste de ${t.toLowerCase()}.`)}))}));
     h+=group('Au travail',H);
   }else if(L.retired)h+=note(`Tu es à la retraite. Pension : ${fmt(L.pension)} par an.`);

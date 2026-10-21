@@ -167,8 +167,9 @@ function obitHtml(L){
   const ks=kids(L);const rb=RIBBONS.find(r=>r.k===L.ribbon)||RIBBONS[RIBBONS.length-1];const ages=snapAges(L).slice(-6).reverse();
   return `<div class="obit"><div class="obav">${avatar(L,{happy:50})}</div><div class="ok">Repose en paix</div><h2>${esc(L.first)} ${esc(L.last)}</h2><p>${L.age} ans · ${esc(L.cause||'')}</p>
   <div class="ribbon"><span>${rb.ic}</span><div><b>Ruban : ${esc(rb.n)}</b><small>${esc(rb.d)}</small></div></div>
+  <p class="epi">« ${esc(lifeEpitaph(L))} »</p>${(()=>{const a=lifeAwards(L);return a.length?`<div class="awards">${a.map(x=>`<span class="award" title="${esc(x.d)}">${emoInline(x.ic+' '+x.n)}</span>`).join('')}</div>`:''})()}
   <dl><div><dt>Patrimoine</dt><dd>${fmt(netWorth(L))}</dd></div><div><dt>Dernier métier</dt><dd>${esc(jobLabel(L))}</dd></div><div><dt>Enfants</dt><dd>${allKids(L).length}</dd></div><div><dt>Génération</dt><dd>${L.gen}</dd></div></dl>
-  <div class="list">${ks.map(k=>row({av:avatar(k),t:`Continuer en tant que ${k.first}`,s:`${role(k)} · ${An(k.age)}${L.will.heir&&L.will.heir!==k.id?' · non désigné héritier':' · hérite de ta fortune'}`,right:'›',a:()=>{continueAs(G.turn,k.id);save();render()}})).join('')}
+  <div class="list">${row({ic:'📤',t:'Partager mon bilan',s:'Une image à envoyer à ta moitié',a:()=>shareLife(L,'share')})}${row({ic:'💾',t:'Enregistrer l’image',s:'Dans ta galerie',a:()=>shareLife(L,'save')})}${ks.map(k=>row({av:avatar(k),t:`Continuer en tant que ${k.first}`,s:`${role(k)} · ${An(k.age)}${L.will.heir&&L.will.heir!==k.id?' · non désigné héritier':' · hérite de ta fortune'}`,right:'›',a:()=>{continueAs(G.turn,k.id);save();render()}})).join('')}
   ${ages.length?row({ic:'⏳',t:'Remonter le temps',s:`Revenir à ${An(ages[0])} ou avant`,right:'›',a:()=>openPanel(pTime)}):''}
   ${row({ic:'🌱',t:'Commencer une nouvelle vie',s:'Nouveau prénom, nouveau départ',right:'›',a:()=>openPanel(pNewLife(G.turn))})}</div></div>`;
 }
@@ -227,6 +228,8 @@ function pTime(){
 }
 
 /* ---------- Métier et école ---------- */
+const HOURS={light:['Tranquille (35 h)','Plus de temps pour toi : bonheur en hausse, performance en baisse.'],normal:['Normal (39 h)','Équilibré : ni fatigue, ni coup de pouce.'],heavy:['Intense (50 h)','Performance en hausse, mais stress et fatigue aussi.']};
+function pHours(){const L=cur();return {title:'Rythme de travail',html:note('Ton rythme joue chaque année sur ta performance, ton stress et ton bonheur.')+group('',Object.entries(HOURS).map(([k,[n,d]])=>row({ic:k==='light'?'🌴':k==='heavy'?'🔥':'⏱️',t:n,s:(L.job&&(L.job.hours||'normal')===k?'Rythme actuel · ':'')+d,a:()=>run(()=>{if(L.job)L.job.hours=k;STACK.pop();return 'Rythme de travail : '+n.toLowerCase()+'.'})})))}}
 function pWork(){
   const L=cur();let h='';
   if(L.prison)return {title:'Prison',html:card('Détention',`Peine restante : ${An(L.prison)}`,'Les activités de détention sont dans l’onglet Activités.')};
@@ -256,13 +259,14 @@ function pWork(){
     const H=[];
     if(!L.job.sp){
       const B=bossOf(L);if(B)H.push(row({av:avatar(B),t:`${L.job.mil?'Supérieur':ge(B,'Patron','Patronne')} : ${B.first} ${B.last}`,s:'Relation avec ta hiérarchie',right:mini(B.rel),a:()=>pushPanel(pBoss)}));
+      H.push(row({ic:'⏱️',t:'Rythme de travail',s:`${HOURS[L.job.hours||'normal'][0]} · touche pour changer`,right:'›',a:()=>pushPanel(pHours)}));
       H.push(act(L,{ic:'💪',t:'Travailler plus dur',s:'Performance en hausse, fatigue aussi',key:'work',fn:L=>{L.job.perf=clamp(L.job.perf+R(5,11));chg(L,{happy:-2,health:-1});return out(L,'Tu enchaînes les heures et ça se voit.')}}));
       H.push(act(L,{ic:'😴',t:'Lever le pied',s:'Bonheur en hausse, performance en baisse',key:'slack',fn:L=>{L.job.perf=clamp(L.job.perf-R(4,9));chg(L,{happy:4});return out(L,'Pauses café prolongées et longues réunions.')}}));
-      H.push(act(L,{ic:'💶',t:'Demander une augmentation',key:'raise',fn:L=>{if(chance(L.job.perf/150)){const p=R(4,12);L.job.sal=Math.round(L.job.sal*(1+p/100));return out(L,`Augmentation accordée : +${p} %.`)}L.job.perf=clamp(L.job.perf-5);return out(L,'Ta demande d’augmentation est refusée.')}}));
+      H.push(act(L,{ic:'💶',t:'Demander une augmentation',key:'raise',dis:L.job.raiseWait>0?`Reviens dans ${An(L.job.raiseWait)}`:'',fn:L=>{if(chance(L.job.perf/150)){const p=R(4,12);L.job.sal=Math.round(L.job.sal*(1+p/100));L.job.raiseWait=2;return out(L,`Augmentation accordée : +${p} %. Prochaine demande dans 2 ans.`)}L.job.perf=clamp(L.job.perf-5);L.job.raiseWait=1;return out(L,'Ta demande d’augmentation est refusée. Réessaie l’an prochain.')}}));
       H.push(act(L,{ic:'📈',t:'Demander une promotion',key:'promo',dis:L.job.lvl>=ladderOf(L.job).length-1?'Tu es au sommet':'',fn:L=>{const j=L.job;if(j.perf>=70&&chance(.5)){j.lvl++;j.y=0;j.sal=Math.round(j.sal*(j.mil?MILITARY.step:CAREERS[j.c].step));chg(L,{happy:8});if(j.lvl===ladderOf(j).length-1)track(L,'topCareer');return out(L,`📈 Promotion ! Tu deviens ${title(L).toLowerCase()}.`)}j.perf=clamp(j.perf-3);return out(L,'Pas cette année, te répond-on.')}}));
       H.push(act(L,{ic:'☕',t:'Sympathiser avec un collègue',key:'coll',fn:L=>{const f=addFriend(L,{coworker:1,age:L.age+R(-8,8)});return out(L,`Tu sympathises avec ${f.first} à la machine à café.`)}}));
     }
-    H.push(act(L,{ic:'🏖️',t:L.job.mil?'Prendre ta retraite militaire':'Prendre ta retraite',s:L.job.mil?'Après 15 ans de service':`Pension : ${fmt(calcPension(L))} par an`,min:L.job.mil?0:60,dis:L.job.mil&&L.job.y<15&&(L.tr.militaryYears||0)<15?'Après 15 ans de service':'',nav:confirmP('Prendre ta retraite ?','Tu toucheras 55 % de ton salaire actuel chaque année.',()=>retire(L))}));
+    H.push(act(L,{ic:'🏖️',t:L.job.mil?'Prendre ta retraite militaire':'Prendre ta retraite',s:L.job.mil?'Après 15 ans de service':`Pension : ${fmt(calcPension(L))} par an`,min:L.job.mil?0:60,dis:L.job.mil&&L.job.y<15&&(L.tr.militaryYears||0)<15?'Après 15 ans de service':'',nav:confirmP('Prendre ta retraite ?',`Pension estimée : ${fmt(calcPension(L))} par an, d’après tes 5 meilleures années et ta durée de carrière.`,()=>retire(L))}));
     H.push(row({ic:'🚪',t:L.job.mil?'Quitter l’armée':'Démissionner',danger:1,a:()=>pushPanel(confirmP(L.job.mil?'Quitter l’armée ?':'Démissionner ?','Tu perdras ton salaire. Pas de chômage après une démission.',()=>{const t=title(L);L.job=null;chg(L,{happy:2});return out(L,`Tu quittes ton poste de ${t.toLowerCase()}.`)}))}));
     h+=group('Au travail',H);
   }else if(L.retired)h+=note(`Tu es à la retraite. Pension : ${fmt(L.pension)} par an.`);

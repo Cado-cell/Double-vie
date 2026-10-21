@@ -25,7 +25,7 @@ const {chromium}=require(require('child_process').execSync('npm root -g').toStri
       if(p===pRoyal&&!L.royal)continue;
       try{openPanel(p)}catch(e){errs.push('OPEN '+p.name+' '+e.message)}
       for(let d=0;d<3;d++){
-        const rows=[...document.querySelectorAll('#pbody button.row:not([disabled]), #pbody button.tile:not([disabled]), #pbody .btn:not([disabled])')].filter(r=>!/Tout effacer|Nouvelle partie/.test(r.textContent));
+        const rows=[...document.querySelectorAll('#pbody button.row:not([disabled]), #pbody button.tile:not([disabled]), #pbody .btn:not([disabled])')].filter(r=>!/Tout effacer|Nouvelle partie|Revoir la visite guidée/.test(r.textContent));
         if(!rows.length)break;
         rows[Math.floor(Math.random()*rows.length)].click();clicks++;
         await drain();

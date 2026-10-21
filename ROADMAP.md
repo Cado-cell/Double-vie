@@ -139,7 +139,7 @@
 - [ ] **12. Événements illustrés** : cartes d'événement avec décor et avatars des personnes concernées, transitions entre les années.
 - [x] **13. Prise en main** *(fait le 21/10 : visite guidée de 6 écrans au premier lancement, rejouable depuis Menu → Réglages ; fenêtre « Quoi de neuf » alimentée par `CHANGELOG.md` quand une nouveauté est publiée)*. Reste : aides contextuelles ponctuelles.
 - [ ] **14. Fil de vie 2.0** : chronologie, filtre « moments importants », « vieillir jusqu'au prochain événement », **album des portraits par âge** (l'avatar qui vieillit).
-- [ ] **15. Bilan de fin de vie + carte à partager** (image via le partage du téléphone) + « photo de famille ».
+- [x] **15. Bilan de fin de vie + carte à partager** *(fait le 21/10 : prix décernés (Millionnaire, Le plus généreux, Grande famille…), épitaphe, carte image 1080×1500 à partager par le téléphone ou à enregistrer)*. Reste : « photo de famille » et code de bilan pour la comparaison à deux (chantier 1).
 - [ ] **16. Personnalisation++** : tenues par métier et par époque, évolution du style avec l'âge, thèmes de couleurs de l'appli, cadres de portrait.
 - [x] **17a. Infrastructure de base** *(fait le 21/10 : dépôt avec `src/`, `tools/`, `tests/`, batterie `node tests/run_all.js`, publication par `python3 tools/build_pwa.py --publish`, pilote automatique de nuit)*.
 - [ ] **17b. Infrastructure, suite** : exécution automatique des tests sur GitHub à chaque envoi (GitHub Actions, nécessite l'autorisation « workflow » du jeton), découpage du paquet pour un démarrage plus rapide, stats d'équilibrage en local.
@@ -148,7 +148,7 @@
 
 ### NIVEAU 4 — Petits chantiers (S)
 
-- [ ] 20. **Carrière avancée** : horaires réglables, demandes d'augmentation avec délai, retraite calculée sur les meilleures années.
+- [x] 20. **Carrière avancée** *(fait le 21/10 : rythme de travail tranquille / normal / intense, délai de 1 à 2 ans entre deux demandes d'augmentation, retraite = 5 meilleures années × 2 % par année travaillée, entre 25 % et 75 %)*.
 - [ ] 21. **Traits au choix à la création** + petit questionnaire de personnalité optionnel.
 - [ ] 22. **Jalons de l'enfance** : premiers mots, premiers pas, scène de caprice, rentrée en maternelle (avec visage).
 - [ ] 23. **Textes plus simples** : jargon des extensions (bourse, immobilier), phrases plus courtes, accords.
@@ -165,7 +165,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → #15 bilan partageable (carte image) → petits chantiers #20, #21, #22, #23 → #17b.
+1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → ~~#15 bilan partageable~~ → petits chantiers ~~#20~~, #21, #22, #23 → #17b.
 2. **Vague 2 — Des personnages et une vie qui ont du relief** : Rêves / objectifs de vie et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
 3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
 4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.

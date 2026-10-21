@@ -369,8 +369,10 @@ function workYear(L){
   if(L.part){L.part.y++;earn(L,PART_TIME[L.part.k].sal)}
   const j=L.job;if(!j)return;
   if(j.sp){j.y=(j.y||0)+1;const S=SPECIALS[j.c];if(S&&S.year){try{S.year(L)}catch(e){console.error(e)}}else if(!S){L.job=null}return}
-  j.y++;const boss=bossOf(L);if(boss)boss.rel=clamp(boss.rel+R(-3,2)+(j.perf-50)/25);
-  j.perf=clamp(j.perf+R(-7,6)+(L.st.smarts>70?2:0)+(L.st.happy<30?-3:0)+(L.hid.discipline-50)/20+(L.addict.alcool>50?-6:0));
+  j.y++;if(j.raiseWait>0)j.raiseWait--;const boss=bossOf(L);if(boss)boss.rel=clamp(boss.rel+R(-3,2)+(j.perf-50)/25);
+  const hrs=j.hours||'normal';
+  j.perf=clamp(j.perf+R(-7,6)+(L.st.smarts>70?2:0)+(L.st.happy<30?-3:0)+(L.hid.discipline-50)/20+(L.addict.alcool>50?-6:0)+(hrs==='heavy'?6:hrs==='light'?-5:0));
+  if(hrs==='heavy')chg(L,{stress:4,health:-1,happy:-1});else if(hrs==='light')chg(L,{stress:-3,happy:2});
   const lad=ladderOf(j);
   if(j.lvl<lad.length-1&&j.perf>=75&&j.y>=2&&chance(.55*(.6+(boss?boss.rel:50)/125))){
     j.lvl++;j.y=0;j.sal=Math.round(j.sal*(j.mil?MILITARY.step:CAREERS[j.c].step));j.perf=clamp(j.perf-12);chg(L,{happy:8,stress:4});say(L,`📈 Promotion ! Tu deviens ${title(L).toLowerCase()}.`);
@@ -378,10 +380,17 @@ function workYear(L){
   }else if((j.perf<=15&&chance(.6))||(boss&&boss.rel<8&&j.perf<45&&chance(.4))){
     say(L,`Tu es ${ge(L,'licencié','licenciée')} de ton poste de ${title(L).toLowerCase()}.`);L.job=null;L.flags.chomage=2;L.flags.fired=1;chg(L,{happy:-12});return;
   }
-  earn(L,salary(L));
+  earn(L,salary(L));trackSalary(L,salary(L));
   if(j.mil)track(L,'militaryYears');
 }
-function calcPension(L){const r=modCall('pension',L).find(x=>typeof x==='number');return r!==undefined?Math.round(r):Math.round(salary(L)*.55)}
+/* Retraite : moyenne des 5 meilleures années × 2 % par année travaillée (25 % à 75 %). Retombe sur 55 % du salaire si l'historique est trop court (anciennes sauvegardes). */
+function trackSalary(L,sal){const t=L.tr;t.workY=(t.workY||0)+1;t.best5=(t.best5||[]).concat(Math.round(sal)).sort((a,b)=>b-a).slice(0,5)}
+function calcPension(L){
+  const r=modCall('pension',L).find(x=>typeof x==='number');if(r!==undefined)return Math.round(r);
+  const t=L.tr||{};
+  if((t.workY||0)>=5&&t.best5&&t.best5.length){const avg=t.best5.reduce((s,v)=>s+v,0)/t.best5.length;return Math.round(avg*Math.max(.25,Math.min(.75,t.workY*.02)))}
+  return Math.round(salary(L)*.55);
+}
 function retire(L){const t=title(L);L.pension=calcPension(L);L.retired=true;L.job=null;chg(L,{happy:10});return out(L,`🏖️ Tu prends ta retraite après une carrière de ${t.toLowerCase()}. Pension : ${fmt(L.pension)} par an.`)}
 
 /* ---------- Famille ---------- */

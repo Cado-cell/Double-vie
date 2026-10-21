@@ -3,6 +3,8 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 21/10/2026 (nuit)
+- Carrière : choisis ton rythme de travail (tranquille, normal, intense), attends 1 à 2 ans entre deux demandes d'augmentation, et ta retraite dépend maintenant de tes 5 meilleures années et de ta durée de carrière.
+- Bilan de fin de vie : prix décernés, épitaphe et carte à partager en image (partage du téléphone) ou à enregistrer.
 - Visite guidée de 6 écrans au premier lancement (rejouable dans Menu → Réglages → Revoir la visite guidée) et fenêtre « Quoi de neuf ? » quand une nouveauté est publiée.
 - Activités : 5 entrées au lieu de 8, les catégories avancées (argent, pouvoir, zone d'ombre, outils) sont dans « Plus d'aventures ». Relations : « À voir en ce moment » propose de passer du temps avec les proches qui en ont besoin, en 2 touches. Un personnage de 30 ans : 604 actions au lieu de 802 au départ de la journée.
 - Menus plus courts : les offres d'emploi (55 lignes) deviennent « 5 meilleurs pour toi » + 8 secteurs ; Émigrer (58 pays) devient 6 destinations populaires + 6 régions ; études supérieures, leçons, contrebande, journal financier et volatilité sont regroupés. Liste la plus longue d'un personnage de 30 ans : 20 lignes au lieu de 58.
