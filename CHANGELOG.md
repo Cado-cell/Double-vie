@@ -3,6 +3,7 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 21/10/2026 (nuit)
+- Rêves de vie : à 12, 25 et 40 ans, choisis ce qui compte pour toi (millionnaire, grande famille, tour du monde…). Ta progression est dans la fiche personnage, chaque rêve réalisé te rend heureux et compte dans ton bilan.
 - Création du personnage : choisis un trait de caractère (Optimiste, Bosseur, Génie…) ou laisse le hasard.
 - Enfance : 8 nouveaux moments (premiers mots, premiers pas, caprice au supermarché, maternelle, ami imaginaire, vélo sans roulettes, CP, goûter d'anniversaire).
 - Bourse : des mots plus simples (« pari à la baisse », « risque des placements »).

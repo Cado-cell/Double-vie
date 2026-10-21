@@ -56,7 +56,7 @@ const FX=(()=>{
   }
 
   /* ---------- Réactions au journal de l’année ---------- */
-  const WIN=/(^|\s)(🎓|💒|👶|💍|🏆)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|accouch/i;
+  const WIN=/(^|\s)(🎓|💒|👶|💍|🏆)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|accouch|Rêve réalisé/i;
   const BAD=/(^|\s)(☠️|🕯️|🚑|🔒)|décès|est mort|est morte|meurt|licenci|accident|divorc|te quitte|condamn|incendie/i;
   function reactions(txt){
     const now=Date.now();

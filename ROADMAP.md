@@ -98,7 +98,7 @@
   - **Défis communs** (« premier millionnaire », « la plus belle carrière ») comparés à la fin.
   - **Pas de temps réel** : cela demanderait un serveur ; ce n'est pas nécessaire pour vous deux.
   - *Mode « deux joueurs sur le même téléphone » : il reste tel quel. On n'y investit plus (secrets, écran « passe le téléphone », jokers) tant que ce n'est pas demandé.*
-- [ ] **2. Moteur d'histoires et mémoire** *(impact : 5/5)*
+- [ ] **2. Moteur d'histoires et mémoire** *(impact : 5/5 — « Rêves de vie » faits le 21/10 : choix d'un rêve à 12, 25 et 40 ans, onze rêves possibles, progression sur la fiche personnage, bonheur à la réalisation, prix « Rêveur comblé » dans le bilan ; reste : personnalité cachée, mémoire et rappels, personnages récurrents, arcs)*
   - Mémoire des événements marquants (étiquettes de souvenirs) pour des **rappels** : « Ça fait 10 ans que tu as quitté Théo… ».
   - **Personnages récurrents** avec personnalité : le rival d'école, le meilleur ami d'enfance, l'ex qui revient, le voisin pénible.
   - **Arcs sur plusieurs années** (chaînes 3 à 6 étapes avec bifurcations réelles) ; objectif : passer de 52 à 200 chaînes.
@@ -166,7 +166,7 @@
 ## 5. Ordre de réalisation proposé
 
 1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → ~~#15 bilan partageable~~ → petits chantiers ~~#20~~, ~~#21~~, ~~#22~~, #23 → #17b.
-2. **Vague 2 — Des personnages et une vie qui ont du relief** : Rêves / objectifs de vie et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
+2. **Vague 2 — Des personnages et une vie qui ont du relief** : ~~Rêves / objectifs de vie~~ et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
 3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
 4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
 5. **Vague 5 — Durée de vie** : #8 ères → #9 santé → #10 foyer → #12, #14, #16, #18, #19.

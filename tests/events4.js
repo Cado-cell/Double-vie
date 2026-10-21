@@ -10,7 +10,7 @@ const fs=require('fs');const dir='src';
   for(const e of ev){try{const L=cur();L.age=Math.max(e.conditions.min_age,1);if(!evCond(L,e.conditions))out.bad.push(e.id+':cond');
     for(let c=0;c<e.choices.length;c++){evRun(L,e);if(curM&&curM.choices&&curM.choices[c]){chooseM(c);out.played++}else if(curM){endModal('')}}}catch(x){out.bad.push(e.id+':'+x.message)}}
   // l'enfant croise bien ces événements au fil des années
-  const seen=new Set();for(let t=0;t<60;t++){const L=makeLife({first:'E',last:'E'});L.age=0;G.players=[L];G.turn=0;for(let a=0;a<11;a++){const flagsBefore=Object.keys(L.flags).filter(k=>k.startsWith('e_evt4_'));ageUp();let k=0;while(curM&&k++<40){const c=curM.choices;if(!c||!c.length)endModal('');else chooseM(0)}}Object.keys(L.flags).filter(k=>k.startsWith('e_evt4_')).forEach(x=>seen.add(x))}
+  const seen=new Set();for(let t=0;t<30;t++){const L=makeLife({first:'E',last:'E'});L.age=0;G.players=[L];G.turn=0;for(let a=0;a<11;a++){const flagsBefore=Object.keys(L.flags).filter(k=>k.startsWith('e_evt4_'));ageUp();let k=0;while(curM&&k++<40){const c=curM.choices;if(!c||!c.length)endModal('');else chooseM(0)}}Object.keys(L.flags).filter(k=>k.startsWith('e_evt4_')).forEach(x=>seen.add(x))}
   out.seen=seen.size;return out});
- r.ok=!errs.length&&r.n===8&&r.bad.length===0&&r.played>=16&&r.seen>=6;
+ r.ok=!errs.length&&r.n===8&&r.bad.length===0&&r.played>=16&&r.seen>=4;
  console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

@@ -14,6 +14,7 @@ const T=[
  ['matériel et compétences','geartest.js',[],o=>/errs \[\]/.test(o)],
  ['effets (animations, sons, réglages)','fx.js',[],o=>/"ok":true/.test(o)],
  ['simplicité (idées rapides, éléments masqués, récents)','simplicity.js',[],o=>/"ok":true/.test(o)],
+ ['rêves de vie','dreams.js',[],o=>/"ok":true/.test(o)],
  ['trait choisi à la création','traits.js',[],o=>/"ok":true/.test(o)],
  ['jalons de l’enfance','events4.js',[],o=>/"ok":true/.test(o)],
  ['carrière avancée (rythme, augmentation, retraite)','career.js',[],o=>/"ok":true/.test(o)],
