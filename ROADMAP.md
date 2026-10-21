@@ -104,6 +104,15 @@
   - **Arcs sur plusieurs années** (chaînes 3 à 6 étapes avec bifurcations réelles) ; objectif : passer de 52 à 200 chaînes.
   - **Rêves / objectifs de vie** (comme les aspirations des Sims) : choisis 1 à 3 rêves, jauge de satisfaction, regrets à la fin.
   - **Personnalité cachée** (traits qui influencent les probabilités et les options proposées, récompense de la cohérence façon Alter Ego).
+- [ ] **2b. Personnages vivants — agents locaux** *(impact : 5/5, s'appuie sur 2 et prépare 1 et 4 ; fonctionne hors connexion, gratuit, testable)*
+  - **Fiche de personnalité** par personnage (extraversion, gentillesse, ambition, impulsivité, loyauté, humour) + **buts** (carrière, famille, argent, aventure) + **humeur**.
+  - **Mémoire** : chaque personnage retient ce que tu lui as fait (cadeau, trahison, oubli d'anniversaire, aide) avec un poids qui s'estompe ; **opinions** envers chaque personne (affection, respect, jalousie).
+  - **Cycle annuel autonome** : chaque personnage choisit une action d'après sa personnalité, ses buts et ses opinions (te rappeler, demander de l'argent, se brouiller, se marier, déménager, te déshériter…) ; ce qui te concerne devient un événement, le reste alimente l'arbre familial et les rumeurs.
+  - **Rappels** : « Mamie ne t'a pas vu depuis 3 ans » → héritage modifié ; « Théo se souvient que tu l'as aidé ».
+  - **Dialogues** générés par grammaire (intention × personnalité × relation), des centaines de variantes, sans connexion.
+  - **Duo** : les personnages qui connaissent les deux joueurs ont un avis sur chacun (jalousie, rumeurs, secrets ébruités).
+  - Garde-fous : budget de calcul par année, tests de simulation (pas de comportement absurde, pas de boucle), graine aléatoire fixe pour reproduire un bug.
+- [ ] **2c. Couche IA en ligne (expérimentale, optionnelle)** *(à décider avec toi avant tout travail)* : conversation libre avec un proche et variations de texte par un modèle de langage. Le **simulateur reste la vérité** (il décide ce qui arrive), le modèle ne fait que **parler** ; hors connexion ou en cas d'échec, retour automatique aux dialogues locaux. Prérequis : un petit serveur intermédiaire qui garde la clé secrète (le dépôt étant public, aucune clé ne peut être dans le jeu), un plafond de dépense, un interrupteur dans les réglages, et l'accord sur la vie privée (le texte envoyé quitte le téléphone). Alternative sur téléphone (modèle de 300 à 700 Mo téléchargé dans le navigateur) : possible mais inégale selon les appareils, non recommandée pour l'instant.
 - [ ] **3. Contenu ×3 + pipeline qualité** *(impact : 5/5)*
   - Passer de 418 à 1 000+ événements : culture française (bac, concours, CAF, impôts, apéro, tonton à Noël), événements par **métier**, par **pays**, par **âge**, **calendaires** (rentrée, Noël, vacances, élections).
   - **Linter d'événements** : identifiants uniques, chaînes sans impasse, orthographe, ton, équilibre des conséquences.
@@ -158,7 +167,7 @@
 
 1. **Vague 1 — Fondations et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S2 à S7 (simplicité)** → #13 prise en main → #15 bilan partageable → petits chantiers #20, #21, #22, #23 (puis #17b).
 2. **Vague 2 — Ce qui nous distingue** : #1 Duo 2.0 (écran de passage, moments à deux, vie secrète, jokers, bilan comparatif) → Rêves (#2, partie objectifs).
-3. **Vague 3 — Profondeur et contenu** : #2 (mémoire, personnages récurrents) → #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
+3. **Vague 3 — Profondeur et contenu** : #2 (mémoire, personnages récurrents) → **2b personnages vivants** (socle commun avec le mode Duo) → #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
 4. **Vague 4 — Durée de vie** : #7 rejouabilité → #8 ères → #9 santé → #10 foyer → #12, #14, #16, #18, #19.
 
 ---
