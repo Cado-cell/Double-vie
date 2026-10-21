@@ -530,7 +530,7 @@ function pBoss(){
     act(L,{ic:'💢',t:'Lui tenir tête en réunion',key:'b_tete',danger:1,fn:L=>{if(chance(.35)){B.rel=clamp(B.rel+5);chg(L,{happy:4});return out(L,'Ton aplomb impressionne.')}B.rel=clamp(B.rel-R(10,18));return out(L,`${B.first} ne te le pardonnera pas de sitôt.`)}})])};
 }
 const wTag=(L,p)=>{const w=p&&p.type!=='pet'?npcWealth(L,p):null;return w&&!w.pocket?` · ≈ ${fmtk(w.cash)}`:''};
-function spendTime(L,p){p.rel=clamp(p.rel+R(3,10));chg(L,{happy:2});return out(L,pick([`Cinéma avec ${p.first}.`,`Longue balade avec ${p.first}.`,`Soirée jeux de société avec ${p.first}.`,`Pique-nique avec ${p.first}.`]))}
+function spendTime(L,p){p.seen=L.age;p.rel=clamp(p.rel+R(3,10));chg(L,{happy:2});return out(L,pick([`Cinéma avec ${p.first}.`,`Longue balade avec ${p.first}.`,`Soirée jeux de société avec ${p.first}.`,`Pique-nique avec ${p.first}.`]))}
 function pRel(){
   const L=cur();let h='';const top=[];
   if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:'Trouver l’amour',s:'Applis, soirées, coups de foudre',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':'',fn:L=>{findLove(L)}}));

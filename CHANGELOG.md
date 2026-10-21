@@ -3,6 +3,7 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 21/10/2026 (nuit)
+- Tes proches vivent aussi : chaque année, un parent, un ami, un frère ou une sœur peut t'appeler, passer te voir, te demander de l'argent, se fâcher, se réconcilier ou se plaindre que tu ne donnes plus de nouvelles, selon sa personnalité et votre relation.
 - Souvenirs : le jeu retient tes grands moments (mariage, naissance, diplôme, promotion, deuil, rupture) et y repense 5, 10, 15… ans plus tard ; l'album est dans ta fiche personnage.
 - Défis et chirurgien esthétique : listes plus courtes, détail à la demande.
 - Rêves de vie : à 12, 25 et 40 ans, choisis ce qui compte pour toi (millionnaire, grande famille, tour du monde…). Ta progression est dans la fiche personnage, chaque rêve réalisé te rend heureux et compte dans ton bilan.
