@@ -10388,6 +10388,54 @@ registerMod({
 
 ;
 
+/* ===== mod_memory.js ===== */
+/* Deux Vies — module « Souvenirs » (id memory)
+   Le jeu retient les grands moments de la vie (mariage, naissance, diplôme, promotion, deuil, rupture)
+   et y revient 5, 10, 15, 20… ans plus tard. État par vie : L.mem = [{a, t, k, done}], L.memSeen = {âge: nb de lignes lues}. */
+(()=>{
+const MOD='memory';
+const GOOD=/(^|\s)(💒|👶|🎓|🏆|📈|💍|🥇)|diplôm|décroches ton bac|Promotion|se marie|accouch/;
+const BAD=/(^|\s)(🕯️|💔|☠️)|est mort|est morte|te quitte|divorc|décès/;
+const ANNIV=[5,10,15,20,25,30,40,50,60];
+const strip=t=>{const [e,r]=emoSplit(t);return (r||t).replace(/\s+/g,' ').trim()};
+function scan(L){
+  if(!L.mem)L.mem=[];if(!L.memSeen)L.memSeen={};
+  for(const b of (L.log||[]).slice(-2)){
+    const seen=L.memSeen[b.age]||0;
+    for(let i=seen;i<b.lines.length;i++){
+      const line=b.lines[i];const k=BAD.test(line)?'bad':GOOD.test(line)?'good':null;
+      if(k&&line.length>12&&L.mem.length<60)L.mem.push({a:b.age,t:strip(line).slice(0,150),k});
+    }
+    L.memSeen[b.age]=b.lines.length;
+  }
+  for(const a of Object.keys(L.memSeen))if(+a<L.age-3)delete L.memSeen[a];
+}
+function year(L){
+  if(!L)return;scan(L);
+  const due=L.mem.find(m=>{const n=L.age-m.a;return ANNIV.includes(n)&&!(m.done||[]).includes(n)});
+  if(!due)return;
+  const n=L.age-due.a;due.done=(due.done||[]).concat(n);
+  const good=due.k==='good';
+  say(L,`🕰️ Il y a ${n} ans : ${due.t.charAt(0).toLowerCase()+due.t.slice(1)}${/[.!?…]$/.test(due.t)?'':'.'} ${good?'Un sourire te vient.':'Une bougie, une pensée.'}`);
+  chg(L,good?{happy:2}:{happy:-2,karma:1});
+}
+function pMem(){
+  const L=cur();if(!L)return {title:'Souvenirs',html:note('Aucun personnage.')};
+  const list=(L.mem||[]).slice().reverse().slice(0,25);
+  return {title:'Souvenirs',html:note(list.length?'Les grands moments de ta vie. Le jeu y repense tous les 5 ans.':'Tes grands moments (mariage, naissance, diplôme, deuil…) viendront s’ajouter ici.')
+    +group('Album',list.map(m=>row({ic:m.k==='good'?'🌟':'🕯️',t:m.t,s:`à ${m.a} ans${m.done&&m.done.length?` · rappelé ${m.done.length} fois`:''}`})))};
+}
+registerMod({
+  id:MOD,
+  born(L){if(L){L.mem=[];L.memSeen={}}},
+  heirInit(D,L){if(L){L.mem=[];L.memSeen={}}},
+  year,
+  sheetRows(L){const n=(L&&L.mem||[]).length;return [nav('🕰️','Souvenirs',n?`${n} souvenir${n>1?'s':''} gardé${n>1?'s':''}`:'Aucun pour l’instant',pMem)]}
+});
+})();
+
+;
+
 /* ===== mod_pregnancy.js ===== */
 /* Deux Vies — module « Grossesse » (id pregnancy)
    Remplace la naissance immédiate : test de conception, neuf mois de grossesse (une année de jeu), échographie,
@@ -10780,12 +10828,14 @@ function chirs(L){
 }
 function newDoc(avoid){let n;do n=pick(NOMS);while(n===avoid);return {nom:n,rep:R(20,100),mult:Math.round((.7+Math.random()*.9)*100)/100}}
 function pChir(){const L=cur();const s=chirs(L);
-  const docs=s.docs.map((d,i)=>{
-    const ps=(typeof SURGERIES!=='undefined'?SURGERIES:[]).map(([n,c,w])=>{const cost=Math.round(c*d.mult);
-      return act(L,{ic:'💉',t:n,s:`${fmt(cost)} · ${w}`,min:18,cost,fn:L=>operer(L,d,n,w)})});
-    return `<h3 class="sec">${esc(d.nom)}</h3>`+card('Réputation',`${d.rep} / 100`,`Tarifs ×${String(d.mult).replace('.',',')}`)+group('',ps)}).join('');
+  const rows=s.docs.map((d,i)=>row({ic:'🩺',t:d.nom,s:`Réputation ${d.rep} / 100 · tarifs ×${String(d.mult).replace('.',',')}`,right:'›',a:()=>pushPanel(()=>pChirDoc(i))}));
   const lg=s.log.length?group('Journal',s.log.slice(-5).reverse().map(t=>`<p class="note">${esc(t)}</p>`)):'';
-  return {title:'Chirurgien esthétique',html:note('Les chirurgiens changent d’une année à l’autre. Les moins chers ne sont pas toujours les plus doués.')+docs+lg};
+  return {title:'Chirurgien esthétique',html:note('Les chirurgiens changent d’une année à l’autre. Les moins chers ne sont pas toujours les plus doués.')+group('Choisis ton chirurgien',rows)+lg};
+}
+function pChirDoc(i){const L=cur();const s=chirs(L);const d=s.docs[i];
+  if(!d)return {title:'Chirurgien',html:note('Ce chirurgien n’est plus disponible.')};
+  const ps=(typeof SURGERIES!=='undefined'?SURGERIES:[]).map(([n,c,w])=>{const cost=Math.round(c*d.mult);return act(L,{ic:'💉',t:n,s:`${fmt(cost)} · ${w}`,min:18,cost,fn:L=>operer(L,d,n,w)})});
+  return {title:d.nom,html:card('Réputation',`${d.rep} / 100`,`Tarifs ×${String(d.mult).replace('.',',')}`)+group('Interventions',ps)};
 }
 function operer(L,d,n,w){
   const s=chirs(L);const risque=lim(.34-d.rep*.0032,.03,.3);let t;
@@ -12874,7 +12924,11 @@ function pTree(){
   return {title:'Arbre généalogique',html:sec('Grands-parents',x=>x.type==='grand')+sec('Parents',x=>x.type==='parent')+group('Ta génération',[row({av:avOf(L,L),t:`${L.first} ${L.last}`,s:`Toi · ${An(L.age)}`}),p?row({av:avatar(p),t:`${p.first} ${p.last}`,s:`${partnerLabel(L)} · ${An(p.age)}`}):''].concat(L.family.filter(x=>x.type==='sibling').map(x=>row({av:avatar(x),t:`${x.first} ${x.last}`,s:`${role(x)} · ${x.alive?An(x.age):'décédé'}`}))))+sec('Enfants',x=>x.type==='child')+sec('Petits-enfants',x=>x.type==='grandkid')};
 }
 function pRibbons(){const n=Object.values(G.ribbons).filter(Boolean).length;return {title:'Rubans',html:note(`Chaque vie terminée reçoit un ruban. ${n} sur ${RIBBONS.length} obtenus.`)+`<div class="rgrid">${RIBBONS.map(r=>{const c=G.ribbons[r.k]||0;return `<div class="rb${c?'':' off'}"><span>${r.ic}</span><b>${esc(r.n)}</b><small>${esc(r.d)}</small>${c?`<em>×${c}</em>`:''}</div>`}).join('')}</div>`}}
-function pChallenges(){const n=CHALLENGES.filter(c=>G.challenges[c.k]).length;return {title:'Défis',html:note(`${n} défi${n>1?'s':''} réussi${n>1?'s':''} sur ${CHALLENGES.length}. Ils restent acquis d’une vie à l’autre.`)+group('',CHALLENGES.map(c=>row({ic:G.challenges[c.k]?'🏅':'🔒',t:c.n,s:c.d,right:G.challenges[c.k]?'Réussi':''})))}}
+const chRow=c=>row({ic:G.challenges[c.k]?'🏅':'🔒',t:c.n,s:c.d,right:G.challenges[c.k]?'Réussi':''});
+function pChallenges(){const done=CHALLENGES.filter(c=>G.challenges[c.k]),todo=CHALLENGES.filter(c=>!G.challenges[c.k]);const n=done.length;
+  return {title:'Défis',html:note(`${n} défi${n>1?'s':''} réussi${n>1?'s':''} sur ${CHALLENGES.length}. Ils restent acquis d’une vie à l’autre.`)+group('À relever',todo.slice(0,6).map(chRow))
+    +group('',[todo.length>6?row({ic:'🔒',t:`Voir les ${todo.length-6} autres défis`,right:'›',a:()=>pushPanel(()=>pChallengesList(false))}):null,n?row({ic:'🏅',t:`Défis réussis (${n})`,right:'›',a:()=>pushPanel(()=>pChallengesList(true))}):null])}}
+function pChallengesList(d){return {title:d?'Défis réussis':'Défis à relever',html:group('',CHALLENGES.filter(c=>!!G.challenges[c.k]===d).map(chRow))}}
 function pCem(){return {title:'Cimetière familial',html:G.cemetery.length?group('Ils ont vécu',G.cemetery.map(c=>{const rb=RIBBONS.find(r=>r.k===c.ribbon);return row({av:avatar({look:c.look,gender:c.gender,age:c.age,alive:false}),t:c.name,s:`${c.age} ans · ${c.cause} · ${c.job} · ${fmt(c.worth)}`,right:rb?rb.ic:''})})):note('Personne n’y repose encore.')}}
 function pTime(){
   const L=cur();const ages=snapAges(L).slice().reverse();

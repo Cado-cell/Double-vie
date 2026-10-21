@@ -84,7 +84,7 @@
 - [x] **S2. Offres d'emploi** *(fait le 21/10 : 5 « mieux payés pour toi » + 8 secteurs, au lieu de 55 lignes ; chaque métier hors de portée dit ce qu'il manque)*.
 - [x] **S3. Émigrer** *(fait le 21/10 : 6 destinations populaires + 6 régions, au lieu de 58 pays en vrac)*.
 - [x] **S4. Listes très longues** *(fait le 21/10 : études supérieures → 5 filières pour toi + licences / écoles ; contrebande → une ligne par marchandise ; journal financier → 5 derniers titres ; matrice de volatilité → 3 catégories ; leçons → par talent)*.
-- [ ] **S4b. Listes restantes de 15 lignes ou plus** : Défis (18), Maison Lumière et Ludiverse (16), Chirurgien esthétique (16), Traits (15) ; résumé d'abord, détail à la demande.
+- [x] **S4b. Listes restantes** *(fait le 21/10 : défis → 6 à relever + listes à part ; chirurgien esthétique → un chirurgien par ligne puis ses interventions)*. Reste : fiches des entreprises cotées (16 à 18 lignes) et panneau des traits (15).
 - [x] **S5. Découverte progressive** *(fait le 21/10 : Activités passe de 8 à 5 entrées ; argent, pouvoir, zone d'ombre et outils sont rangés dans « Plus d'aventures » ; Bourse et Entreprise remontent en « Juste pour toi » quand tu as de l'argent)*.
 - [x] **S6. Garde-fou automatique** *(fait le 21/10 : `tests/nav_budget.js` échoue si une liste dépasse 30 lignes ou si le nombre de panneaux, d'actions ou d'actions à 5 touches dépasse les plafonds ; les plafonds se resserrent à chaque lot)*.
 - [x] **S7. Parcours à 2 touches** *(fait le 21/10 : « À voir en ce moment » dans Relations — passer du temps avec les 3 proches qui en ont le plus besoin, en 2 touches ; idées rapides sur l'écran principal)*. Reste à étudier : raccourcis directs dans l'onglet Métier.
@@ -98,7 +98,7 @@
   - **Défis communs** (« premier millionnaire », « la plus belle carrière ») comparés à la fin.
   - **Pas de temps réel** : cela demanderait un serveur ; ce n'est pas nécessaire pour vous deux.
   - *Mode « deux joueurs sur le même téléphone » : il reste tel quel. On n'y investit plus (secrets, écran « passe le téléphone », jokers) tant que ce n'est pas demandé.*
-- [ ] **2. Moteur d'histoires et mémoire** *(impact : 5/5 — « Rêves de vie » faits le 21/10 : choix d'un rêve à 12, 25 et 40 ans, onze rêves possibles, progression sur la fiche personnage, bonheur à la réalisation, prix « Rêveur comblé » dans le bilan ; reste : personnalité cachée, mémoire et rappels, personnages récurrents, arcs)*
+- [ ] **2. Moteur d'histoires et mémoire** *(impact : 5/5 — « Rêves de vie » faits le 21/10 : choix d'un rêve à 12, 25 et 40 ans, onze rêves possibles, progression sur la fiche personnage, bonheur à la réalisation, prix « Rêveur comblé » dans le bilan ; souvenirs faits le 21/10 : le jeu retient mariage, naissance, diplôme, promotion, deuil, rupture et y revient 5, 10, 15… ans plus tard, avec un album « Souvenirs » sur la fiche ; reste : personnalité cachée, personnages récurrents, arcs)*
   - Mémoire des événements marquants (étiquettes de souvenirs) pour des **rappels** : « Ça fait 10 ans que tu as quitté Théo… ».
   - **Personnages récurrents** avec personnalité : le rival d'école, le meilleur ami d'enfance, l'ex qui revient, le voisin pénible.
   - **Arcs sur plusieurs années** (chaînes 3 à 6 étapes avec bifurcations réelles) ; objectif : passer de 52 à 200 chaînes.
@@ -165,7 +165,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → ~~#15 bilan partageable~~ → petits chantiers ~~#20~~, ~~#21~~, ~~#22~~, #23 → #17b.
+1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → ~~S4b~~ → ~~#13 prise en main~~ → ~~#15 bilan partageable~~ → petits chantiers ~~#20~~, ~~#21~~, ~~#22~~, #23 → #17b.
 2. **Vague 2 — Des personnages et une vie qui ont du relief** : ~~Rêves / objectifs de vie~~ et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
 3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
 4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.

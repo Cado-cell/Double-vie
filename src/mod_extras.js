@@ -37,12 +37,14 @@ function chirs(L){
 }
 function newDoc(avoid){let n;do n=pick(NOMS);while(n===avoid);return {nom:n,rep:R(20,100),mult:Math.round((.7+Math.random()*.9)*100)/100}}
 function pChir(){const L=cur();const s=chirs(L);
-  const docs=s.docs.map((d,i)=>{
-    const ps=(typeof SURGERIES!=='undefined'?SURGERIES:[]).map(([n,c,w])=>{const cost=Math.round(c*d.mult);
-      return act(L,{ic:'💉',t:n,s:`${fmt(cost)} · ${w}`,min:18,cost,fn:L=>operer(L,d,n,w)})});
-    return `<h3 class="sec">${esc(d.nom)}</h3>`+card('Réputation',`${d.rep} / 100`,`Tarifs ×${String(d.mult).replace('.',',')}`)+group('',ps)}).join('');
+  const rows=s.docs.map((d,i)=>row({ic:'🩺',t:d.nom,s:`Réputation ${d.rep} / 100 · tarifs ×${String(d.mult).replace('.',',')}`,right:'›',a:()=>pushPanel(()=>pChirDoc(i))}));
   const lg=s.log.length?group('Journal',s.log.slice(-5).reverse().map(t=>`<p class="note">${esc(t)}</p>`)):'';
-  return {title:'Chirurgien esthétique',html:note('Les chirurgiens changent d’une année à l’autre. Les moins chers ne sont pas toujours les plus doués.')+docs+lg};
+  return {title:'Chirurgien esthétique',html:note('Les chirurgiens changent d’une année à l’autre. Les moins chers ne sont pas toujours les plus doués.')+group('Choisis ton chirurgien',rows)+lg};
+}
+function pChirDoc(i){const L=cur();const s=chirs(L);const d=s.docs[i];
+  if(!d)return {title:'Chirurgien',html:note('Ce chirurgien n’est plus disponible.')};
+  const ps=(typeof SURGERIES!=='undefined'?SURGERIES:[]).map(([n,c,w])=>{const cost=Math.round(c*d.mult);return act(L,{ic:'💉',t:n,s:`${fmt(cost)} · ${w}`,min:18,cost,fn:L=>operer(L,d,n,w)})});
+  return {title:d.nom,html:card('Réputation',`${d.rep} / 100`,`Tarifs ×${String(d.mult).replace('.',',')}`)+group('Interventions',ps)};
 }
 function operer(L,d,n,w){
   const s=chirs(L);const risque=lim(.34-d.rep*.0032,.03,.3);let t;

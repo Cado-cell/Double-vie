@@ -19,8 +19,9 @@ const fs=require('fs');const dir='src';
  r.emi=await pg.evaluate(()=>{closeSheet();openPanel(()=>pEmigrate());const n1=document.querySelectorAll('#pbody .row,#pbody .tile').length;let max=0;for(const [id] of COUNTRY_GROUPS){closeSheet();openPanel(()=>pEmigrateGroup(id));max=Math.max(max,document.querySelectorAll('#pbody .row').length)}return {n1,max}});
  r.adv=await pg.evaluate(()=>{closeSheet();openPanel(pAct);const t=document.getElementById('pbody').innerText;return {has:/Plus d’aventures/.test(t),n:document.querySelectorAll('#pbody .tile').length}});
  r.near=await pg.evaluate(()=>{const L=cur();const p=L.family.find(x=>x.alive&&x.type==='parent')||L.family.find(x=>x.alive&&x.type==='friend');if(!p)return 'none';L.family.forEach(x=>{x.rel=70});p.rel=20;delete L.used['t'+p.id];closeSheet();openPanel(pRel);const ok=/À voir en ce moment/.test(document.getElementById('pbody').innerText);const b=[...document.querySelectorAll('#pbody .row')].find(x=>x.textContent.includes('Passer du temps avec '+p.first));if(!b)return false;const before=p.rel;b.click();return ok&&p.rel>before});
- r.long=await pg.evaluate(()=>{const out={};const L=cur();L.money=500000;
+ r.long=await pg.evaluate(()=>{const out={};const L=cur();L.money=500000;G.challenges={};
   const tryP=(name,f)=>{try{closeSheet();openPanel(f);out[name]=document.querySelectorAll('#pbody .row,#pbody .tile').length}catch(e){out[name]='ERR '+e.message}};
+  tryP('challenges',()=>pChallenges());tryP('challengesTodo',()=>pChallengesList(false));
   tryP('majors',()=>pMajors());tryP('majorsLic',()=>pMajorsType('lic'));tryP('majorsEcole',()=>pMajorsType('ecole'));
   if(typeof pNews==='function'){tryP('news',()=>pNews());tryP('newsAll',()=>pNewsAll())}
   if(typeof pVol==='function'){tryP('vol',()=>pVol());tryP('volStock',()=>pVolCat('stock'))}

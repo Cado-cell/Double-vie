@@ -220,7 +220,11 @@ function pTree(){
   return {title:'Arbre généalogique',html:sec('Grands-parents',x=>x.type==='grand')+sec('Parents',x=>x.type==='parent')+group('Ta génération',[row({av:avOf(L,L),t:`${L.first} ${L.last}`,s:`Toi · ${An(L.age)}`}),p?row({av:avatar(p),t:`${p.first} ${p.last}`,s:`${partnerLabel(L)} · ${An(p.age)}`}):''].concat(L.family.filter(x=>x.type==='sibling').map(x=>row({av:avatar(x),t:`${x.first} ${x.last}`,s:`${role(x)} · ${x.alive?An(x.age):'décédé'}`}))))+sec('Enfants',x=>x.type==='child')+sec('Petits-enfants',x=>x.type==='grandkid')};
 }
 function pRibbons(){const n=Object.values(G.ribbons).filter(Boolean).length;return {title:'Rubans',html:note(`Chaque vie terminée reçoit un ruban. ${n} sur ${RIBBONS.length} obtenus.`)+`<div class="rgrid">${RIBBONS.map(r=>{const c=G.ribbons[r.k]||0;return `<div class="rb${c?'':' off'}"><span>${r.ic}</span><b>${esc(r.n)}</b><small>${esc(r.d)}</small>${c?`<em>×${c}</em>`:''}</div>`}).join('')}</div>`}}
-function pChallenges(){const n=CHALLENGES.filter(c=>G.challenges[c.k]).length;return {title:'Défis',html:note(`${n} défi${n>1?'s':''} réussi${n>1?'s':''} sur ${CHALLENGES.length}. Ils restent acquis d’une vie à l’autre.`)+group('',CHALLENGES.map(c=>row({ic:G.challenges[c.k]?'🏅':'🔒',t:c.n,s:c.d,right:G.challenges[c.k]?'Réussi':''})))}}
+const chRow=c=>row({ic:G.challenges[c.k]?'🏅':'🔒',t:c.n,s:c.d,right:G.challenges[c.k]?'Réussi':''});
+function pChallenges(){const done=CHALLENGES.filter(c=>G.challenges[c.k]),todo=CHALLENGES.filter(c=>!G.challenges[c.k]);const n=done.length;
+  return {title:'Défis',html:note(`${n} défi${n>1?'s':''} réussi${n>1?'s':''} sur ${CHALLENGES.length}. Ils restent acquis d’une vie à l’autre.`)+group('À relever',todo.slice(0,6).map(chRow))
+    +group('',[todo.length>6?row({ic:'🔒',t:`Voir les ${todo.length-6} autres défis`,right:'›',a:()=>pushPanel(()=>pChallengesList(false))}):null,n?row({ic:'🏅',t:`Défis réussis (${n})`,right:'›',a:()=>pushPanel(()=>pChallengesList(true))}):null])}}
+function pChallengesList(d){return {title:d?'Défis réussis':'Défis à relever',html:group('',CHALLENGES.filter(c=>!!G.challenges[c.k]===d).map(chRow))}}
 function pCem(){return {title:'Cimetière familial',html:G.cemetery.length?group('Ils ont vécu',G.cemetery.map(c=>{const rb=RIBBONS.find(r=>r.k===c.ribbon);return row({av:avatar({look:c.look,gender:c.gender,age:c.age,alive:false}),t:c.name,s:`${c.age} ans · ${c.cause} · ${c.job} · ${fmt(c.worth)}`,right:rb?rb.ic:''})})):note('Personne n’y repose encore.')}}
 function pTime(){
   const L=cur();const ages=snapAges(L).slice().reverse();
