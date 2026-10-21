@@ -12896,6 +12896,7 @@ function pBoss(){
     act(L,{ic:'💢',t:'Lui tenir tête en réunion',key:'b_tete',danger:1,fn:L=>{if(chance(.35)){B.rel=clamp(B.rel+5);chg(L,{happy:4});return out(L,'Ton aplomb impressionne.')}B.rel=clamp(B.rel-R(10,18));return out(L,`${B.first} ne te le pardonnera pas de sitôt.`)}})])};
 }
 const wTag=(L,p)=>{const w=p&&p.type!=='pet'?npcWealth(L,p):null;return w&&!w.pocket?` · ≈ ${fmtk(w.cash)}`:''};
+function spendTime(L,p){p.rel=clamp(p.rel+R(3,10));chg(L,{happy:2});return out(L,pick([`Cinéma avec ${p.first}.`,`Longue balade avec ${p.first}.`,`Soirée jeux de société avec ${p.first}.`,`Pique-nique avec ${p.first}.`]))}
 function pRel(){
   const L=cur();let h='';const top=[];
   if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:'Trouver l’amour',s:'Applis, soirées, coups de foudre',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':'',fn:L=>{findLove(L)}}));
@@ -12905,6 +12906,8 @@ function pRel(){
   }
   if(!L.prison)top.push(act(L,{ic:'🤝',t:'Se faire un nouvel ami',s:'École, travail, voisinage',min:4,key:'friend',fn:L=>{const f=addFriend(L);chg(L,{happy:4});return out(L,`Tu te lies d’amitié avec ${f.first}.`)}}));
   h+=group('Rencontres',top);
+  {const need=L.family.filter(p=>p.alive&&p.type!=='pet'&&p.type!=='enemy'&&p.type!=='ex'&&p.type!=='grandkid'&&p.age>=4&&p.rel<75&&!L.used['t'+p.id]).sort((a,b)=>a.rel-b.rel).slice(0,3);
+   if(!L.prison)h+=group('À voir en ce moment',need.map(p=>act(L,{av:avatar(p),t:`Passer du temps avec ${p.first}`,s:`${role(p)} · relation ${Math.round(p.rel)} %`,key:'t'+p.id,fn:L=>spendTime(L,p)})))}
   {const B=bossOf(L);if(B)h+=group('Travail',[row({av:avatar(B),t:`${B.first} ${B.last}`,s:`${L.job.mil?'Supérieur':ge(B,'Patron','Patronne')} · ${An(B.age)}${wTag(L,B)}`,right:mini(B.rel),a:()=>pushPanel(pBoss)})])}
   if(L.partner){const p=partnerOf(L);h+=group('Couple',[row({av:avatar(p),t:`${p.first} ${p.last}`,s:`${partnerLabel(L)} · ${An(p.age)}${L.partner.link!=null?` · joueur ${L.partner.link+1} · ${fmtk(linkedOther(L).money)}`:wTag(L,L.partner.p)}`,right:mini(L.partner.rel),a:()=>pushPanel(pPartner)})])}
   for(const [n,f] of [['Parents',p=>p.type==='parent'],['Grands-parents',p=>p.type==='grand'],['Frères et sœurs',p=>p.type==='sibling'],['Enfants',p=>p.type==='child'],['Petits-enfants',p=>p.type==='grandkid'],['Amis et collègues',p=>p.type==='friend'],['Ex',p=>p.type==='ex'],['Ennemis',p=>p.type==='enemy'],['Animaux',p=>p.type==='pet']]){
@@ -12925,7 +12928,7 @@ function pPerson(id){
     H.push(act(L,{ic:'💉',t:'Visite chez le vétérinaire',s:'80 €',cost:80,key:'v'+id,fn:L=>{p.max+=chance(.5)?1:0;return out(L,`${p.first} est en pleine forme.`)}}));
     H.push(row({ic:'🏠',t:'Confier à un refuge',danger:1,a:()=>pushPanel(confirmP(`Confier ${p.first} à un refuge ?`,'Tu ne le reverras pas.',()=>{L.family=L.family.filter(x=>x.id!==id);STACK.pop();chg(L,{karma:-3,happy:-4});return out(L,`Tu confies ${p.first} à la SPA.`)}))}));
   }else{
-    H.push(act(L,{ic:'☕',t:'Passer du temps ensemble',key:'t'+id,fn:L=>{p.rel=clamp(p.rel+R(3,10));chg(L,{happy:2});return out(L,pick([`Cinéma avec ${p.first}.`,`Longue balade avec ${p.first}.`,`Soirée jeux de société avec ${p.first}.`,`Pique-nique avec ${p.first}.`]))}}));
+    H.push(act(L,{ic:'☕',t:'Passer du temps ensemble',key:'t'+id,fn:L=>spendTime(L,p)}));
     H.push(act(L,{ic:'💬',t:'Discuter',key:'d'+id,fn:L=>{p.rel=clamp(p.rel+R(1,5));return out(L,`Bonne conversation avec ${p.first}.`)}}));
     H.push(act(L,{ic:'🌷',t:'Faire un compliment',key:'c'+id,fn:L=>{p.rel=clamp(p.rel+R(1,4));return out(L,`${p.first} est touché par ton compliment.`)}}));
     H.push(g('Offrir des chocolats',25,R(2,6)));
@@ -12964,11 +12967,17 @@ function actItems(L){
 }
 function actRow(L,[c,ic,t,s,f,min]){return f?act(L,{ic,t,s,min,nav:f}):act(L,{ic,t,s,min,key:'benevolat',fn:L=>{chg(L,{karma:R(4,8),happy:3});return out(L,pick(['Tu sers des repas aux Restos du Cœur.','Tu donnes des cours de lecture à des enfants.','Tu nettoies une plage avec une association.','Tu promènes les chiens de la SPA.']))}})}
 const actCatPanel=id=>()=>{const L=cur();const cat=ACT_CATS.find(c=>c[0]===id);const its=actItems(L).filter(i=>i[0]===id);return {title:cat[2],html:group('',its.map(i=>actRow(L,i)))}};
+/* Les catégories avancées (argent, pouvoir, zone d'ombre, outils) sont rangées derrière « Plus d'aventures ». */
+const ACT_ADV=['argent','pouvoir','ombre','outils'];
+function actCatTile(L,items,id){const cat=ACT_CATS.find(c=>c[0]===id);if(!cat)return '';const av=items.filter(i=>i[0]===id&&(i[5]||0)<=L.age);if(!av.length)return '';const names=av.map(i=>i[2]);return tile({ic:cat[1],t:cat[2],s:names.slice(0,3).join(', ')+(names.length>3?'…':''),a:()=>pushPanel(actCatPanel(id))})}
+function pAdventures(){const L=cur();const items=actItems(L);return {title:'Plus d’aventures',html:note('Argent, pouvoir, zones d’ombre, outils… à découvrir quand tu te sens prêt.')+tiles(ACT_ADV.map(id=>actCatTile(L,items,id)))}}
 function pAct(){
   const L=cur();if(L.prison)return pPrison();
   const items=actItems(L);
   const rec=(RECENTS[G.turn]||[]).map(x=>tile({ic:x.ic,t:x.t,s:'Utilisé récemment',a:()=>pushPanel(x.f)}));
-  const ts=ACT_CATS.map(([id,ic,t])=>{const its=items.filter(i=>i[0]===id);const av=its.filter(i=>(i[5]||0)<=L.age);if(!av.length)return '';const names=av.map(i=>i[2]);return tile({ic,t,s:names.slice(0,3).join(', ')+(names.length>3?'…':''),a:()=>pushPanel(actCatPanel(id))})});
+  const adv=ACT_ADV.filter(id=>actCatTile(L,items,id));
+  const ts=ACT_CATS.filter(c=>!ACT_ADV.includes(c[0])).map(c=>actCatTile(L,items,c[0]));
+  if(adv.length)ts.push(tile({ic:'🧭',t:'Plus d’aventures',s:adv.map(id=>ACT_CATS.find(c=>c[0]===id)[2]).join(', '),a:()=>pushPanel(pAdventures)}));
   const sug=actPick(L,items).map(([i,why])=>tile({ic:i[1],t:i[2],s:why,a:()=>pushPanel(i[4])}));
   return {title:'Activités',html:(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+(rec.length?`<h3 class="sec">Récents</h3>${tiles(rec)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
 }
@@ -12982,6 +12991,8 @@ function actPick(L,items){
   add('Sorties',L.st.happy<55&&L.age>=10,'Un petit coup de blues ?');
   add('Corps et esprit',L.st.health<60,'Reprends des forces');
   add('Réseaux sociaux',L.age>=13&&!L.social.verified,'Gagne en notoriété');
+  add('Bourse',L.age>=20&&L.money>25000,'Fais travailler ton argent');
+  add('Entreprise',L.age>=22&&L.money>80000&&!L.job,'Lance ta société');
   add('Vacances',L.age>=18&&L.money>4000,'Tu as de quoi te faire plaisir');
   return out.slice(0,3);
 }

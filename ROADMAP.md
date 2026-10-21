@@ -85,9 +85,9 @@
 - [x] **S3. Émigrer** *(fait le 21/10 : 6 destinations populaires + 6 régions, au lieu de 58 pays en vrac)*.
 - [x] **S4. Listes très longues** *(fait le 21/10 : études supérieures → 5 filières pour toi + licences / écoles ; contrebande → une ligne par marchandise ; journal financier → 5 derniers titres ; matrice de volatilité → 3 catégories ; leçons → par talent)*.
 - [ ] **S4b. Listes restantes de 15 lignes ou plus** : Défis (18), Maison Lumière et Ludiverse (16), Chirurgien esthétique (16), Traits (15) ; résumé d'abord, détail à la demande.
-- [ ] **S5. Découverte progressive** : un seul bouton « Plus d'aventures » dans Activités qui regroupe les extensions avancées ; elles remontent en « Juste pour toi » quand le moment s'y prête.
-- [ ] **S6. Garde-fou automatique** : un test qui échoue si une liste dépasse 30 lignes ou si une action courante demande plus de 3 touches.
-- [ ] **S7. Parcours à 2 touches** pour les actions les plus utilisées (passer du temps avec un proche, étudier, travailler, soigner) : boutons directs dans les fiches de personnes et sur l'écran principal.
+- [x] **S5. Découverte progressive** *(fait le 21/10 : Activités passe de 8 à 5 entrées ; argent, pouvoir, zone d'ombre et outils sont rangés dans « Plus d'aventures » ; Bourse et Entreprise remontent en « Juste pour toi » quand tu as de l'argent)*.
+- [x] **S6. Garde-fou automatique** *(fait le 21/10 : `tests/nav_budget.js` échoue si une liste dépasse 30 lignes ou si le nombre de panneaux, d'actions ou d'actions à 5 touches dépasse les plafonds ; les plafonds se resserrent à chaque lot)*.
+- [x] **S7. Parcours à 2 touches** *(fait le 21/10 : « À voir en ce moment » dans Relations — passer du temps avec les 3 proches qui en ont le plus besoin, en 2 touches ; idées rapides sur l'écran principal)*. Reste à étudier : raccourcis directs dans l'onglet Métier.
 
 ### NIVEAU 1 — Très gros chantiers (XL)
 
@@ -165,7 +165,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b, S5 à S7 (simplicité)** → #13 prise en main → #15 bilan partageable (carte image) → petits chantiers #20, #21, #22, #23 → #17b.
+1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → #13 prise en main → #15 bilan partageable (carte image) → petits chantiers #20, #21, #22, #23 → #17b.
 2. **Vague 2 — Des personnages et une vie qui ont du relief** : Rêves / objectifs de vie et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
 3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
 4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.

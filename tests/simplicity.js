@@ -17,6 +17,8 @@ const fs=require('fs');const dir='src';
  // listes longues regroupées
  r.jobs=await pg.evaluate(()=>{closeSheet();openPanel(()=>pJobs());const n1=document.querySelectorAll('#pbody .row,#pbody .tile').length;let max=0;for(const [id] of jobSectors()){closeSheet();openPanel(()=>pJobsSector(id));max=Math.max(max,document.querySelectorAll('#pbody .row').length)}return {n1,max}});
  r.emi=await pg.evaluate(()=>{closeSheet();openPanel(()=>pEmigrate());const n1=document.querySelectorAll('#pbody .row,#pbody .tile').length;let max=0;for(const [id] of COUNTRY_GROUPS){closeSheet();openPanel(()=>pEmigrateGroup(id));max=Math.max(max,document.querySelectorAll('#pbody .row').length)}return {n1,max}});
+ r.adv=await pg.evaluate(()=>{closeSheet();openPanel(pAct);const t=document.getElementById('pbody').innerText;return {has:/Plus d’aventures/.test(t),n:document.querySelectorAll('#pbody .tile').length}});
+ r.near=await pg.evaluate(()=>{const L=cur();const p=L.family.find(x=>x.alive&&x.type==='parent')||L.family.find(x=>x.alive&&x.type==='friend');if(!p)return 'none';L.family.forEach(x=>{x.rel=70});p.rel=20;delete L.used['t'+p.id];closeSheet();openPanel(pRel);const ok=/À voir en ce moment/.test(document.getElementById('pbody').innerText);const b=[...document.querySelectorAll('#pbody .row')].find(x=>x.textContent.includes('Passer du temps avec '+p.first));if(!b)return false;const before=p.rel;b.click();return ok&&p.rel>before});
  r.long=await pg.evaluate(()=>{const out={};const L=cur();L.money=500000;
   const tryP=(name,f)=>{try{closeSheet();openPanel(f);out[name]=document.querySelectorAll('#pbody .row,#pbody .tile').length}catch(e){out[name]='ERR '+e.message}};
   tryP('majors',()=>pMajors());tryP('majorsLic',()=>pMajorsType('lic'));tryP('majorsEcole',()=>pMajorsType('ecole'));
@@ -33,5 +35,5 @@ const fs=require('fs');const dir='src';
   return {dès,notes}});
  await pg.screenshot({path:'/tmp/simp_kid.png'});await pg.close();
  pg=await open(30);await pg.screenshot({path:'/tmp/simp_adult.png'});await pg.close();
- r.ok=!errs.length&&Object.values(r.long).every(v=>typeof v==='number'&&v<=30)&&r.jobs.n1<=14&&r.jobs.max<=12&&r.emi.n1<=14&&r.emi.max<=14&&r.chips>=1&&r.chipOpens&&r.recents&&r.kid.dès===0&&r.kid.notes>=1;
+ r.ok=!errs.length&&r.adv.has&&r.adv.n<=12&&(r.near===true||r.near==='none')&&Object.values(r.long).every(v=>typeof v==='number'&&v<=30)&&r.jobs.n1<=14&&r.jobs.max<=12&&r.emi.n1<=14&&r.emi.max<=14&&r.chips>=1&&r.chipOpens&&r.recents&&r.kid.dès===0&&r.kid.notes>=1;
  console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

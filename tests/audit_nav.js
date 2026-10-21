@@ -39,4 +39,4 @@ const ages=process.argv.slice(2).map(Number).filter(Boolean);if(!ages.length)age
   console.log('Panneaux avec >40 % d’éléments grisés :',panels.filter(p=>p.n>=4&&p.locked/p.n>.4).map(p=>`${p.title} ${p.locked}/${p.n}`).join(' · ')||'aucun');
   console.log('Panneaux de profondeur 3+ :',panels.filter(p=>p.depth>=3).length);
  }
- fs.writeFileSync('/tmp/audit_nav.json',JSON.stringify(all,null,1));await b.close()})();
+ fs.writeFileSync(require('path').join(require('os').tmpdir(),'audit_nav.json'),JSON.stringify(all,null,1));await b.close()})();
