@@ -14,6 +14,7 @@ const T=[
  ['matériel et compétences','geartest.js',[],o=>/errs \[\]/.test(o)],
  ['effets (animations, sons, réglages)','fx.js',[],o=>/"ok":true/.test(o)],
  ['simplicité (idées rapides, éléments masqués, récents)','simplicity.js',[],o=>/"ok":true/.test(o)],
+ ['visite guidée et « Quoi de neuf »','tuto.js',[],o=>/"ok":true/.test(o)],
  ['plafonds de navigation (simplicité)','nav_budget.js',[],o=>/"ok":true/.test(o)],
  ['hors connexion (paquet publié)','pwatest2.js',[],o=>/erreurs \[\]/.test(o)&&/"cached":8/.test(o)]
 ];

@@ -199,6 +199,7 @@ function renderMain(){
   document.querySelectorAll('.tabs .tab').forEach(b=>b.disabled=!L.alive);
   $('#ageBtn').disabled=!L.alive||busy();
   try{FX.afterRender(L)}catch(e){console.error(e)}
+  try{TUTO.afterRender(L)}catch(e){console.error(e)}
 }
 function render(){ACTS=[];renderMain();if(STACK.length&&G)showSheet()}
 
@@ -799,7 +800,8 @@ function pMenu(){
   const nR=Object.values(G.ribbons).filter(Boolean).length,nC=Object.keys(G.challenges).length;
   return {title:'Menu',html:group('Outils',modCall('menuRows',cur()).flat())+group('Collection',[nav('🎀','Rubans',`${nR} sur ${RIBBONS.length}`,pRibbons),nav('🏅','Défis',`${nC} sur ${CHALLENGES.length}`,pChallenges),nav('🪦','Cimetière familial',`${G.cemetery.length} vie${G.cemetery.length>1?'s':''} terminée${G.cemetery.length>1?'s':''}`,pCem)])
     +group('Personnage',[nav('🪪','Fiche personnage','Toutes tes statistiques',pSheet),nav('🌳','Arbre généalogique','Ta famille',pTree),nav('⏳','Machine à remonter le temps','Reviens en arrière',pTime)])
-    +group('Partie',[row({ic:'🔊',t:'Sons',s:FX.st.sound?'Activés · touche pour couper':'Coupés · touche pour activer',a:()=>FX.toggle('sound')}),row({ic:'📳',t:'Vibrations',s:FX.st.haptic?'Activées · touche pour couper':'Coupées · touche pour activer',a:()=>FX.toggle('haptic')}),row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
+    +group('Réglages',[row({ic:'🔊',t:'Sons',s:FX.st.sound?'Activés · touche pour couper':'Coupés · touche pour activer',a:()=>FX.toggle('sound')}),row({ic:'📳',t:'Vibrations',s:FX.st.haptic?'Activées · touche pour couper':'Coupées · touche pour activer',a:()=>FX.toggle('haptic')}),row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),row({ic:'🎓',t:'Revoir la visite guidée',s:'Les bases en 6 écrans',a:()=>{closeSheet();TUTO.start()}})])
+    +group('Partie',[G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
       row({ic:'🗑️',t:'Nouvelle partie',s:'Efface la partie en cours',danger:1,a:()=>pushPanel(confirmP('Nouvelle partie ?','La partie en cours, les rubans et les défis seront effacés de ce navigateur.',()=>{G=null;try{localStorage.removeItem(KEY)}catch(e){}closeSheet();return ''},'Tout effacer'))})])
     +`<p class="cs" style="text-align:center;opacity:.6;margin:14px 0 0">Double Vie · version ${window.DV_VERSION||'locale'}</p>`+`<h3 class="sec">Comment jouer</h3><div class="card"><div class="cs">Le bouton <b>Âge</b> fait passer une année. Entre deux années, explore les onglets : études et métier, biens, relations, activités. Touche ton avatar pour voir ta fiche complète. À deux, vous jouez chacun votre tour et vous pouvez vous déclarer votre flamme, vous marier et avoir des enfants ensemble. Tout est débloqué : mode Dieu, machine à remonter le temps, carrières spéciales, royauté, zoo, Bourse, agent secret, mouvement spirituel, marché noir. La partie est sauvegardée automatiquement dans ce navigateur.</div></div>`};
 }

@@ -137,7 +137,7 @@
 
 - [x] **11. « Juice »** *(fait le 21/10 : compteur d'argent animé, variations de jauges flottantes, confettis sur diplôme/mariage/naissance, vibrations, sons synthétisés désactivés par défaut, réglages dans le Menu)*. Reste : gâteau 🎂 d'anniversaire et clignement des yeux (niveau 5).
 - [ ] **12. Événements illustrés** : cartes d'événement avec décor et avatars des personnes concernées, transitions entre les années.
-- [ ] **13. Prise en main en 60 secondes** : tutoriel court, aides contextuelles, popup « Quoi de neuf », rappel des modules disponibles.
+- [x] **13. Prise en main** *(fait le 21/10 : visite guidée de 6 écrans au premier lancement, rejouable depuis Menu → Réglages ; fenêtre « Quoi de neuf » alimentée par `CHANGELOG.md` quand une nouveauté est publiée)*. Reste : aides contextuelles ponctuelles.
 - [ ] **14. Fil de vie 2.0** : chronologie, filtre « moments importants », « vieillir jusqu'au prochain événement », **album des portraits par âge** (l'avatar qui vieillit).
 - [ ] **15. Bilan de fin de vie + carte à partager** (image via le partage du téléphone) + « photo de famille ».
 - [ ] **16. Personnalisation++** : tenues par métier et par époque, évolution du style avec l'âge, thèmes de couleurs de l'appli, cadres de portrait.
@@ -165,7 +165,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → #13 prise en main → #15 bilan partageable (carte image) → petits chantiers #20, #21, #22, #23 → #17b.
+1. **Vague 1 — Fondations, simplicité et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → ~~S1~~ → **S4b (simplicité)** → ~~#13 prise en main~~ → #15 bilan partageable (carte image) → petits chantiers #20, #21, #22, #23 → #17b.
 2. **Vague 2 — Des personnages et une vie qui ont du relief** : Rêves / objectifs de vie et personnalité cachée (#2, première partie) → **2b personnages vivants** → mémoire et rappels (#2, suite).
 3. **Vague 3 — Se comparer à deux, chacun chez soi** : #1 (code de défi, comparaison de bilans, échange de personnage) → #7 (départs thématiques, défis de la semaine, score de vie).
 4. **Vague 4 — Profondeur et contenu** : #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.

@@ -8,6 +8,20 @@ style=h[i:j];body=h[j:]
 body=re.sub(r'<script src="[^"]+"></script>\n?','',body).strip()
 head_items=[l for l in h[:i].splitlines() if l.startswith('<link')]
 VERSION=time.strftime('%Y%m%d-%H%M%S')
+def _news():
+    try:
+        out=[];on=False
+        for ln in open(SP+'/CHANGELOG.md',encoding='utf8'):
+            if ln.startswith('## '):
+                if on:break
+                on=True;continue
+            if on and ln.startswith('- '):
+                t=ln[2:].strip()
+                if len(t)>230:t=t[:t.rfind(' ',0,227)]+'…'
+                out.append(t)
+        return out[:4]
+    except Exception:return []
+NEWS=json.dumps(_news(),ensure_ascii=False)
 shutil.rmtree(O,ignore_errors=True);os.makedirs(O)
 bundle='/* Double Vie — jeu complet (fichiers assemblés dans l’ordre de chargement) */\n'+''.join('\n/* ===== '+s+' ===== */\n'+open(D+'/'+s).read()+'\n;\n' for s in scripts)
 open(O+'/app.js','w').write(bundle)
@@ -34,7 +48,7 @@ page=f"""<!doctype html>
 </head>
 <body>
 {body}
-<script>window.DV_VERSION='{VERSION}'</script>
+<script>window.DV_VERSION='{VERSION}';window.DV_NEWS={NEWS}</script>
 <script src="app.js"></script>
 <script>if('serviceWorker' in navigator){{const had=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{{if(had&&!rl){{rl=1;location.reload()}}}});window.addEventListener('load',()=>{{navigator.serviceWorker.register('sw.js',{{updateViaCache:'none'}}).then(r=>{{r.update().catch(()=>{{}});setInterval(()=>r.update().catch(()=>{{}}),600000)}}).catch(()=>{{}})}})}}</script>
 </body>
