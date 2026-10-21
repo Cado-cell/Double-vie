@@ -331,18 +331,23 @@ function pFences(){
   return {title:'Receleurs',html:note('Les receleurs changent chaque année. Plus ils paient, plus ils sont sujets à n’être pas ce qu’ils prétendent. Pour revendre, ouvre une pièce dans ta collection.')+group('Cette année',rows)
     +note(`Ta réputation (${Math.round(B.rep)} / 100) améliore leurs offres jusqu’à 8 points.`)};
 }
+function contraActs(L,B,k){
+  const px=B.px,room=Math.max(0,600-stockUnits(B)),q=B.stock[k]||0,p=px[k];
+  const buy=(n)=>act(L,{ic:'🟢',t:`Acheter ${n} unités`,s:fmt(p*n),cost:p*n,min:18,dis:room<n?'Entrepôt plein (600 unités max.)':'',fn:L=>{B.stock[k]=(B.stock[k]||0)+n;addHeat(B,R(1,3)*Math.ceil(n/10));track(L,'crimes');chg(L,{crime:R(1,2),karma:-1});return out(L,`Tu stockes ${n} unités : ${k.toLowerCase()}.`)}});
+  const sell=(n,lab)=>act(L,{ic:'🔴',t:lab,s:q?fmt(p*Math.min(n,q)):'',dis:!q?'Rien en stock':'',fn:L=>{const m=Math.min(n,B.stock[k]||0);const g=m*p;B.stock[k]=(B.stock[k]||0)-m;if(B.stock[k]<=0)delete B.stock[k];earn(L,g,1);addHeat(B,R(2,5)*Math.ceil(m/20));track(L,'crimes');chg(L,{crime:R(1,3)});B.st.gained+=g;trackMax(L,'bmHeat',B.heat);return out(L,`Tu écoules ${m} unités de ${k.toLowerCase()} pour ${fmt(g)}.`)}});
+  return [buy(10),buy(50),sell(10,'Revendre 10 unités'),sell(99999,`Tout revendre (${q})`)];
+}
 function pContra(){
   const L=cur();const B=ensure(L);const px=B.px;
   const room=Math.max(0,600-stockUnits(B));
   const trend=k=>{const b=BM_ITEMS[k][0];const d=Math.round((px[k]/b-1)*100);return d>=0?`▲ +${d} %`:`▼ ${d} %`};
-  const body=Object.keys(BM_ITEMS).map(k=>{
-    const q=B.stock[k]||0;const p=px[k];
-    const buy=(n)=>act(L,{ic:'🟢',t:`Acheter ${n} unités`,s:fmt(p*n),cost:p*n,min:18,dis:room<n?'Entrepôt plein (600 unités max.)':'',fn:L=>{B.stock[k]=(B.stock[k]||0)+n;addHeat(B,R(1,3)*Math.ceil(n/10));track(L,'crimes');chg(L,{crime:R(1,2),karma:-1});return out(L,`Tu stockes ${n} unités : ${k.toLowerCase()}.`)}});
-    const sell=(n,lab)=>act(L,{ic:'🔴',t:lab,s:q?fmt(p*Math.min(n,q)):'',dis:!q?'Rien en stock':'',fn:L=>{const m=Math.min(n,B.stock[k]||0);const g=m*p;B.stock[k]=(B.stock[k]||0)-m;if(B.stock[k]<=0)delete B.stock[k];earn(L,g,1);addHeat(B,R(2,5)*Math.ceil(m/20));track(L,'crimes');chg(L,{crime:R(1,3)});B.st.gained+=g;trackMax(L,'bmHeat',B.heat);return out(L,`Tu écoules ${m} unités de ${k.toLowerCase()} pour ${fmt(g)}.`)}});
-    return group(`${k} · ${fmt(p)} l’unité ${trend(k)}${q?` · stock ${q}`:''}`,[buy(10),buy(50),sell(10,'Revendre 10 unités'),sell(99999,`Tout revendre (${q})`)]);
-  }).join('');
+  const rows=Object.keys(BM_ITEMS).map(k=>{const q=B.stock[k]||0;return row({ic:'📦',t:k,s:`${fmt(px[k])} l’unité · ${trend(k)}${q?` · stock ${q}`:''}`,right:'›',a:()=>pushPanel(()=>pContraItem(k))})});
   return {title:'Contrebande',html:note('Les prix changent chaque année : achète quand ça creuse, revends quand ça grimpe. Le stock dort dans une cave à Aubervilliers.')
-    +card('Stock',fmt(stockValue(B)),`${stockUnits(B)} unités · ${room} places libres`,statLine('Attention de la police',B.heat))+body};
+    +card('Stock',fmt(stockValue(B)),`${stockUnits(B)} unités · ${room} places libres`,statLine('Attention de la police',B.heat))+group('Marchandises',rows)};
+}
+function pContraItem(k){
+  const L=cur();const B=ensure(L);if(!BM_ITEMS[k])return {title:'Contrebande',html:note('Marchandise introuvable.')};
+  return {title:k,html:card('Prix du jour',fmt(B.px[k]),`Stock : ${B.stock[k]||0} unités`)+group('Acheter ou revendre',contraActs(L,B,k))};
 }
 
 /* ---------- Évènements JSON ---------- */

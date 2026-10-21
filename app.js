@@ -2880,11 +2880,13 @@ function pAdvisor(){
   if(I.ins)h+=note('🤫 Tu as profité d’une information privilégiée. Espérons que personne ne fasse le rapprochement…');
   return {title:'Conseiller financier',html:h};
 }
+const newsRow=(M,n)=>`<div class="row"><span class="ic e h7">${esc(n.ic||'📰')}</span><span class="rt"><b>${esc(n.t)}</b><small>${esc(ago(M.y-n.y))}</small></span></div>`;
 function pNews(){
-  const M=mkGet();const items=M.news.slice().reverse();
-  return {title:'Journal financier',html:note('Les gros titres des dernières années. Les rumeurs, elles, tombent sans prévenir.')+
-    (items.length?`<div class="list">${items.map(n=>`<div class="row"><span class="ic">${esc(n.ic||'📰')}</span><span class="rt"><b>${esc(n.t)}</b><small>${esc(ago(M.y-n.y))}</small></span></div>`).join('')}</div>`:note('Aucune nouvelle pour l’instant.'))};
+  const M=mkGet();const items=M.news.slice().reverse();const top=items.slice(0,5);
+  return {title:'Journal financier',html:note('Les derniers gros titres. Les rumeurs, elles, tombent sans prévenir.')+
+    (items.length?`<div class="list">${top.map(n=>newsRow(M,n)).join('')}${items.length>5?row({ic:'🗞️',t:`Voir les ${items.length-5} titres plus anciens`,right:'›',a:()=>pushPanel(pNewsAll)}):''}</div>`:note('Aucune nouvelle pour l’instant.'))};
 }
+function pNewsAll(){const M=mkGet();return {title:'Anciens titres',html:`<div class="list">${M.news.slice().reverse().map(n=>newsRow(M,n)).join('')}</div>`}}
 function corrTable(M){
   const groups=[['Actions',STOCK_L],['Crypto',LIST.filter(A=>A.cat==='crypto')],['Mat. prem.',LIST.filter(A=>A.cat==='com'&&A.id!=='XAU')],['Or',LIST.filter(A=>A.id==='XAU')]].filter(g=>g[1].length);
   const n=Math.min(...LIST.map(A=>M.a[A.id].h.length))-1;if(n<4||groups.length<2)return '';
@@ -2894,14 +2896,14 @@ function corrTable(M){
   const cell=v=>`<td style="padding:6px 2px;border-radius:6px;background:color-mix(in srgb,var(${v>=0?'--good':'--bad'}) ${Math.round(Math.abs(v)*55)}%,transparent);font-family:var(--mono)">${v.toFixed(2).replace('.',',').replace('-','−')}</td>`;
   return `<div class="card"><div class="ck">Corrélations sur ${An(n)}</div><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;text-align:center"><tr><th></th>${groups.map(g=>`<th style="font-weight:600;color:var(--muted)">${esc(g[0])}</th>`).join('')}</tr>${groups.map((g,i)=>`<tr><th style="text-align:left;font-weight:600;color:var(--muted)">${esc(g[0])}</th>${groups.map((_,j)=>cell(i===j?1:cor(ser[i],ser[j]))).join('')}</tr>`).join('')}</table><div class="cs">Proche de 1 : ces actifs montent et baissent ensemble. Négatif : l’un compense l’autre.</div></div>`;
 }
+function volRows(cat){return LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`σ ${Math.round(A.v*100)} % (${volLab(A.v)}) · β ${A.beta.toFixed(2).replace('.',',').replace('-','−')}${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
+    right:`<span class="bar" style="width:64px"><i style="width:${lim(A.v*70,4,100)}%;background:var(${A.v<.3?'--good':A.v<.6?'--warn':'--bad'})"></i></span>`,a:()=>pushPanel(pAsset(A.id))}))}
 function pVol(){
   const M=mkGet();
-  let h=note('σ : amplitude typique des variations annuelles. β : sensibilité aux mouvements du marché (négatif : valeur refuge). Les actions d’un même secteur bougent ensemble, les crypto-monnaies suivent leur propre humeur.');
-  h+=corrTable(M);
-  for(const cat of ['stock','crypto','com'])h+=group(CATN[cat],LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`σ ${Math.round(A.v*100)} % (${volLab(A.v)}) · β ${A.beta.toFixed(2).replace('.',',').replace('-','−')}${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
-    right:`<span class="bar" style="width:64px"><i style="width:${lim(A.v*70,4,100)}%;background:var(${A.v<.3?'--good':A.v<.6?'--warn':'--bad'})"></i></span>`,a:()=>pushPanel(pAsset(A.id))})));
-  return {title:'Matrice de volatilité',html:h};
+  const ts=['stock','crypto','com'].map(cat=>{const n=LIST.filter(A=>A.cat===cat).length;return n?ntile(cat==='stock'?'📈':cat==='crypto'?'🪙':'🛢️',CATN[cat],`${n} actifs · risque et bêta`,()=>pVolCat(cat)):''});
+  return {title:'Matrice de volatilité',html:note('σ : amplitude des variations annuelles. β : sensibilité au marché (négatif : valeur refuge).')+corrTable(M)+tiles(ts)};
 }
+function pVolCat(cat){return {title:CATN[cat],html:group('',volRows(cat))}}
 
 /* ================= Bilan annuel d’une vie ================= */
 function invYear(L){
@@ -4552,18 +4554,23 @@ function pFences(){
   return {title:'Receleurs',html:note('Les receleurs changent chaque année. Plus ils paient, plus ils sont sujets à n’être pas ce qu’ils prétendent. Pour revendre, ouvre une pièce dans ta collection.')+group('Cette année',rows)
     +note(`Ta réputation (${Math.round(B.rep)} / 100) améliore leurs offres jusqu’à 8 points.`)};
 }
+function contraActs(L,B,k){
+  const px=B.px,room=Math.max(0,600-stockUnits(B)),q=B.stock[k]||0,p=px[k];
+  const buy=(n)=>act(L,{ic:'🟢',t:`Acheter ${n} unités`,s:fmt(p*n),cost:p*n,min:18,dis:room<n?'Entrepôt plein (600 unités max.)':'',fn:L=>{B.stock[k]=(B.stock[k]||0)+n;addHeat(B,R(1,3)*Math.ceil(n/10));track(L,'crimes');chg(L,{crime:R(1,2),karma:-1});return out(L,`Tu stockes ${n} unités : ${k.toLowerCase()}.`)}});
+  const sell=(n,lab)=>act(L,{ic:'🔴',t:lab,s:q?fmt(p*Math.min(n,q)):'',dis:!q?'Rien en stock':'',fn:L=>{const m=Math.min(n,B.stock[k]||0);const g=m*p;B.stock[k]=(B.stock[k]||0)-m;if(B.stock[k]<=0)delete B.stock[k];earn(L,g,1);addHeat(B,R(2,5)*Math.ceil(m/20));track(L,'crimes');chg(L,{crime:R(1,3)});B.st.gained+=g;trackMax(L,'bmHeat',B.heat);return out(L,`Tu écoules ${m} unités de ${k.toLowerCase()} pour ${fmt(g)}.`)}});
+  return [buy(10),buy(50),sell(10,'Revendre 10 unités'),sell(99999,`Tout revendre (${q})`)];
+}
 function pContra(){
   const L=cur();const B=ensure(L);const px=B.px;
   const room=Math.max(0,600-stockUnits(B));
   const trend=k=>{const b=BM_ITEMS[k][0];const d=Math.round((px[k]/b-1)*100);return d>=0?`▲ +${d} %`:`▼ ${d} %`};
-  const body=Object.keys(BM_ITEMS).map(k=>{
-    const q=B.stock[k]||0;const p=px[k];
-    const buy=(n)=>act(L,{ic:'🟢',t:`Acheter ${n} unités`,s:fmt(p*n),cost:p*n,min:18,dis:room<n?'Entrepôt plein (600 unités max.)':'',fn:L=>{B.stock[k]=(B.stock[k]||0)+n;addHeat(B,R(1,3)*Math.ceil(n/10));track(L,'crimes');chg(L,{crime:R(1,2),karma:-1});return out(L,`Tu stockes ${n} unités : ${k.toLowerCase()}.`)}});
-    const sell=(n,lab)=>act(L,{ic:'🔴',t:lab,s:q?fmt(p*Math.min(n,q)):'',dis:!q?'Rien en stock':'',fn:L=>{const m=Math.min(n,B.stock[k]||0);const g=m*p;B.stock[k]=(B.stock[k]||0)-m;if(B.stock[k]<=0)delete B.stock[k];earn(L,g,1);addHeat(B,R(2,5)*Math.ceil(m/20));track(L,'crimes');chg(L,{crime:R(1,3)});B.st.gained+=g;trackMax(L,'bmHeat',B.heat);return out(L,`Tu écoules ${m} unités de ${k.toLowerCase()} pour ${fmt(g)}.`)}});
-    return group(`${k} · ${fmt(p)} l’unité ${trend(k)}${q?` · stock ${q}`:''}`,[buy(10),buy(50),sell(10,'Revendre 10 unités'),sell(99999,`Tout revendre (${q})`)]);
-  }).join('');
+  const rows=Object.keys(BM_ITEMS).map(k=>{const q=B.stock[k]||0;return row({ic:'📦',t:k,s:`${fmt(px[k])} l’unité · ${trend(k)}${q?` · stock ${q}`:''}`,right:'›',a:()=>pushPanel(()=>pContraItem(k))})});
   return {title:'Contrebande',html:note('Les prix changent chaque année : achète quand ça creuse, revends quand ça grimpe. Le stock dort dans une cave à Aubervilliers.')
-    +card('Stock',fmt(stockValue(B)),`${stockUnits(B)} unités · ${room} places libres`,statLine('Attention de la police',B.heat))+body};
+    +card('Stock',fmt(stockValue(B)),`${stockUnits(B)} unités · ${room} places libres`,statLine('Attention de la police',B.heat))+group('Marchandises',rows)};
+}
+function pContraItem(k){
+  const L=cur();const B=ensure(L);if(!BM_ITEMS[k])return {title:'Contrebande',html:note('Marchandise introuvable.')};
+  return {title:k,html:card('Prix du jour',fmt(B.px[k]),`Stock : ${B.stock[k]||0} unités`)+group('Acheter ou revendre',contraActs(L,B,k))};
 }
 
 /* ---------- Évènements JSON ---------- */
@@ -12646,10 +12653,39 @@ function pWork(){
   h+=group('Carrière',T2);
   return {title:inSchool(L)?'École':'Métier',html:h};
 }
-function pMajors(){const L=cur();return {title:'Études supérieures',html:note('Les filières sélectives regardent ta moyenne. Les écoles privées coûtent cher : bourse, parents ou prêt étudiant.')+group('Licences (3 ans, puis master et doctorat)',Object.entries(MAJORS).filter(([,M])=>M.type==='lic').map(([k,M])=>row({ic:'📘',t:M.n,s:`${An(M.y)}${canMajor(L,k)?'':` · ${M.g/5}/20 de moyenne requis`}`,dis:!canMajor(L,k),a:()=>{STACK.pop();run(()=>enroll(L,k))}})))+group('Écoles et filières longues',Object.entries(MAJORS).filter(([,M])=>M.type==='ecole').map(([k,M])=>row({ic:'🏫',t:M.n,s:`${M.dip} · ${An(M.y)} · ${fmt(M.cost||250)} par an${canMajor(L,k)?'':M.needLic?' · licence requise':` · ${M.g/5}/20 requis`}`,dis:!canMajor(L,k),a:()=>{STACK.pop();run(()=>enroll(L,k))}})))}}
+function majorRow(L,k,M){return M.type==='lic'
+  ?row({ic:'📘',t:M.n,s:`${An(M.y)}${canMajor(L,k)?'':` · ${M.g/5}/20 de moyenne requis`}`,dis:!canMajor(L,k),a:()=>{STACK.length=0;closeSheet();run(()=>enroll(L,k))}})
+  :row({ic:'🏫',t:M.n,s:`${M.dip} · ${An(M.y)} · ${fmt(M.cost||250)} par an${canMajor(L,k)?'':M.needLic?' · licence requise':` · ${M.g/5}/20 requis`}`,dis:!canMajor(L,k),a:()=>{STACK.length=0;closeSheet();run(()=>enroll(L,k))}})}
+function pMajors(){const L=cur();const E=Object.entries(MAJORS);const ok=E.filter(([k])=>canMajor(L,k));
+  const best=ok.slice().sort((a,b)=>b[1].g-a[1].g).slice(0,5);
+  return {title:'Études supérieures',html:note('Les filières sélectives regardent ta moyenne. Les écoles privées coûtent cher : bourse, parents ou prêt étudiant.')
+    +(best.length?group('Les plus ambitieuses pour toi',best.map(([k,M])=>majorRow(L,k,M))):note('Aucune filière ne t’est encore accessible : travaille ta moyenne.'))
+    +`<h3 class="sec">Toutes les filières</h3>`+tiles([ntile('📘',`Licences (${E.filter(([,M])=>M.type==='lic').length})`,'3 ans, puis master et doctorat',()=>pMajorsType('lic')),ntile('🏫',`Écoles et filières longues (${E.filter(([,M])=>M.type==='ecole').length})`,'Diplôme direct, parfois payant',()=>pMajorsType('ecole'))])}}
+function pMajorsType(t){const L=cur();return {title:t==='lic'?'Licences':'Écoles',html:group('',Object.entries(MAJORS).filter(([,M])=>M.type===t).map(([k,M])=>majorRow(L,k,M)))}}
+/* Offres d'emploi : d'abord les 5 meilleures pour toi, puis les secteurs (au lieu d'une liste de 55 lignes). */
+const JOB_SECTORS=[['svc','🛍️','Commerce et services',['resto','vente','caisse','call','poste','menage','secret','immo','banqueg','steward']],
+  ['man','🛠️','Métiers manuels',['btp','plomb','elec','menuis','meca','coiff','boul','esthe','cuisine','agri','peche']],
+  ['trans','🚚','Transport',['livr','taxi','pilote','capit']],
+  ['secu','🛡️','Sécurité et service public',['secu','police','gendarme','pomp','douane']],
+  ['sante','🩺','Santé et soins',['soin','infi','med','chir','pharma','dent','veto','psy']],
+  ['edu','🎓','Éducation, science et culture',['prof','cherch','culture','journ','coach','musicien','graph']],
+  ['biz','💼','Droit, finance et affaires',['droit','juge','notaire','mkt','finance','compta','diplo']],
+  ['tech','💻','Tech et ingénierie',['dev','ing','archi']]];
+function jobSectors(){const known=new Set(JOB_SECTORS.flatMap(x=>x[3]));const rest=Object.keys(CAREERS).filter(k=>!known.has(k));return rest.length?JOB_SECTORS.concat([['autres','🧩','Autres métiers',rest]]):JOB_SECTORS}
+function jobRow(L,k,ic){const C=CAREERS[k];const miss=reqMiss(L,C.req);const same=L.job&&L.job.c===k;return {ok:!(miss||same),row:row({ic:ic||'💼',t:fem(C.ladder[0],L),s:`${C.n} · ${fmt(C.base*(costOf(L)*.6+.4))} par an${miss?' · '+miss:same?' · ton métier actuel':''}`,dis:!!(miss||same),a:()=>applyJob(L,k),right:miss||same?'':'Postuler'})}}
 function pJobs(){
-  const L=cur();const rows=Object.entries(CAREERS).map(([k,C])=>{const miss=reqMiss(L,C.req);const same=L.job&&L.job.c===k;return {m:!!(miss||same),h:row({ic:'💼',t:fem(C.ladder[0],L),s:`${C.n} · ${fmt(C.base*(costOf(L)*.6+.4))} par an${miss?' · '+miss:same?' · ton métier actuel':''}`,dis:!!(miss||same),a:()=>applyJob(L,k),right:miss||same?'':'Postuler'})}}).sort((a,b)=>a.m-b.m);
-  return {title:'Offres d’emploi',html:note('Ton métier évolue avec ta performance : promotions, augmentations, ou licenciement.')+group('',rows.map(r=>r.h))};
+  const L=cur();const SEC=jobSectors();const icOf={};SEC.forEach(([,ic,,ks])=>ks.forEach(k=>icOf[k]=ic));
+  const all=Object.keys(CAREERS).map(k=>Object.assign({k},jobRow(L,k,icOf[k])));
+  const best=all.filter(x=>x.ok).sort((a,b)=>CAREERS[b.k].base-CAREERS[a.k].base).slice(0,5);
+  const secs=SEC.map(([id,ic,n,ks])=>{const kk=ks.filter(k=>CAREERS[k]);const ok=kk.filter(k=>all.find(x=>x.k===k).ok).length;return ntile(ic,n,`${ok} accessible${ok>1?'s':''} sur ${kk.length}`,()=>pJobsSector(id))});
+  return {title:'Offres d’emploi',html:note('Ton métier évolue avec ta performance : promotions, augmentations, ou licenciement.')
+    +(best.length?group('Les mieux payés pour toi',best.map(x=>x.row)):note('Aucun métier ne t’est encore accessible : continue tes études ou passe un diplôme. Chaque secteur indique ce qu’il manque.'))
+    +`<h3 class="sec">Par secteur</h3>`+tiles(secs)};
+}
+function pJobsSector(id){
+  const L=cur();const sec=jobSectors().find(x=>x[0]===id);if(!sec)return {title:'Métiers',html:note('Secteur introuvable.')};
+  const rows=sec[3].filter(k=>CAREERS[k]).map(k=>jobRow(L,k,sec[1])).sort((a,b)=>b.ok-a.ok);
+  return {title:sec[2],html:group('',rows.map(x=>x.row))};
 }
 function pPartTime(){const L=cur();return {title:'Temps partiel',html:group('Offres',Object.entries(PART_TIME).map(([k,P])=>act(L,{ic:'🧾',t:fem(P.n,L),s:`${fmt(P.sal)} par an`,min:P.min,dis:L.part?'Tu as déjà un petit boulot':P.smarts&&L.st.smarts<P.smarts?`Intelligence ${P.smarts} % min.`:L.prison?'En prison':'',fn:L=>{if(chance(.7)){L.part={k,y:0};return out(L,`Tu décroches un job : ${fem(P.n,L).toLowerCase()}.`)}return out(L,'Le poste est déjà pris.')}})))}}
 function pGigs(){const L=cur();return {title:'Petits boulots',html:note('Chaque petit boulot peut se faire une fois par an.')+group('',GIGS.map(g=>act(L,{ic:'🪙',t:g.n,s:`${fmt(g.gain[0])} à ${fmt(g.gain[1])}`,min:g.min,key:'gig_'+g.k,dis:L.prison?'En prison':'',fn:L=>{let n=R(g.gain[0],g.gain[1]);if(g.skill)n=Math.round(n*(.5+skillOf(L,g.skill)/100));earn(L,n);return out(L,`${g.n} : tu gagnes ${fmt(n)}.`)}})))}}
@@ -12962,10 +12998,18 @@ function pMind(){
     act(L,{ic:'💇',t:'Salon de coiffure',s:'Nouvelle coupe, nouvelle couleur, nouveau style',min:8,nav:pLook('self')}),
     act(L,{ic:'💆',t:'Journée au spa',s:'250 €',cost:250,min:16,key:'spa',fn:L=>{chg(L,{happy:R(5,9),looks:1,stress:-R(6,12)});return out(L,'Hammam, massage et peignoir moelleux.')}})])};
 }
+const LESSON_IC={musique:'🎸',danse:'💃',comedie:'🎭',mannequinat:'📸',peinture:'🎨',ecriture:'✍️',cuisine:'🍳',sport:'⚽',sciences:'🔬'};
+function lessonRow(L,Ls){return act(L,{ic:LESSON_IC[Ls.t]||'➕',t:Ls.n,s:`${TALENTS[Ls.t]}${L.talent===Ls.t?' · ton talent !':''}${L.skills[Ls.k]?` · niveau ${L.skills[Ls.k]} %`:''}`,min:Ls.min,dis:L.lessons.length>=3?'Trois leçons maximum':L.prison?'En prison':'',fn:L=>{L.lessons.push(Ls.k);return out(L,`Tu t’inscris : ${Ls.n.toLowerCase()}.`)}})}
 function pLessons(){
-  const L=cur();
-  return {title:'Leçons et loisirs',html:note(`Les leçons progressent chaque année. ${L.age<18?'Tes parents paient.':'Chaque leçon coûte 600 € par an.'} Trois leçons maximum en même temps.`)+group('Mes leçons',L.lessons.map(k=>{const Ls=LESSONS.find(x=>x.k===k);return row({ic:'🎯',t:Ls.n,s:`Niveau ${L.skills[k]||0} %${Ls.belt?` · ceinture ${BELTS[Math.min(6,Math.floor((L.skills[k]||0)/15))]}`:''} · touche pour arrêter`,a:()=>run(()=>{L.lessons=L.lessons.filter(x=>x!==k);return `Tu arrêtes : ${Ls.n.toLowerCase()}.`})})}))+group('S’inscrire',LESSONS.filter(Ls=>!L.lessons.includes(Ls.k)).map(Ls=>act(L,{ic:'➕',t:Ls.n,s:`${TALENTS[Ls.t]}${L.talent===Ls.t?' · ton talent !':''}${L.skills[Ls.k]?` · niveau ${L.skills[Ls.k]} %`:''}`,min:Ls.min,dis:L.lessons.length>=3?'Trois leçons maximum':L.prison?'En prison':'',fn:L=>{L.lessons.push(Ls.k);return out(L,`Tu t’inscris : ${Ls.n.toLowerCase()}.`)}})))};
+  const L=cur();const free=LESSONS.filter(Ls=>!L.lessons.includes(Ls.k)&&(Ls.min||0)<=L.age);
+  const types=[...new Set(free.map(Ls=>Ls.t))];
+  const mine=L.talent?free.filter(Ls=>Ls.t===L.talent):[];
+  return {title:'Leçons et loisirs',html:note(`Les leçons progressent chaque année. ${L.age<18?'Tes parents paient.':'Chaque leçon coûte 600 € par an.'} Trois leçons maximum en même temps.`)
+    +group('Mes leçons',L.lessons.map(k=>{const Ls=LESSONS.find(x=>x.k===k);return row({ic:LESSON_IC[Ls.t]||'🎯',t:Ls.n,s:`Niveau ${L.skills[k]||0} %${Ls.belt?` · ceinture ${BELTS[Math.min(6,Math.floor((L.skills[k]||0)/15))]}`:''} · touche pour arrêter`,a:()=>run(()=>{L.lessons=L.lessons.filter(x=>x!==k);return `Tu arrêtes : ${Ls.n.toLowerCase()}.`})})}))
+    +group('Ton talent',mine.map(Ls=>lessonRow(L,Ls)))
+    +(types.length?`<h3 class="sec">S’inscrire</h3>`+tiles(types.map(t=>ntile(LESSON_IC[t]||'➕',TALENTS[t],`${free.filter(Ls=>Ls.t===t).length} activité${free.filter(Ls=>Ls.t===t).length>1?'s':''}`,()=>pLessonsType(t)))):'')};
 }
+function pLessonsType(t){const L=cur();return {title:TALENTS[t]||'Leçons',html:group('',LESSONS.filter(Ls=>Ls.t===t&&!L.lessons.includes(Ls.k)).map(Ls=>lessonRow(L,Ls)))}}
 function pHealth(){
   const L=cur();const ill=L.ill.map(k=>DIS[k].n).join(', ');
   return {title:'Santé',html:(ill?note(`À soigner : ${ill}.`):'')+group('Soins',[
@@ -13052,7 +13096,22 @@ function pPetShop(){const L=cur();return {title:'Animaux',html:note(L.age<18?'Te
 function pLaw(){const L=cur();return {title:'Procès',html:note('Porte plainte et tente d’obtenir des dommages et intérêts.')+group('Poursuivre',LAWSUITS.map(S=>act(L,{ic:'⚖️',t:S.n,s:S.why,key:'law',fn:L=>{modal({title:'Ton avocat',icon:'⚖️',text:`Plainte contre ${S.n.toLowerCase()} pour ${S.why}.`,choices:[['Avocat commis d’office (gratuit)',0,.75],['Avocat réputé (5 000 €)',5000,1],['Ténor du barreau (25 000 €)',25000,1.3]].map(([t,c,m])=>({t,fn:()=>{L.money-=c;if(chance(S.p*m)){const g=R(S.gain[0],S.gain[1]);L.money+=g;return out(L,`⚖️ Procès gagné contre ${S.n.toLowerCase()} : ${fmt(g)} de dommages et intérêts.`)}return out(L,`Procès perdu contre ${S.n.toLowerCase()}.`)}}))})}})))}}
 function pWill(){const L=cur();const ks=allKids(L).filter(k=>k.alive);return {title:'Testament',html:note('En France, tes enfants ont toujours droit à une part réservataire. L’héritier désigné reprend tes biens.')+group('Héritier principal',[act(L,{ic:'⚖️',t:'Partage égal (par défaut)',dis:!L.will.heir?'Choix actuel':'',fn:L=>{L.will.heir=null;return 'Testament mis à jour.'}}),...ks.map(k=>act(L,{av:avatar(k),t:`${k.first} ${k.last}`,s:`${role(k)} · ${An(k.age)}`,dis:L.will.heir===k.id?'Héritier désigné':'',fn:L=>{L.will.heir=k.id;return out(L,`📜 Tu désignes ${k.first} comme héritier principal.`)}}))])+group('Dons aux associations',[0,10,25,50].map(p=>act(L,{ic:'🎗️',t:`${p} % de ta fortune`,dis:L.will.charity===p?'Choix actuel':'',fn:L=>{L.will.charity=p;if(p)track(L,'given',Math.round(netWorth(L)*p/100));return 'Testament mis à jour.'}})))}}
 function pIdentity(){const L=cur();return {title:'Identité',html:`<div class="card"><div class="two"><label class="f">Prénom<input id="rn-first" value="${esc(L.first)}" autocomplete="off" maxlength="30"></label><label class="f">Nom<input id="rn-last" value="${esc(L.last)}" autocomplete="off" maxlength="30"></label></div></div>`+group('',[row({ic:'🪪',t:'Changer de nom',s:'Démarche en mairie · 50 €',a:()=>{const f=$('#rn-first').value.trim(),l=$('#rn-last').value.trim();if(!f||!l){toast('Indique un prénom et un nom.');return}run(()=>{L.money-=50;L.first=f.slice(0,30);L.last=l.slice(0,30);return out(L,`Tu t’appelles désormais ${L.first} ${L.last}.`)})}}),act(L,{ic:'⚧️',t:'Transition de genre',s:'Parcours médical · 15 000 €',min:18,cost:15000,key:'trans',fn:L=>{L.gender=L.gender==='F'?'H':'F';chg(L,{happy:15});return out(L,`Tu entames ta transition. Tu te sens enfin ${ge(L,'toi-même','toi-même')}.`)}})])}}
-function pEmigrate(){const L=cur();return {title:'Émigrer',html:note('Tu quittes ton emploi actuel, sauf si ta carrière dépend de ta notoriété.')+group('Pays',Object.keys(COUNTRIES).filter(c=>c!==L.country).map(c=>act(L,{ic:'🌍',t:c,s:fmt(3000),cost:3000,dis:L.prison?'En prison':'',fn:L=>{L.country=c;L.city=pick(COUNTRIES[c].cities);let lost='';if(jobOk(L)){L.job=null;lost=' Tu quittes ton emploi.'}if(inHigher(L))L.edu.stage='done';L.market=null;L.rent=0;STACK.pop();track(L,'trips');return out(L,`🌍 Tu t’installes à ${L.city} (${c}).${lost}`)}})))}}
+/* Émigrer : destinations populaires puis continents (au lieu de 58 pays en vrac). */
+const COUNTRY_GROUPS=[['eur1','🇪🇺','Europe de l’Ouest et du Sud',['France','Belgique','Suisse','Monaco','Luxembourg','Italie','Espagne','Portugal','Royaume-Uni','Irlande','Allemagne','Autriche','Pays-Bas','Grèce']],
+  ['eur2','🏔️','Europe du Nord et de l’Est',['Suède','Norvège','Danemark','Finlande','Islande','Pologne','Tchéquie','Russie','Ukraine']],
+  ['ame','🌎','Amériques',['Canada','États-Unis','Mexique','Cuba','Haïti','Colombie','Pérou','Brésil','Chili','Argentine']],
+  ['afr','🌍','Afrique',['Maroc','Algérie','Tunisie','Égypte','Sénégal','Mali','Côte d’Ivoire','Cameroun','Nigeria','RD Congo','Angola','Cap-Vert','Afrique du Sud']],
+  ['asie','🌏','Asie et Moyen-Orient',['Turquie','Liban','Jordanie','Arabie saoudite','Émirats arabes unis','Inde','Chine','Corée du Sud','Japon','Vietnam','Thaïlande']],
+  ['oce','🏝️','Océanie',['Australie','Nouvelle-Zélande']]];
+const POPULAR_COUNTRIES=['Canada','États-Unis','Royaume-Uni','Suisse','Espagne','Japon','Australie','Émirats arabes unis'];
+function emigRow(L,c){return act(L,{ic:'🌍',t:c,s:fmt(3000),cost:3000,dis:L.prison?'En prison':'',fn:L=>{L.country=c;L.city=pick(COUNTRIES[c].cities);let lost='';if(jobOk(L)){L.job=null;lost=' Tu quittes ton emploi.'}if(inHigher(L))L.edu.stage='done';L.market=null;L.rent=0;STACK.length=0;closeSheet();track(L,'trips');return out(L,`🌍 Tu t’installes à ${L.city} (${c}).${lost}`)}})}
+function pEmigrate(){const L=cur();const has=c=>COUNTRIES[c]&&c!==L.country;
+  const listed=new Set(COUNTRY_GROUPS.flatMap(g=>g[3]));const other=Object.keys(COUNTRIES).filter(c=>c!==L.country&&!listed.has(c));
+  const groups=other.length?COUNTRY_GROUPS.concat([['autres','🧭','Autres pays',other]]):COUNTRY_GROUPS;
+  const ts=groups.map(([id,ic,n,cs])=>{const k=cs.filter(has).length;return k?ntile(ic,n,`${k} pays`,()=>pEmigrateGroup(id)):''});
+  return {title:'Émigrer',html:note('Tu quittes ton emploi actuel, sauf si ta carrière dépend de ta notoriété.')+group('Destinations populaires',POPULAR_COUNTRIES.filter(has).slice(0,6).map(c=>emigRow(L,c)))+`<h3 class="sec">Par région</h3>`+tiles(ts)}}
+function pEmigrateGroup(id){const L=cur();const all=COUNTRY_GROUPS.concat([['autres','🧭','Autres pays',Object.keys(COUNTRIES).filter(c=>!COUNTRY_GROUPS.some(g=>g[3].includes(c)))]]);const g=all.find(x=>x[0]===id);if(!g)return {title:'Émigrer',html:note('Région introuvable.')};
+  return {title:g[2],html:group('',g[3].filter(c=>COUNTRIES[c]&&c!==L.country).map(c=>emigRow(L,c)))}}
 
 /* ---------- Mode Dieu ---------- */
 function sliders(list){return list.map(([id,lab,v])=>`<label class="sl" for="g-${id}"><span>${lab}<output id="o-${id}">${v}</output></span><input type="range" id="g-${id}" min="0" max="100" value="${v}"></label>`).join('')}

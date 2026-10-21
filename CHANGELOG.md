@@ -3,6 +3,7 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 21/10/2026 (nuit)
+- Menus plus courts : les offres d'emploi (55 lignes) deviennent « 5 meilleurs pour toi » + 8 secteurs ; Émigrer (58 pays) devient 6 destinations populaires + 6 régions ; études supérieures, leçons, contrebande, journal financier et volatilité sont regroupés. Liste la plus longue d'un personnage de 30 ans : 20 lignes au lieu de 58.
 - Plus simple : trois « idées rapides » sous ton personnage (ex. Amour, Santé, Emploi) ouvrent directement le bon menu ; Activités propose « Juste pour toi » et « Récents » ; les actions réservées à un âge que tu n'as pas encore ne s'affichent plus (une ligne les rappelle). Un enfant de 8 ans voit 172 actions au lieu de 255 et 1 élément grisé au lieu de 56.
 - Confettis réservés aux grands moments (diplôme, mariage, naissance, promotion) et espacés d'au moins 8 secondes.
 

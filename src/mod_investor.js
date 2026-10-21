@@ -459,11 +459,13 @@ function pAdvisor(){
   if(I.ins)h+=note('🤫 Tu as profité d’une information privilégiée. Espérons que personne ne fasse le rapprochement…');
   return {title:'Conseiller financier',html:h};
 }
+const newsRow=(M,n)=>`<div class="row"><span class="ic e h7">${esc(n.ic||'📰')}</span><span class="rt"><b>${esc(n.t)}</b><small>${esc(ago(M.y-n.y))}</small></span></div>`;
 function pNews(){
-  const M=mkGet();const items=M.news.slice().reverse();
-  return {title:'Journal financier',html:note('Les gros titres des dernières années. Les rumeurs, elles, tombent sans prévenir.')+
-    (items.length?`<div class="list">${items.map(n=>`<div class="row"><span class="ic">${esc(n.ic||'📰')}</span><span class="rt"><b>${esc(n.t)}</b><small>${esc(ago(M.y-n.y))}</small></span></div>`).join('')}</div>`:note('Aucune nouvelle pour l’instant.'))};
+  const M=mkGet();const items=M.news.slice().reverse();const top=items.slice(0,5);
+  return {title:'Journal financier',html:note('Les derniers gros titres. Les rumeurs, elles, tombent sans prévenir.')+
+    (items.length?`<div class="list">${top.map(n=>newsRow(M,n)).join('')}${items.length>5?row({ic:'🗞️',t:`Voir les ${items.length-5} titres plus anciens`,right:'›',a:()=>pushPanel(pNewsAll)}):''}</div>`:note('Aucune nouvelle pour l’instant.'))};
 }
+function pNewsAll(){const M=mkGet();return {title:'Anciens titres',html:`<div class="list">${M.news.slice().reverse().map(n=>newsRow(M,n)).join('')}</div>`}}
 function corrTable(M){
   const groups=[['Actions',STOCK_L],['Crypto',LIST.filter(A=>A.cat==='crypto')],['Mat. prem.',LIST.filter(A=>A.cat==='com'&&A.id!=='XAU')],['Or',LIST.filter(A=>A.id==='XAU')]].filter(g=>g[1].length);
   const n=Math.min(...LIST.map(A=>M.a[A.id].h.length))-1;if(n<4||groups.length<2)return '';
@@ -473,14 +475,14 @@ function corrTable(M){
   const cell=v=>`<td style="padding:6px 2px;border-radius:6px;background:color-mix(in srgb,var(${v>=0?'--good':'--bad'}) ${Math.round(Math.abs(v)*55)}%,transparent);font-family:var(--mono)">${v.toFixed(2).replace('.',',').replace('-','−')}</td>`;
   return `<div class="card"><div class="ck">Corrélations sur ${An(n)}</div><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;text-align:center"><tr><th></th>${groups.map(g=>`<th style="font-weight:600;color:var(--muted)">${esc(g[0])}</th>`).join('')}</tr>${groups.map((g,i)=>`<tr><th style="text-align:left;font-weight:600;color:var(--muted)">${esc(g[0])}</th>${groups.map((_,j)=>cell(i===j?1:cor(ser[i],ser[j]))).join('')}</tr>`).join('')}</table><div class="cs">Proche de 1 : ces actifs montent et baissent ensemble. Négatif : l’un compense l’autre.</div></div>`;
 }
+function volRows(cat){return LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`σ ${Math.round(A.v*100)} % (${volLab(A.v)}) · β ${A.beta.toFixed(2).replace('.',',').replace('-','−')}${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
+    right:`<span class="bar" style="width:64px"><i style="width:${lim(A.v*70,4,100)}%;background:var(${A.v<.3?'--good':A.v<.6?'--warn':'--bad'})"></i></span>`,a:()=>pushPanel(pAsset(A.id))}))}
 function pVol(){
   const M=mkGet();
-  let h=note('σ : amplitude typique des variations annuelles. β : sensibilité aux mouvements du marché (négatif : valeur refuge). Les actions d’un même secteur bougent ensemble, les crypto-monnaies suivent leur propre humeur.');
-  h+=corrTable(M);
-  for(const cat of ['stock','crypto','com'])h+=group(CATN[cat],LIST.filter(A=>A.cat===cat).map(A=>row({ic:A.ic,t:A.n,s:`σ ${Math.round(A.v*100)} % (${volLab(A.v)}) · β ${A.beta.toFixed(2).replace('.',',').replace('-','−')}${A.dy?` · dividende ${pcF(A.dy)}`:''}`,
-    right:`<span class="bar" style="width:64px"><i style="width:${lim(A.v*70,4,100)}%;background:var(${A.v<.3?'--good':A.v<.6?'--warn':'--bad'})"></i></span>`,a:()=>pushPanel(pAsset(A.id))})));
-  return {title:'Matrice de volatilité',html:h};
+  const ts=['stock','crypto','com'].map(cat=>{const n=LIST.filter(A=>A.cat===cat).length;return n?ntile(cat==='stock'?'📈':cat==='crypto'?'🪙':'🛢️',CATN[cat],`${n} actifs · risque et bêta`,()=>pVolCat(cat)):''});
+  return {title:'Matrice de volatilité',html:note('σ : amplitude des variations annuelles. β : sensibilité au marché (négatif : valeur refuge).')+corrTable(M)+tiles(ts)};
 }
+function pVolCat(cat){return {title:CATN[cat],html:group('',volRows(cat))}}
 
 /* ================= Bilan annuel d’une vie ================= */
 function invYear(L){
