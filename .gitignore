@@ -1,0 +1,6 @@
+pwa/
+node_modules/
+src/test.html
+src/shot.html
+*.png.tmp
+/tmp/

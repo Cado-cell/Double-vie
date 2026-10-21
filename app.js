@@ -376,23 +376,29 @@ const AV_A = (() => {
   const TOP_COLORS = ['#D9704C', '#E3A93C', '#7EA68A', '#2F6F78', '#2E3F66', '#8D7BC2', '#E7A1A6', '#8E3049', '#EDE3D2', '#3B3E46'];
   const BG_COLORS = ['#F7E3D3', '#E2EDE3', '#DCE7F3', '#ECE1F1', '#FAEBC6', '#F6DAD8', '#D8EEEA', '#E8E3DC'];
 
-  const HAIRS = ['court', 'rase', 'meche', 'boucle', 'afro', 'milong', 'long', 'carre', 'queue', 'chignon', 'tresses', 'crete', 'chauve'];
+  const HAIRS = ['court', 'rase', 'meche', 'boucle', 'afro', 'milong', 'long', 'carre', 'queue', 'chignon', 'tresses', 'crete', 'chauve', 'ondule', 'frange', 'undercut', 'pixie', 'locs', 'manbun', 'degarni'];
+  const FACES = ['ovale', 'rond', 'carre', 'long', 'coeur'];
+  const NOSES = ['droit', 'fin', 'large', 'retrousse', 'aquilin'];
+  const LIPS = ['fines', 'moyennes', 'pleines'];
+  const MAKEUPS = ['aucun', 'naturel', 'rouge', 'rose', 'prune', 'smoky'];
+  const MARKS = ['aucune', 'grain', 'cicatrice', 'acne'];
   const EYES = ['ronds', 'amande', 'rieurs', 'miclos'];
   const BROWS = ['naturels', 'arques', 'epais', 'fins'];
-  const BEARDS = ['aucune', 'barbe3j', 'barbe', 'bouc', 'moustache'];
-  const GLASSES = ['aucune', 'rondes', 'carrees', 'solaires'];
-  const ACCS = ['aucun', 'boucles', 'casquette', 'bonnet', 'bandeau', 'fleur'];
-  const TOPS = ['tshirt', 'sweat', 'chemise', 'costume', 'robe', 'pull'];
+  const BEARDS = ['aucune', 'barbe3j', 'barbe', 'bouc', 'moustache', 'barbelongue', 'collier', 'favoris', 'goatee'];
+  const GLASSES = ['aucune', 'rondes', 'carrees', 'solaires', 'aviateur', 'chat', 'demi'];
+  const ACCS = ['aucun', 'boucles', 'casquette', 'bonnet', 'bandeau', 'fleur', 'chapeau', 'bandana', 'voile', 'piercing'];
+  const TOPS = ['tshirt', 'sweat', 'chemise', 'costume', 'robe', 'pull', 'polo', 'veste', 'debardeur', 'blouse'];
 
   /* Libellés prêts pour un éditeur */
   const LABELS = {
-    hair: { court: 'Court', rase: 'Rasé', meche: 'Mèche', boucle: 'Bouclé', afro: 'Afro', milong: 'Mi-long', long: 'Long', carre: 'Carré', queue: 'Queue-de-cheval', chignon: 'Chignon', tresses: 'Tresses', crete: 'Crête', chauve: 'Chauve' },
+    hair: { ondule: 'Ondulé', frange: 'Frange', undercut: 'Undercut', pixie: 'Pixie', locs: 'Locks', manbun: 'Chignon homme', degarni: 'Dégarni', court: 'Court', rase: 'Rasé', meche: 'Mèche', boucle: 'Bouclé', afro: 'Afro', milong: 'Mi-long', long: 'Long', carre: 'Carré', queue: 'Queue-de-cheval', chignon: 'Chignon', tresses: 'Tresses', crete: 'Crête', chauve: 'Chauve' },
     eyes: { ronds: 'Ronds', amande: 'En amande', rieurs: 'Rieurs', miclos: 'Mi-clos' },
     brows: { naturels: 'Naturels', arques: 'Arqués', epais: 'Épais', fins: 'Fins' },
-    beard: { aucune: 'Aucune', barbe3j: 'Barbe de 3 jours', barbe: 'Barbe', bouc: 'Bouc', moustache: 'Moustache' },
-    glasses: { aucune: 'Aucune', rondes: 'Rondes', carrees: 'Carrées', solaires: 'Solaires' },
-    acc: { aucun: 'Aucun', boucles: 'Boucles d’oreilles', casquette: 'Casquette', bonnet: 'Bonnet', bandeau: 'Bandeau', fleur: 'Fleur' },
-    top: { tshirt: 'T-shirt', sweat: 'Sweat à capuche', chemise: 'Chemise', costume: 'Costume', robe: 'Robe', pull: 'Col roulé' },
+    beard: { barbelongue: 'Barbe longue', collier: 'Collier', favoris: 'Favoris', goatee: 'Bouc et moustache', aucune: 'Aucune', barbe3j: 'Barbe de 3 jours', barbe: 'Barbe', bouc: 'Bouc', moustache: 'Moustache' },
+    glasses: { aviateur: 'Aviateur', chat: 'Œil de chat', demi: 'Demi-cerclées', aucune: 'Aucune', rondes: 'Rondes', carrees: 'Carrées', solaires: 'Solaires' },
+    acc: { chapeau: 'Chapeau', bandana: 'Bandana', voile: 'Voile', piercing: 'Piercing au nez', aucun: 'Aucun', boucles: 'Boucles d’oreilles', casquette: 'Casquette', bonnet: 'Bonnet', bandeau: 'Bandeau', fleur: 'Fleur' },
+    top: { polo: 'Polo', veste: 'Veste', debardeur: 'Débardeur', blouse: 'Blouse blanche', tshirt: 'T-shirt', sweat: 'Sweat à capuche', chemise: 'Chemise', costume: 'Costume', robe: 'Robe', pull: 'Col roulé' },
+    face: { ovale: 'Ovale', rond: 'Rond', carre: 'Carré', long: 'Allongé', coeur: 'En cœur' }, nose: { droit: 'Droit', fin: 'Fin', large: 'Large', retrousse: 'Retroussé', aquilin: 'Aquilin' }, lips: { fines: 'Fines', moyennes: 'Moyennes', pleines: 'Pleines' }, makeup: { aucun: 'Aucun', naturel: 'Naturel', rouge: 'Rouge à lèvres', rose: 'Rose', prune: 'Prune', smoky: 'Smoky' }, mark: { aucune: 'Aucune', grain: 'Grain de beauté', cicatrice: 'Cicatrice', acne: 'Acné' },
     skin: ['Porcelaine', 'Claire', 'Pêche', 'Dorée', 'Caramel', 'Cannelle', 'Brune', 'Ébène'],
     hc: ['Noir', 'Brun foncé', 'Châtain', 'Auburn', 'Blond foncé', 'Blond', 'Platine', 'Roux', 'Rose pastel', 'Bleu'],
     eye: ['Marron', 'Noisette', 'Vert', 'Bleu', 'Gris', 'Noir'],
@@ -452,6 +458,12 @@ const AV_A = (() => {
     o.top = has(TOPS, L.top) ? L.top : det(g === 'F' ? ['tshirt', 'pull', 'chemise', 'robe'] : ['tshirt', 'pull', 'chemise', 'sweat'], 9);
     o.bg = idx(L.bg, 8, det([0, 1, 2, 3, 4, 5, 6, 7], 13));
     o.freckles = L.freckles === true;
+    o.face = has(FACES, L.face) ? L.face : det(FACES, 17);
+    o.nose = has(NOSES, L.nose) ? L.nose : det(NOSES, 21);
+    o.lips = has(LIPS, L.lips) ? L.lips : det(LIPS, 23);
+    o.makeup = has(MAKEUPS, L.makeup) ? L.makeup : 'aucun';
+    o.mark = has(MARKS, L.mark) ? L.mark : 'aucune';
+    o.seed = seed;
     return o;
   }
 
@@ -565,6 +577,47 @@ const AV_A = (() => {
           top = 6.8;
         } else top = 21.8;
         break;
+      case 'ondule':
+        back.push(P('M28.8 46C27 26 37.5 15.5 50 15.5C62.5 15.5 73 26 71.2 46C71 55 72.4 62 75 68C72 71 69 69 66.6 72C64 75 61 72.4 58.6 74.6L41.4 74.6C39 72.4 36 75 33.4 72C31 69 28 71 25 68C27.6 62 29 55 28.8 46Z', D));
+        front.push(P('M25.4 68C28.4 61 30.8 54 30.6 44C30.4 29 38 17 50 17C63 17 69.6 30 69.4 44C69.2 54 71.6 61 74.6 68C71.4 70.6 69 68.2 67 69.6C64.8 71.6 62 70 60.6 68C61.8 60 64.4 48 63.8 37.4C57.6 35.6 49.2 30.6 45.2 23.4C43.2 27.2 39.4 32 37.2 39.4C35.6 48 38.4 60 39.4 68C38 70 35.2 71.6 33 69.6C31 68.2 28.6 70.6 25.4 68Z', H));
+        front.push(S('M45.2 23.4C48.6 20.2 54 19 59.6 20.6M64.4 42Q67.4 48 64.8 54Q62.4 60 65.6 66M35.6 42Q32.6 48 35.2 54Q37.6 60 34.4 66M52 21Q56 24 55 28', D, 1.05));
+        top = 15.5; break;
+      case 'frange':
+        back.push(P('M28 46C26.5 25 37 14.6 50 14.6C63 14.6 73.5 25 72 46C71.5 62 74.2 78 79.4 101L20.6 101C25.8 78 28.5 62 28 46Z', D));
+        front.push(P('M25.6 95.4C28.8 80 30.7 62 30.6 44C30.4 29 38 17 50 17C63 17 69.6 30 69.4 44C69.3 62 71.2 80 74.4 95.4C70.6 97 66.6 96 65 92.4C63.4 82 64.2 66 64 56C63.9 49 64.6 43 63.8 37.4L36.2 37.4C35.4 43 36.1 49 36 56C35.8 66 36.6 82 35 92.4C33.4 96 29.4 97 25.6 95.4Z', H));
+        front.push(P('M30.8 45C29.8 27 38.4 16.4 50 16.4C61.6 16.4 70.2 27 69.2 45C68.8 41 67.8 38.4 66.2 36.4C58 40 42 40 33.8 36.4C32.2 38.4 31.2 41 30.8 45Z', H));
+        front.push(S('M40 21C44 18.4 52 17.4 59 19.4M37.6 32Q41 35.6 38.6 38.6M45.6 31.4Q48.4 35.4 46.4 39M54 31.4Q56.6 35.4 54.6 39.2M62 32Q58.8 35.6 61.6 38.6', D, 1));
+        top = 14.6; break;
+      case 'undercut':
+        front.push(P('M33.4 46C32.6 34 35 28 38.4 26.4L38.4 36C36 38 34.6 41 34.4 46ZM66.6 46C67.4 34 65 28 61.6 26.4L61.6 36C64 38 65.4 41 65.6 46Z', c.buzz));
+        front.push(P('M36.4 35C33.8 22 41.6 12.4 52.4 12.8C62.8 13.2 67 21.4 64 33.4C61 27.4 54.4 25 46.6 27C42 28.2 38.6 31 36.4 35Z', H));
+        front.push(S('M40 22.4C44.4 17.8 52.6 16 60.4 19M46 26.6C50 23 56 22 61.6 24', D, 1.1));
+        top = 12.6; break;
+      case 'pixie':
+        front.push(P('M32 47C29.8 31 37.6 17 50.6 17.2C64 17.4 70.6 28.6 68 47L66.8 47C66.4 43 65.6 39.6 64 37C58.6 40.6 49 39.8 40.6 37.2C38 36.4 36 38.4 35 41C34.6 43 34.4 45 34.4 47Z', H));
+        front.push(P('M31.6 52C30.8 46 31.6 42 33.6 40.4L35.2 50.6ZM68.4 52C69.2 46 68.4 42 66.4 40.4L64.8 50.6Z', H));
+        front.push(S('M41 22.6C46 18.8 55 18.6 61.4 23M40.4 36.8C45.6 36 52 35 58 33.4M48 20.4Q51 25 49 29', D, 1.05));
+        top = 17.2; break;
+      case 'locs': {
+        const rope = 'M30 38C27 52 26.4 68 27 90M34 44C31.6 58 31.6 74 33 96M70 38C73 52 73.6 68 73 90M66 44C68.4 58 68.4 74 67 96M40 34C37 50 38 70 39.6 98M60 34C63 50 62 70 60.4 98';
+        back.push(P('M29.6 46C28 27 37.6 16.4 50 16.4C62.4 16.4 72 27 70.4 46C70 60 71.6 74 74 92L26 92C28.4 74 30 60 29.6 46Z', c.hairDD));
+        back.push(S(rope, H, 4.2));
+        back.push(S(rope, D, 4.2, ' stroke-dasharray="1.2 2.2"'));
+        front.push(P(sleek, H));
+        front.push(S('M40 31C44 25 56 25 60 31M44.6 21.8C48 19.8 53 19.8 56.4 21.8', D, 1));
+        front.push(S('M32.4 44C30.4 56 30 70 30.8 86M67.6 44C69.6 56 70 70 69.2 86', H, 3.8));
+        front.push(S('M32.4 44C30.4 56 30 70 30.8 86M67.6 44C69.6 56 70 70 69.2 86', D, 3.8, ' stroke-dasharray="1.2 2.2"'));
+        top = 16.4; break;
+      }
+      case 'manbun':
+        if (!hat) {
+          back.push(`<circle cx="50" cy="12.6" r="7.6" fill="${H}"/>`);
+          back.push(S('M44.8 11.6C46 8.4 52.6 8 55 11.6M45.6 15.8C48.4 17.4 52.4 17 54.6 14.8', D, 1.05));
+        }
+        front.push(P('M33.4 46C32.6 34 35 28 38.4 26.4L38.4 36C36 38 34.6 41 34.4 46ZM66.6 46C67.4 34 65 28 61.6 26.4L61.6 36C64 38 65.4 41 65.6 46Z', c.buzz));
+        front.push(P('M36 36C34.6 23 41 17.6 50 17.4C59 17.6 65.4 23 64 36C60.4 30 56 27 50 27C44 27 39.6 30 36 36Z', H));
+        front.push(S('M41 25C45 21.4 55 21.4 59 25', D, 1));
+        top = hat ? 17.4 : 5; break;
       case 'degarni':
         front.push(P('M32.4 50.4C31.2 42 31.8 36 34.6 31.6C36 34.2 36.2 38.6 35.4 42.4C35 45.2 34.8 47.8 34.6 50.4Z', H));
         front.push(P('M67.6 50.4C68.8 42 68.2 36 65.4 31.6C64 34.2 63.8 38.6 64.6 42.4C65 45.2 65.2 47.8 65.4 50.4Z', H));
@@ -589,7 +642,7 @@ const AV_A = (() => {
     rieurs: { o: [[-4.3, 0.9], [-2.6, -3.2], [2.6, -3.4], [4.6, 0.3], [2.6, -0.8], [-2.4, -0.6]], ir: [0.1, -0.6, 2.5], lid: 1.3 },
     miclos: { o: [[-4.3, 0.5], [-2.6, -1.5], [2.6, -1.8], [4.6, -0.2], [2.9, 2.8], [-2.4, 3.1]], ir: [0.2, 0.7, 2.6], lid: 1.45 }
   };
-  function eyes(st, c, cx, cy, sc, uid, dead, baby) {
+  function eyes(st, c, cx, cy, sc, uid, dead, baby, fx) {
     let out = '', defs = '';
     const hl = [], pu = [];
     [-1, 1].forEach((s, i) => {
@@ -607,6 +660,7 @@ const AV_A = (() => {
       }
       const F = EYE_FORMS[st] || EYE_FORMS.amande;
       const o = F.o.map(T);
+      if (fx && fx.shadow) out += `<ellipse cx="${f(ex + s * 0.5 * sc)}" cy="${f(ey - 3 * sc)}" rx="${f(5 * sc)}" ry="${f(2.4 * sc)}" fill="${fx.shadow}" fill-opacity="${fx.so}"/>`;
       const d = `${M(o[0])}C${f(o[1][0])} ${f(o[1][1])} ${f(o[2][0])} ${f(o[2][1])} ${f(o[3][0])} ${f(o[3][1])}C${f(o[4][0])} ${f(o[4][1])} ${f(o[5][0])} ${f(o[5][1])} ${f(o[0][0])} ${f(o[0][1])}Z`;
       const id = `ava${uid}e${i}`;
       defs += `<clipPath id="${id}"><path d="${d}"/></clipPath>`;
@@ -617,6 +671,7 @@ const AV_A = (() => {
       // paupière supérieure
       const l0 = T([F.o[0][0] - 0.2, F.o[0][1] + 0.1]), l3 = T([F.o[3][0] + 0.5, F.o[3][1] - 0.3]);
       out += S(`${M(l0)}C${f(o[1][0])} ${f(o[1][1] - 0.15 * sc)} ${f(o[2][0])} ${f(o[2][1] - 0.15 * sc)} ${f(l3[0])} ${f(l3[1])}`, c.lash, F.lid * Math.min(sc, 1.15));
+      if (fx && fx.lash) { const t0 = T([F.o[3][0] + 0.1, F.o[3][1] - 0.2]); out += S(`${M(t0)}l${f(s * 1.8 * sc)} ${f(-1.4 * sc)}`, c.lash, 0.95 * Math.min(sc, 1.15)); }
       if (st === 'miclos') out += S(`${M(T([-3.6, -2.2]))}C${f(T([-1.6, -4])[0])} ${f(T([-1.6, -4])[1])} ${f(T([2.6, -4.2])[0])} ${f(T([2.6, -4.2])[1])} ${f(T([4.4, -2.6])[0])} ${f(T([4.4, -2.6])[1])}`, c.skinD, 0.9);
       if (st === 'rieurs') out += S(`${M(T([-2.6, 2.4]))}Q${f(T([0.4, 3.6])[0])} ${f(T([0.4, 3.6])[1])} ${f(T([3.4, 2.2])[0])} ${f(T([3.4, 2.2])[1])}`, c.skinD, 0.9);
     });
@@ -643,17 +698,38 @@ const AV_A = (() => {
     return S(d, c.brow, F.w * sc);
   }
 
-  /* ---------- Bouche ---------- */
-  function mouth(c, mood, dead, y, sc) {
+  /* ---------- Nez ---------- */
+  function noseArt(st, c, small) {
+    if (small) return S('M48.6 53.4Q50 54.6 51.4 53.4', c.skinD, 1.3);
+    const sh = ' stroke-opacity=".5"', nos = (a, b, r) => `<path d="${dots([[a, 53.7], [b, 53.7]], r)}" fill="${c.skinD}" fill-opacity=".7"/>`;
+    const tip = `<ellipse cx="50" cy="52.1" rx="1.5" ry="1" fill="${c.skinL}" fill-opacity=".55"/>`;
+    switch (st) {
+      case 'fin': return S('M48.7 47.6Q48.1 50.8 48.6 52.4', c.skinD, 0.8, sh) + S('M48 53.1Q50 54.7 52 53.1', c.skinD, 1.2) + tip;
+      case 'large': return S('M48.2 47.4Q46.9 51 47.1 52.8', c.skinD, 0.95, sh) + S('M46.7 53.4Q48.2 55 50 54.3Q51.8 55 53.3 53.4', c.skinD, 1.45) + nos(47.7, 52.3, 0.55) + tip;
+      case 'retrousse': return S('M49.1 48.6Q48.7 50.8 49.2 51.8', c.skinD, 0.8, sh) + S('M47.9 52.4Q50 55.1 52.1 52.4', c.skinD, 1.3) + nos(48.3, 51.7, 0.5) + tip;
+      case 'aquilin': return S('M48.8 46.6Q47.5 49.8 48.4 52.6', c.skinD, 1.05, sh) + S('M47.9 53.1Q50 55 52.1 53.1', c.skinD, 1.35) + `<ellipse cx="50" cy="52.4" rx="1.3" ry="0.9" fill="${c.skinL}" fill-opacity=".45"/>`;
+      default: return S('M48.9 47.8Q48.3 51 48.5 52.6', c.skinD, 0.85, sh) + S('M47.8 53Q50 55 52.2 53', c.skinD, 1.4) + nos(48.2, 51.8, 0.45) + tip;
+    }
+  }
+
+  /* ---------- Bouche et lèvres ---------- */
+  function mouth(c, mood, dead, y, sc, lp, lipC, gap) {
     const X = x => f(50 + x * sc), Y = v => f(y + v * sc);
     if (dead) return S(`M${X(-3.4)} ${Y(0.6)}Q${X(0)} ${Y(1.3)} ${X(3.4)} ${Y(0.6)}`, c.lip, 1.4 * sc);
+    const k = lp === 'fines' ? 0.6 : lp === 'pleines' ? 1.45 : 1, u = 0.5 + 0.55 * k, l = 0.6 + 0.95 * k;
     if (mood >= 67) {
-      return P(`M${X(-5)} ${Y(-0.9)}Q${X(0)} ${Y(0.4)} ${X(5)} ${Y(-0.9)}Q${X(4.4)} ${Y(4.6)} ${X(0)} ${Y(4.6)}Q${X(-4.4)} ${Y(4.6)} ${X(-5)} ${Y(-0.9)}Z`, c.mouth)
+      const up = P(`M${X(-5.1)} ${Y(-0.9)}Q${X(0)} ${Y(0.4 - 2 * u)} ${X(5.1)} ${Y(-0.9)}Q${X(0)} ${Y(0.4)} ${X(-5.1)} ${Y(-0.9)}Z`, lipC);
+      const lo = P(`M${X(-4.7)} ${Y(1.8)}Q${X(0)} ${Y(7.4 + 1.8 * l)} ${X(4.7)} ${Y(1.8)}Q${X(0)} ${Y(7.4)} ${X(-4.7)} ${Y(1.8)}Z`, lipC);
+      return lo + up
+        + P(`M${X(-5)} ${Y(-0.9)}Q${X(0)} ${Y(0.4)} ${X(5)} ${Y(-0.9)}Q${X(4.4)} ${Y(4.6)} ${X(0)} ${Y(4.6)}Q${X(-4.4)} ${Y(4.6)} ${X(-5)} ${Y(-0.9)}Z`, c.mouth)
         + P(`M${X(-4)} ${Y(-0.2)}Q${X(0)} ${Y(0.9)} ${X(4)} ${Y(-0.2)}L${X(3.7)} ${Y(1.2)}Q${X(0)} ${Y(2.1)} ${X(-3.7)} ${Y(1.2)}Z`, c.white)
+        + (gap ? P(`M${X(-1.7)} ${Y(-0.3)}L${X(-0.4)} ${Y(-0.1)}L${X(-0.4)} ${Y(1.5)}L${X(-1.7)} ${Y(1.4)}Z`, c.mouth) : '')
         + P(`M${X(-2.6)} ${Y(3.9)}Q${X(0)} ${Y(2.2)} ${X(2.6)} ${Y(3.9)}Q${X(0)} ${Y(4.7)} ${X(-2.6)} ${Y(3.9)}Z`, c.tongue);
     }
-    if (mood >= 34) return S(`M${X(-3.8)} ${Y(0)}Q${X(0)} ${Y(2.4)} ${X(3.8)} ${Y(0)}`, c.lip, 1.55 * sc);
-    return S(`M${X(-3.8)} ${Y(2.4)}Q${X(0)} ${Y(-0.6)} ${X(3.8)} ${Y(2.4)}`, c.lip, 1.55 * sc);
+    const yc = mood >= 34 ? 0 : 2.4, cc = mood >= 34 ? 2.4 : -0.6;
+    const line = `M${X(-4.2)} ${Y(yc)}Q${X(0)} ${Y(cc)} ${X(4.2)} ${Y(yc)}`;
+    const crescent = (sh) => `M${X(-4.2)} ${Y(yc)}Q${X(0)} ${Y(cc + sh)} ${X(4.2)} ${Y(yc)}Q${X(0)} ${Y(cc)} ${X(-4.2)} ${Y(yc)}Z`;
+    return P(crescent(-2 * u), lipC) + P(crescent(2 * l), lipC) + S(line, c.lip, 1.15 * sc);
   }
 
   /* ---------- Barbes ---------- */
@@ -668,6 +744,20 @@ const AV_A = (() => {
         return P('M43.4 57.2C45 54.4 48.6 54.4 50 55.4C51.4 54.4 55 54.4 56.6 57.2C54.6 56.6 52 56.8 50 57.4C48 56.8 45.4 56.6 43.4 57.2ZM45.2 61.6C46.6 62.6 53.4 62.6 54.8 61.6C55 65.6 52.8 68.8 50 68.8C47.2 68.8 45 65.6 45.2 61.6Z', c.hair);
       case 'moustache':
         return P('M42.6 57.6C44 54.2 48.4 54 50 55.2C51.6 54 56 54.2 57.4 57.6C55.4 56.8 52.6 57 50 57.8C47.4 57 44.6 56.8 42.6 57.6Z', c.hair);
+      case 'barbelongue':
+        return P('M33.4 46.6C33.2 54 34.8 60.4 38 66C41 72 45.4 78 50 79.6C54.6 78 59 72 62 66C65.2 60.4 66.8 54 66.6 46.6L64.8 46.6C64.6 51.6 63 55.4 60.4 56.8C57.4 54.6 54 53.8 50 53.8C46 53.8 42.6 54.6 39.6 56.8C37 55.4 35.4 51.6 35.2 46.6Z', c.hair)
+          + S('M40 64C42 70 46 75 50 77M60 64C58 70 54 75 50 77M50 66L50 76', c.hairD, 0.9)
+          + P('M45.6 58.2Q50 57.2 54.4 58.2Q54 61.6 50 61.8Q46 61.6 45.6 58.2Z', c.skinD);
+      case 'collier':
+        return S('M34.4 47C34.8 56 38.2 63.8 44.4 66.6Q50 68.6 55.6 66.6C61.8 63.8 65.2 56 65.6 47', c.hair, 2.1)
+          + P('M45.4 64.8Q50 63.6 54.6 64.8Q54 68.4 50 68.8Q46 68.4 45.4 64.8Z', c.hair);
+      case 'favoris':
+        return P('M33.4 39C33 45.6 33.4 52.4 35.4 58.4L38 56C37 51.6 36.8 46 37 40Z', c.hair)
+          + P('M66.6 39C67 45.6 66.6 52.4 64.6 58.4L62 56C63 51.6 63.2 46 63 40Z', c.hair)
+          + P('M42.6 57.6C44 54.2 48.4 54 50 55.2C51.6 54 56 54.2 57.4 57.6C55.4 56.8 52.6 57 50 57.8C47.4 57 44.6 56.8 42.6 57.6Z', c.hair);
+      case 'goatee':
+        return beardArt('bouc', c) + beardArt('moustache', c)
+          + S('M43.6 58.4C41.6 60.6 41.6 64 44.6 66.4M56.4 58.4C58.4 60.6 58.4 64 55.4 66.4', c.hair, 1.5);
       default: return '';
     }
   }
@@ -709,6 +799,30 @@ const AV_A = (() => {
           + P(`M${f(nl)} 54L${f(nr)} 54L${f(nr)} ${f(by + 2)}L${f(nl)} ${f(by + 2)}Z`, c.skinD)
           + P(`M${f(nl - 8.6)} ${f(by + 1.2)}C${f(nl - 4)} ${f(by - 0.8)} ${f(nr + 4)} ${f(by - 0.8)} ${f(nr + 8.6)} ${f(by + 1.2)}C${f(nr + 5.6)} ${f(by + 10.6)} ${f(nl - 5.6)} ${f(by + 10.6)} ${f(nl - 8.6)} ${f(by + 1.2)}Z`, c.skin)
           + S(`M${f(nl - 8.4)} ${f(by + 1.6)}C${f(nl - 5.4)} ${f(by + 10.4)} ${f(nr + 5.4)} ${f(by + 10.4)} ${f(nr + 8.4)} ${f(by + 1.6)}`, c.topD, 1.4);
+      case 'polo':
+        return body + neckU
+          + P(`M${f(nl - 1)} ${f(by - 1.6)}L${f(nl + 3.2)} ${f(by + 1.4)}L50 ${f(by + 5.6)}L${f(nl - 5.8)} ${f(by + 3.4)}ZM${f(nr + 1)} ${f(by - 1.6)}L${f(nr - 3.2)} ${f(by + 1.4)}L50 ${f(by + 5.6)}L${f(nr + 5.8)} ${f(by + 3.4)}Z`, c.topL)
+          + S(`M50 ${f(by + 4.6)}L50 ${f(by + 15)}`, c.topD, 0.9)
+          + `<path d="${dots([[50, by + 8], [50, by + 12]], 0.7)}" fill="${c.topD}"/>`;
+      case 'veste':
+        return body
+          + P(`M${f(nl)} 54L${f(nr)} 54L${f(nr)} ${f(by - 0.4)}L50 ${f(by + 6)}L${f(nl)} ${f(by - 0.4)}Z`, c.skinD)
+          + P(`M${f(nl + 1)} ${f(by - 1)}L50 ${f(by + 3)}L${f(nr - 1)} ${f(by - 1)}L50 101L${f(nl + 1)} 101Z`.replace(/L50 101L\S+ 101Z/, 'L56 101L44 101Z'), c.shirt)
+          + P(`M${f(nl - 2.4)} ${f(by - 1.6)}L47 ${f(by + 3.6)}L43.4 101L${f(nl - 7)} 101ZM${f(nr + 2.4)} ${f(by - 1.6)}L53 ${f(by + 3.6)}L56.6 101L${f(nr + 7)} 101Z`, c.topD)
+          + S(`M${f(nl - 2.4)} ${f(by - 1.6)}L47 ${f(by + 3.6)}M${f(nr + 2.4)} ${f(by - 1.6)}L53 ${f(by + 3.6)}`, c.topL, 1.1);
+      case 'debardeur': {
+        const sk = P(A.body, c.skin) + P(`M${f(nl)} 54L${f(nr)} 54L${f(nr)} ${f(by + 2)}L${f(nl)} ${f(by + 2)}Z`, c.skinD);
+        return sk
+          + P(`M${f(nl - 9)} 101L${f(nl - 9.4)} ${f(by + 10)}Q${f(nl - 6.4)} ${f(by + 3)} ${f(nl - 3.2)} ${f(by + 0.6)}Q50 ${f(by + 10.6)} ${f(nr + 3.2)} ${f(by + 0.6)}Q${f(nr + 6.4)} ${f(by + 3)} ${f(nr + 9.4)} ${f(by + 10)}L${f(nr + 9)} 101Z`, c.top)
+          + S(`M${f(nl - 3.2)} ${f(by + 0.6)}Q50 ${f(by + 10.6)} ${f(nr + 3.2)} ${f(by + 0.6)}`, c.topD, 1.4);
+      }
+      case 'blouse':
+        return P(A.body, c.shirt)
+          + P(`M${f(nl)} 54L${f(nr)} 54L${f(nr)} ${f(by - 0.4)}L50 ${f(by + 9)}L${f(nl)} ${f(by - 0.4)}Z`, c.skinD)
+          + P(`M${f(nl + 1.4)} ${f(by + 1)}L50 ${f(by + 9.6)}L${f(nr - 1.4)} ${f(by + 1)}L50 101Z`, c.top)
+          + P(`M${f(nl - 2.4)} ${f(by - 1.6)}L50 ${f(by + 10.4)}L45.6 ${f(by + 12.4)}L${f(nl - 7.4)} ${f(by + 3)}ZM${f(nr + 2.4)} ${f(by - 1.6)}L50 ${f(by + 10.4)}L54.4 ${f(by + 12.4)}L${f(nr + 7.4)} ${f(by + 3)}Z`, c.shirtD)
+          + S(`M50 ${f(by + 11)}L50 101M${f(nl - 6)} ${f(by + 15)}L${f(nl - 6)} 101`, c.shirtD, 0.9)
+          + `<path d="${dots([[56, by + 16], [56, by + 21]], 0.7)}" fill="${c.shirtD}"/>`;
       case 'pull': {
         const t0 = A.chin - 2.4, t1 = by + 2.6;
         return body
@@ -744,6 +858,23 @@ const AV_A = (() => {
       }
       case 'boucles':
         return S('M33.2 51.6a2.2 2.2 0 1 0 0.01 0M66.8 51.6a2.2 2.2 0 1 0 0.01 0', c.gold, 1.1);
+      case 'piercing':
+        return `<circle cx="46.8" cy="53.7" r="0.8" fill="${c.gold}"/>` + S('M33.2 51.6a2.2 2.2 0 1 0 0.01 0', c.gold, 1.1);
+      case 'chapeau':
+        return P('M32.2 34C32 22.4 40 16.2 50 16.2C60 16.2 68 22.4 67.8 34Z', c.acc)
+          + S('M40 17.4C44 22 56 22 60 17.4', c.accD, 0.9)
+          + P('M31.8 30.4L68.2 30.4L68.2 34.2C58 32.8 42 32.8 31.8 34.2Z', c.accD)
+          + P('M21 36.4C21 33.8 35 31.8 50 31.8C65 31.8 79 33.8 79 36.4C79 39.6 65 40.4 50 40.4C35 40.4 21 39.6 21 36.4Z', c.acc)
+          + S('M24 36.6C34 38.2 66 38.2 76 36.6', c.accL, 0.8, ' stroke-opacity=".5"');
+      case 'bandana':
+        return P('M31.4 37C31.6 26.6 40 21 50 21C60 21 68.4 26.6 68.6 37C60 33 40 33 31.4 37Z', c.acc)
+          + `<path d="${dots([[38, 29.4], [44.4, 26.2], [51.4, 25.2], [58.4, 26.8], [63.4, 30.4], [41, 33.2], [50, 30.4], [59, 32.4]], 0.9)}" fill="${c.accL}" fill-opacity=".85"/>`
+          + P('M67.4 31.4L75 27.2L73.6 34L76.6 39.6L68.4 37Z', c.accD);
+      case 'voile':
+        return `<path fill-rule="evenodd" d="M27.4 60C26 38 33.6 19.6 50 19.6C66.4 19.6 74 38 72.6 60C72.4 66.6 70 71.4 65 75.6L35 75.6C30 71.4 27.6 66.6 27.4 60ZM35.6 45C35.6 35.4 41.4 30.4 50 30.4C58.6 30.4 64.4 35.4 64.4 45C64.4 54.6 59.6 62 50 62.6C40.4 62 35.6 54.6 35.6 45Z" fill="${c.acc}"/>`
+          + S('M33.4 40C32 52 34 64 39 72M66.6 40C68 52 66 64 61 72', c.accD, 0.9, ' stroke-opacity=".7"')
+          + S('M38 24C44 20.8 56 20.8 62 24', c.accL, 1.2, ' stroke-opacity=".6"')
+          + S('M35.8 44.6C36 36.6 41 31.4 50 31.2C59 31.4 64 36.6 64.2 44.6', c.accD, 0.9, ' stroke-opacity=".55"');
       default: return '';
     }
   }
@@ -759,8 +890,40 @@ const AV_A = (() => {
         return P('M36 43.4C36 42.6 36.6 42.2 37.4 42.2L47.2 42.2C48 42.2 48.4 42.8 48.3 43.6L47.6 48.6C47.1 51 45.4 52 43.2 52L41.4 52C38.6 52 36.8 50.8 36.3 48.4ZM64 43.4C64 42.6 63.4 42.2 62.6 42.2L52.8 42.2C52 42.2 51.6 42.8 51.7 43.6L52.4 48.6C52.9 51 54.6 52 56.8 52L58.6 52C61.4 52 63.2 50.8 63.7 48.4Z', c.shade)
           + S('M48.3 44Q50 43 51.7 44M36.2 43.6L33.6 43.2M63.8 43.6L66.4 43.2', c.shade, 1.3)
           + S('M38.6 44.4L41.4 44.4M54.4 44.4L57.2 44.4', '#FFFFFF', 1, ' stroke-opacity=".55"');
+      case 'aviateur':
+        return `<g fill="${c.lens}" fill-opacity=".28" stroke="#C9A44A" stroke-width="1.15"><path d="M35.8 44.2C35.8 42.6 37.2 42 38.8 42L46.2 42C47.8 42 48.4 42.8 48.2 44.4C47.8 49.4 45 52.8 41.6 52.6C38.4 52.4 35.8 48.6 35.8 44.2Z"/><path d="M64.2 44.2C64.2 42.6 62.8 42 61.2 42L53.8 42C52.2 42 51.6 42.8 51.8 44.4C52.2 49.4 55 52.8 58.4 52.6C61.6 52.4 64.2 48.6 64.2 44.2Z"/></g>`
+          + S('M48.2 43.8Q50 42.8 51.8 43.8M48.6 45.6Q50 44.8 51.4 45.6M35.8 43.6L33.6 43M64.2 43.6L66.4 43', '#C9A44A', 1);
+      case 'chat':
+        return `<g fill="${c.lens}" fill-opacity=".3" stroke="${c.frame}" stroke-width="1.5" stroke-linejoin="round"><path d="M34.6 41.4L46.6 43.2C48 43.4 48.4 44.6 48.2 46C47.8 49.8 45.6 52 42.6 52C39 52 36 49.4 35.8 45.8Z"/><path d="M65.4 41.4L53.4 43.2C52 43.4 51.6 44.6 51.8 46C52.2 49.8 54.4 52 57.4 52C61 52 64 49.4 64.2 45.8Z"/></g>`
+          + S('M48.2 44.4Q50 43.4 51.8 44.4M34.6 41.4L33.2 40.4M65.4 41.4L66.8 40.4', c.frame, 1.3);
+      case 'demi':
+        return S('M36.4 45Q36.6 42.4 40 42.4L45.4 42.4Q47.8 42.4 48 44.6M52 44.6Q52.2 42.4 54.6 42.4L60 42.4Q63.4 42.4 63.6 45M48 43.8Q50 42.8 52 43.8M36.4 44.4L33.6 43.8M63.6 44.4L66.4 43.8', c.frame, 1.4)
+          + `<path d="M37 45.4Q37.4 50.8 42.2 51Q46.4 50.8 47.4 45.4ZM63 45.4Q62.6 50.8 57.8 51Q53.6 50.8 52.6 45.4Z" fill="${c.lens}" fill-opacity=".22"/>`;
       default: return '';
     }
+  }
+
+  /* ---------- Forme du visage ---------- */
+  function facePath(shape, A, baby, kid) {
+    if (baby || kid || shape === 'ovale') return A.face;
+    const cy = A.chinY;
+    switch (shape) {
+      case 'rond': return `M32.4 44C32.4 31 40 25 50 25C60 25 67.6 31 67.6 44C67.6 56.6 61.4 ${f(cy - 0.6)} 50 ${f(cy - 0.6)}C38.6 ${f(cy - 0.6)} 32.4 56.6 32.4 44Z`;
+      case 'carre': return `M33 44C33 31 40.5 25 50 25C59.5 25 67 31 67 44C67 53 66.4 59.4 62 63.2C58.6 ${f(cy + 0.4)} 54.4 ${f(cy + 0.6)} 50 ${f(cy + 0.6)}C45.6 ${f(cy + 0.6)} 41.4 ${f(cy + 0.4)} 38 63.2C33.6 59.4 33 53 33 44Z`;
+      case 'long': return `M33.6 43C33.6 30 40.8 25 50 25C59.2 25 66.4 30 66.4 43C66.4 56 60.4 ${f(cy + 2.3)} 50 ${f(cy + 2.3)}C39.6 ${f(cy + 2.3)} 33.6 56 33.6 43Z`;
+      case 'coeur': return `M32.4 43C32.4 30.6 40.2 25 50 25C59.8 25 67.6 30.6 67.6 43C67.6 52 62.6 58.6 55.6 63.2C53 ${f(cy - 0.2)} 51.6 ${f(cy + 0.7)} 50 ${f(cy + 0.7)}C48.4 ${f(cy + 0.7)} 47 ${f(cy - 0.2)} 44.4 63.2C37.4 58.6 32.4 52 32.4 43Z`;
+      default: return A.face;
+    }
+  }
+
+  /* ---------- Enfants : proportions qui évoluent de 3 à 12 ans ---------- */
+  function kidGeom(age) {
+    const t = Math.max(0, Math.min(1, (age - 3) / 9)), L = 24 - 6 * t, R = 100 - L;
+    const by = 83.6 - 2.8 * t;
+    const body = `M${f(L)} 101C${f(L + 0.6)} ${f(92 - 2 * t)} ${f(31.4 - 4.4 * t)} ${f(85.4 - 2.8 * t)} ${f(41 - 2 * t)} ${f(84.2 - 2.8 * t)}Q50 ${f(83.4 - 3 * t)} ${f(59 + 2 * t)} ${f(84.2 - 2.8 * t)}C${f(68.6 + 4.4 * t)} ${f(85.4 - 2.8 * t)} ${f(R - 0.6)} ${f(92 - 2 * t)} ${f(R)} 101Z`;
+    const hw = 18.4 - 1.0 * t, x0 = 50 - hw, x1 = 50 + hw;
+    const face = `M${f(x0)} 45C${f(x0)} 31 39.8 25.4 50 25.4C60.2 25.4 ${f(x1)} 31 ${f(x1)} 45C${f(x1)} ${f(57.6 + 0.4 * t)} 60.8 65 50 65C39.2 65 ${f(x0)} ${f(57.6 + 0.4 * t)} ${f(x0)} 45Z`;
+    return { s: 1.2 - 0.12 * t, dy: 4.6 - 2.2 * t, neckW: 5.4 + 0.4 * t, bodyTop: by, body, face, chinY: 65, eyeSc: 1.26 - 0.16 * t, eyeY: 48.2 - 0.8 * t };
   }
 
   /* ---------- Rendu ---------- */
@@ -779,14 +942,14 @@ const AV_A = (() => {
     /* --- style effectif selon l’âge --- */
     let hair = lk.hair;
     if (baby) hair = 'bebe';
-    else if (elder && g === 'H' && has(['court', 'meche', 'crete', 'rase'], hair)) hair = 'degarni';
+    else if (g === 'H' && has(['court', 'meche', 'rase', 'undercut', 'pixie', 'manbun'], hair) && ((elder && lk.seed % 10 < 6) || (age >= 50 && lk.seed % 10 < 3))) hair = 'degarni';
     const beard = age >= 16 ? lk.beard : 'aucune';
     let glasses = lk.glasses;
     if (opts.glasses && glasses === 'aucune') glasses = 'rondes';
     if (baby) glasses = 'aucune';
     let acc = lk.acc;
     if (baby && !has(['bonnet', 'bandeau', 'fleur'], acc)) acc = 'aucun';
-    const hat = acc === 'casquette' || acc === 'bonnet';
+    const hat = acc === 'casquette' || acc === 'bonnet' || acc === 'chapeau';
     const top = baby ? 'grenouillere' : lk.top;
 
     /* --- couleurs --- */
@@ -797,6 +960,7 @@ const AV_A = (() => {
       if (elder) hcBase = mix(hcBase, '#F1EEEA', 0.86);
       else if (senior) hcBase = mix(hcBase, '#B9B6B1', 0.58);
       else if (age >= 50) hcBase = mix(hcBase, '#B9B6B1', 0.22);
+      else if (age >= 40) hcBase = mix(hcBase, '#B9B6B1', 0.08);
     }
     const hairD = mix(mul(hcBase, '#C9B7AE'), '#1b1210', lum(hcBase) < 0.2 ? 0.25 : 0.08);
     const darkSkin = lum(sk) < 0.45;
@@ -818,6 +982,11 @@ const AV_A = (() => {
       gold: k('#E2AE3E'), petal: k('#F4A3B5'), frame: k('#2E2420'), lens: k('#FFFFFF'), shade: k('#26232C'),
       bg: k(BG_COLORS[lk.bg])
     };
+    const mk = lk.makeup;
+    const lipMap = { naturel: '#C9776F', rouge: '#B3262E', rose: '#E0708F', prune: '#74305C', smoky: '#8A3A40' };
+    c.lipF = k(mk === 'naturel' ? mix(sk, lipMap.naturel, 0.55) : lipMap[mk] || mix(sk, mix(mul(sk, '#C99486'), '#5A1E1E', darkSkin ? 0.25 : 0.45), 0.5));
+    const shadowMap = { naturel: '#B58E7A', rose: '#E88FB0', prune: '#7C4B8C', smoky: '#3B2F38' };
+    const fx = baby || kid ? null : { lash: g === 'F' || mk === 'smoky', shadow: shadowMap[mk] ? k(shadowMap[mk]) : null, so: mk === 'smoky' ? 0.55 : mk === 'naturel' ? 0.3 : 0.42 };
     c.tie = lk.top === 'costume' ? c.tie : c.tie;
     if (hair === 'queue') c.tie = c.acc;
 
@@ -825,7 +994,7 @@ const AV_A = (() => {
     const A = baby
       ? { s: 1.2, dy: 5.4, neckW: 5.2, bodyTop: 84.6, body: 'M22 101C22.6 92 30.6 86 41 85Q50 84.2 59 85C69.4 86 77.4 92 78 101Z', face: 'M31.6 46C31.6 32.5 40 26.4 50 26.4C60 26.4 68.4 32.5 68.4 46C68.4 57.6 60.6 64.6 50 64.6C39.4 64.6 31.6 57.6 31.6 46Z', chinY: 64.6 }
       : kid
-        ? { s: 1.08, dy: 2.6, neckW: 5.8, bodyTop: 80.8, body: 'M18 101C18.6 90 27 82.6 39 81.4Q50 80.4 61 81.4C73 82.6 81.4 90 82 101Z', face: 'M32.6 45C32.6 31.4 40.6 25.4 50 25.4C59.4 25.4 67.4 31.4 67.4 45C67.4 57 60 65 50 65C40 65 32.6 57 32.6 45Z', chinY: 65 }
+        ? kidGeom(age)
         : teen
           ? { s: 1.02, dy: 0.8, neckW: 6.2, bodyTop: 79, body: 'M14 101C14.6 89 23.4 81 37 79.6Q50 78.4 63 79.6C76.6 81 85.4 89 86 101Z', face: 'M33 44.4C33 31 40.6 25 50 25C59.4 25 67 31 67 44.4C67 56 60 65.4 50 65.4C40 65.4 33 56 33 44.4Z', chinY: 65.4 }
           : { s: 1, dy: 0, neckW: 6.6, bodyTop: 78.2, body: 'M10 101C10.6 88.6 20.4 80.6 36 79Q50 77.6 64 79C79.6 80.6 89.4 88.6 90 101Z', face: 'M33 44C33 31 40.5 25 50 25C59.5 25 67 31 67 44C67 55.6 60 65.5 50 65.5C40 65.5 33 55.6 33 44Z', chinY: 65.5 };
@@ -833,31 +1002,37 @@ const AV_A = (() => {
     const headT = A.s === 1 && A.dy === 0 ? '' : ` transform="matrix(${A.s} 0 0 ${A.s} ${f(50 - 50 * A.s)} ${f(45 - 45 * A.s + A.dy)})"`;
 
     /* --- traits --- */
-    const eyeY = baby ? 48.4 : kid ? 47.4 : 46.6;
-    const eyeSc = baby ? 1.18 : kid ? 1.1 : teen ? 1.04 : 1;
+    const eyeY = baby ? 48.4 : kid ? A.eyeY : 46.6;
+    const eyeSc = baby ? 1.18 : kid ? A.eyeSc : teen ? 1.04 : 1;
     const eyeStyle = baby ? 'ronds' : lk.eyes;
-    const ey = eyes(eyeStyle, c, 50, eyeY, eyeSc, uid, dead, baby);
-    const H = hairArt(hair, c, hat);
+    const ey = eyes(eyeStyle, c, 50, eyeY, eyeSc, uid, dead, baby, fx);
+    const H = acc === 'voile' && !baby ? { back: '', front: '', top: 17 } : hairArt(hair, c, hat);
     const clipId = `ava${uid}c`;
 
     let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="avsvg${dead ? ' dead' : ''}" aria-hidden="true" focusable="false">`;
-    s += `<defs><clipPath id="${clipId}"><circle cx="50" cy="50" r="50"/></clipPath>${ey.defs}</defs>`;
+    s += `<defs><clipPath id="${clipId}"><circle cx="50" cy="50" r="50"/></clipPath><radialGradient id="ava${uid}g" cx=".4" cy=".34" r=".78"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".2"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="1" stop-color="${c.skinD}" stop-opacity=".5"/></radialGradient>${ey.defs}</defs>`;
     s += `<g clip-path="url(#${clipId})">`;
     if (opts.bg !== false) s += `<circle cx="50" cy="50" r="50" fill="${c.bg}"/>`;
     // cheveux arrière
     if (H.back) s += `<g${headT}>${H.back}</g>`;
     // corps
     s += topArt(top, c, A);
+    if (acc === 'voile' && !baby) s += P('M24.6 66C22.6 40 32 17.4 50 17.4C68 17.4 77.4 40 75.4 66C75 77 80 88 92 101L8 101C20 88 25 77 24.6 66Z', c.acc) + S('M30 70C28 82 22 92 14 101M70 70C72 82 78 92 86 101', c.accD, 0.9, ' stroke-opacity=".6"');
     // tête
     s += `<g${headT}>`;
     s += `<path d="M33.6 42.8C30.4 42.4 29.6 45.4 30.2 48.2C30.8 51 32.6 52.6 34.6 52ZM66.4 42.8C69.6 42.4 70.4 45.4 69.8 48.2C69.2 51 67.4 52.6 65.4 52Z" fill="${c.skin}"/>`;
     s += S('M32.6 45.4Q31.6 47.4 33.2 49.6M67.4 45.4Q68.4 47.4 66.8 49.6', c.skinD, 0.9);
-    s += P(A.face, c.skin);
-    // rides
-    if (senior && !baby) {
-      let w = 'M35.4 45.4L33.8 44.6M35.4 47.4L33.8 48.2M64.6 45.4L66.2 44.6M64.6 47.4L66.2 48.2M44.4 54.4Q42.6 57.2 44 60.2M55.6 54.4Q57.4 57.2 56 60.2';
-      if (elder) w += 'M43 33.8Q50 32.6 57 33.8M39.6 50.6Q42.3 51.8 45 50.6M55 50.6Q57.7 51.8 60.4 50.6';
-      s += S(w, c.skinD, 0.8);
+    const FP = facePath(lk.face, A, baby, kid);
+    s += P(FP, c.skin);
+    s += P(FP, `url(#ava${uid}g)`);
+    // rides (de plus en plus marquées avec l’âge)
+    if (!baby && !kid) {
+      const so = o => ` stroke-opacity="${o}"`;
+      if (age >= 35) s += S('M44.4 54.4Q42.6 57.2 44 60.2M55.6 54.4Q57.4 57.2 56 60.2', c.skinD, 0.75, so(age >= 60 ? 0.9 : age >= 45 ? 0.55 : 0.28));
+      if (age >= 50) s += S('M35.4 45.4L33.8 44.6M35.4 47.4L33.8 48.2M64.6 45.4L66.2 44.6M64.6 47.4L66.2 48.2', c.skinD, 0.75, so(age >= 65 ? 0.9 : 0.5));
+      if (age >= 55) s += S('M43 33.8Q50 32.8 57 33.8', c.skinD, 0.75, so(age >= 70 ? 0.9 : 0.5));
+      if (age >= 72) s += S('M44.4 31.2Q50 30.4 55.6 31.2', c.skinD, 0.7, so(0.7));
+      if (age >= 62) s += S('M39.6 50.6Q42.3 51.8 45 50.6M55 50.6Q57.7 51.8 60.4 50.6', c.skinD, 0.75, so(0.7));
     }
     // joues
     if (!dead) {
@@ -869,15 +1044,22 @@ const AV_A = (() => {
     // barbe (sous le nez et la bouche)
     s += beardArt(beard, c);
     // nez
-    s += baby || kid ? S('M48.6 53.4Q50 54.6 51.4 53.4', c.skinD, 1.3) : S('M48.1 52.6Q50 54.6 51.9 52.6', c.skinD, 1.4);
+    s += noseArt(lk.nose, c, baby || kid);
     // bouche
-    s += mouth(c, mood, dead, baby ? 58.4 : kid ? 58.6 : 58.6, baby ? 0.85 : 1);
+    s += mouth(c, mood, dead, baby ? 58.4 : kid ? 58.6 : 58.6, baby ? 0.85 : 1, baby || kid ? 'moyennes' : lk.lips, c.lipF, kid && age >= 6 && age <= 9 && lk.seed % 3 !== 0);
+    if (baby && age < 2 && mood < 67 && !dead) s += `<ellipse cx="50" cy="59.6" rx="5.6" ry="3.8" fill="#F58FB8"/><ellipse cx="48.4" cy="58.4" rx="2.2" ry="1.1" fill="#FFFFFF" fill-opacity=".5"/><circle cx="50" cy="59.6" r="1.25" fill="#FFFFFF"/><circle cx="50" cy="64.8" r="2.5" fill="none" stroke="#F58FB8" stroke-width="1.2"/>`;
     // yeux & sourcils
     s += ey.out;
     if (!baby) s += brows(lk.brows, c, 50, eyeY - 6.4 - (kid ? 0.4 : 0), mood, dead, kid ? 0.95 : 1);
     else s += S('M39 41.6Q42 40.4 45 41.2M55 41.2Q58 40.4 61 41.6', c.brow, 0.9, ' stroke-opacity=".45"');
+    if (!baby && !dead) {
+      if (lk.mark === 'grain') s += `<circle cx="57.6" cy="56.4" r="0.8" fill="${c.hairD}"/>`;
+      if (lk.mark === 'cicatrice') s += S('M58.6 36.8L62 44', k('#D59A8E'), 1.05) + S('M58.2 39.2L60.6 38.2M59.2 41.4L61.8 40.4M60 43.2L62.4 42.2', k('#D59A8E'), 0.6);
+      if (lk.mark === 'acne' && age >= 11 && age <= 26) s += `<path d="${dots([[40, 50.4], [59.4, 49.8], [37.8, 55.6], [62, 55], [45.2, 38], [56, 36.4], [50.6, 34.6], [41.6, 36.8], [47, 56.4]], 0.65)}" fill="${k('#D9776C')}" fill-opacity=".75"/>`;
+    }
     // cheveux avant
     s += H.front;
+    if (!has(['bebe', 'degarni', 'chauve', 'rase', 'crete'], hair) && H.top <= 21) s += S(`M40 ${f(H.top + 12.5)}Q50.5 ${f(H.top + 3.2)} 61.5 ${f(H.top + 11.5)}`, c.hairL, 1.3, ' stroke-opacity=".3"');
     // accessoires
     if (acc === 'boucles') s += accArt('boucles', c, H.top);
     if (glasses !== 'aucune') s += glassesArt(glasses, c);
@@ -902,16 +1084,19 @@ const AV_A = (() => {
     if (Math.random() < 0.05) hc = pick([8, 9, 6]);
     const curly = skin >= 5 ? 0.55 : skin >= 3 ? 0.28 : 0.15;
     let hair;
-    if (g === 'F') hair = Math.random() < curly ? wpick(['boucle', 'afro', 'tresses', 'chignon'], [4, 3, 3, 1]) : wpick(['long', 'milong', 'carre', 'queue', 'chignon', 'meche', 'court', 'rase'], [6, 5, 4, 3, 2, 1, 1, 0.4]);
-    else hair = Math.random() < curly ? wpick(['boucle', 'afro', 'rase', 'tresses'], [4, 2, 3, 1]) : wpick(['court', 'meche', 'rase', 'chauve', 'boucle', 'milong', 'crete', 'queue'], [7, 4, 3, 1, 1, 1, 0.4, 0.4]);
-    const beard = g === 'H' ? wpick(['aucune', 'barbe3j', 'barbe', 'bouc', 'moustache'], [10, 5, 4, 2, 1]) : 'aucune';
-    const acc = g === 'F' ? wpick(['aucun', 'boucles', 'bandeau', 'fleur', 'bonnet', 'casquette'], [8, 5, 1, 1, 1, 0.6]) : wpick(['aucun', 'casquette', 'bonnet', 'boucles'], [14, 2, 1.4, 0.6]);
-    const top = g === 'F' ? wpick(TOPS, [5, 2, 3, 1, 3, 3]) : wpick(TOPS, [5, 3, 3, 1.4, 0, 3]);
+    if (g === 'F') hair = Math.random() < curly ? wpick(['boucle', 'afro', 'tresses', 'chignon', 'locs', 'ondule'], [4, 3, 3, 1, 1.4, 1.5]) : wpick(['long', 'milong', 'carre', 'queue', 'chignon', 'meche', 'court', 'rase', 'ondule', 'frange', 'pixie'], [6, 5, 4, 3, 2, 1, 1, 0.4, 4.5, 2.6, 1.6]);
+    else hair = Math.random() < curly ? wpick(['boucle', 'afro', 'rase', 'tresses', 'locs', 'undercut'], [4, 2, 3, 1, 1.2, 1.2]) : wpick(['court', 'meche', 'rase', 'chauve', 'boucle', 'milong', 'crete', 'queue', 'undercut', 'manbun'], [7, 4, 3, 1, 1, 1, 0.4, 0.4, 3, 1.2]);
+    const beard = g === 'H' ? wpick(['aucune', 'barbe3j', 'barbe', 'bouc', 'moustache', 'barbelongue', 'collier', 'favoris', 'goatee'], [10, 5, 4, 2, 1, 0.8, 1, 0.7, 1.5]) : 'aucune';
+    const acc = g === 'F' ? wpick(['aucun', 'boucles', 'bandeau', 'fleur', 'bonnet', 'casquette', 'chapeau', 'bandana', 'voile', 'piercing'], [8, 5, 1, 1, 1, 0.6, 0.7, 1.1, 0.6, 1.2]) : wpick(['aucun', 'casquette', 'bonnet', 'boucles', 'chapeau', 'bandana', 'piercing'], [14, 2, 1.4, 0.6, 0.9, 0.7, 0.4]);
+    const top = g === 'F' ? wpick(TOPS, [5, 2, 3, 1, 3, 3, 2, 2, 1.6, 0.4]) : wpick(TOPS, [5, 3, 3, 1.4, 0, 3, 2.4, 2, 0.5, 0.5]);
     return {
       skin, hair, hc, eye: skin >= 4 ? wpick([0, 1, 5, 2], [8, 2, 3, 0.3]) : wpick([0, 1, 2, 3, 4, 5], [5, 3, 2, 3, 1.5, 1]),
       eyes: wpick(EYES, [3, 5, 2, 1.4]), brows: g === 'F' ? wpick(BROWS, [4, 3, 1.4, 2]) : wpick(BROWS, [5, 1, 3, 1]),
-      beard, glasses: wpick(GLASSES, [14, 2, 2, 0.6]), acc, top, topc: rnd(0, 9), bg: rnd(0, 7),
-      freckles: Math.random() < (skin <= 1 || hc === 7 ? 0.3 : 0.06)
+      beard, glasses: wpick(GLASSES, [14, 2, 2, 0.6, 1, g === 'F' ? 1.2 : 0.2, 1.2]), acc, top, topc: rnd(0, 9), bg: rnd(0, 7),
+      freckles: Math.random() < (skin <= 1 || hc === 7 ? 0.3 : 0.06),
+      face: pick(FACES), nose: pick(NOSES), lips: g === 'F' ? wpick(LIPS, [1, 3, 3]) : wpick(LIPS, [2, 4, 1.4]),
+      makeup: g === 'F' ? wpick(MAKEUPS, [9, 4, 2, 2, 1, 1]) : 'aucun',
+      mark: wpick(MARKS, [80, 10, 4, 6])
     };
   }
 
@@ -931,14 +1116,16 @@ const AV_A = (() => {
       skin, hair, hc, eye: Math.random() < 0.5 ? A.eye : B.eye,
       eyes: Math.random() < 0.5 ? A.eyes : B.eyes, brows: Math.random() < 0.5 ? A.brows : B.brows,
       beard: 'aucune', glasses: 'aucune', acc: 'aucun', top: g === 'F' ? pick(['tshirt', 'pull', 'robe', 'sweat']) : pick(['tshirt', 'pull', 'sweat', 'chemise']),
-      topc: rnd(0, 9), bg: rnd(0, 7), freckles: (A.freckles || B.freckles) ? Math.random() < 0.6 : Math.random() < 0.04
+      topc: rnd(0, 9), bg: rnd(0, 7), freckles: (A.freckles || B.freckles) ? Math.random() < 0.6 : Math.random() < 0.04,
+      face: Math.random() < 0.5 ? A.face : B.face, nose: Math.random() < 0.5 ? A.nose : B.nose, lips: Math.random() < 0.5 ? A.lips : B.lips,
+      makeup: 'aucun', mark: Math.random() < 0.9 ? 'aucune' : pick(['grain', 'grain', 'cicatrice'])
     };
   }
 
   return {
     render, random, inherit, normalize,
     SKINS, HAIR_COLORS, EYE_COLORS, TOP_COLORS, BG_COLORS,
-    HAIRS, EYES, BROWS, BEARDS, GLASSES, ACCS, TOPS, LABELS
+    HAIRS, EYES, BROWS, BEARDS, GLASSES, ACCS, TOPS, FACES, NOSES, LIPS, MAKEUPS, MARKS, LABELS
   };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = AV_A;
@@ -1472,10 +1659,14 @@ function schoolYear(L){
   }
   if(e.stage==='done'&&L.debt>0&&e.fund==='pret'&&!L.flags.loanStart){L.flags.loanStart=1;say(L,`Tu dois rembourser ${fmt(L.debt)} de prêt étudiant.`)}
 }
+/* Matériel : un instrument, un kimono, un chevalet… accélère l’apprentissage de la compétence liée tant qu’on le possède. */
+const GEAR=[[/piano à queue/i,'piano',3],[/flûte|clavier|piano/i,'piano',2],[/ukul|guitare/i,'guitare',2],[/violon/i,'violon',2],[/batterie/i,'batterie',2],[/micro de karaok/i,'chant',2],[/ballon de foot/i,'football',2],[/raquette/i,'tennis',2],[/kimono/i,'judo',2],[/feutres|peinture|chevalet/i,'dessin',2],[/carnet d.écriture/i,'ecriture',2],[/kit de magie/i,'theatre',1]];
+const gearSkill=n=>{const g=GEAR.find(x=>x[0].test(n||''));return g?[g[1],g[2]]:null};
+const gearBonus=(L,k)=>L.assets.reduce((m,a)=>{const g=gearSkill(a.name);return g&&g[0]===k?Math.max(m,g[1]):m},0);
 function lessonsYear(L){
   for(const k of L.lessons){
     const Ls=LESSONS.find(x=>x.k===k);if(!Ls)continue;
-    const gain=R(4,12)*(L.talent===Ls.t?1.7:1)*(.6+L.hid.discipline/125);
+    const gain=R(4,12)*(L.talent===Ls.t?1.7:1)*(.6+L.hid.discipline/125)+gearBonus(L,k)*1.5;
     const before=L.skills[k]||0;L.skills[k]=clamp(before+gain);
     if(L.age>=18)spend(L,600);
     if(Ls.belt){const b0=Math.min(6,Math.floor(before/15)),b1=Math.min(6,Math.floor(L.skills[k]/15));if(b1>b0){say(L,`🥋 ${Ls.n} : tu obtiens la ceinture ${BELTS[b1]}.`);if(b1===6){track(L,'blackBelt');}}}
@@ -6681,8 +6872,8 @@ function concert(L,V,picks){
 /* ============================ MUSICIEN : panneaux ============================ */
 function certLine(a){return a.cert?` · ${CERTN[a.cert]}`:''}
 function pMusPractice(){
-  const L=cur();const rows=LESSONS.filter(l=>l.t==='musique').map(Ls=>act(L,{ic:'🎸',t:`${Ls.n} · ${lim(Math.round(L.skills[Ls.k]||0),0,100)} %`,s:'Une longue séance de travail',min:Ls.min,key:'mu_p_'+Ls.k,fn:L=>{
-    const g=Math.max(2,R(3,8)+(L.talent==='musique'?2:0)+Math.round((L.hid.discipline-50)/20));L.skills[Ls.k]=clamp((L.skills[Ls.k]||0)+g);chg(L,{happy:1});
+  const L=cur();const rows=LESSONS.filter(l=>l.t==='musique').map(Ls=>act(L,{ic:'🎸',t:`${Ls.n} · ${lim(Math.round(L.skills[Ls.k]||0),0,100)} %`,s:gearBonus(L,Ls.k)?'Ton instrument t’aide à progresser plus vite':'Une longue séance de travail. Un instrument à toi accélère les progrès',min:Ls.min,key:'mu_p_'+Ls.k,fn:L=>{
+    const g=Math.max(2,R(3,8)+(L.talent==='musique'?2:0)+Math.round((L.hid.discipline-50)/20)+gearBonus(L,Ls.k));L.skills[Ls.k]=clamp((L.skills[Ls.k]||0)+g);chg(L,{happy:1});
     return out(L,pick([`Tu travailles ${Ls.n.toLowerCase()} jusqu’à ce que les voisins tapent au plafond.`,`Séance de ${Ls.n.toLowerCase()} : un passage difficile cède enfin.`,`Tu enchaînes les gammes et les ${Ls.n.toLowerCase()}, métronome à fond.`])+` (+${g})`)}}));
   const m=ms(L);
   rows.push(act(L,{ic:'🚇',t:'Jouer dans la rue ou le métro',s:'Quelques pièces, un peu de notoriété',key:'mu_busk',fn:L=>{
@@ -12075,11 +12266,31 @@ function gBurglary(L,C){
 let MQ=[],curM=null,inChoice=false;
 const busy=()=>!!curM||MQ.length>0;
 function modal(m){if(inChoice)MQ.unshift(m);else MQ.push(m);if(!curM&&!inChoice)nextModal()}
+/* Visage de la personne dont parle un évènement (famille, conjoint, patron, amis, inconnus). */
+const FACE_RULES=[[/\b(ta mère|ta maman|maman)\b/i,L=>{const p=parents(L);return p.find(x=>x.gender==='F')||p[0]}],[/\b(ton père|ton papa|papa)\b/i,L=>{const p=parents(L);return p.find(x=>x.gender==='H')||p[0]}],
+  [/\b(grand-mère|mamie|mémé|grand-père|papi|papy|grands-parents)\b/i,(L,t)=>{const g=L.family.filter(x=>x.type==='grand'&&x.alive);return g.find(x=>x.gender===(/grand-père|papi|papy/i.test(t)?'H':'F'))||g[0]}],
+  [/\b(ton frère|ta sœur|ta soeur|petit frère|petite sœur|grand frère|grande sœur)\b/i,(L,t)=>{const g=L.family.filter(x=>x.type==='sibling'&&x.alive);return g.find(x=>x.gender===(/frère/i.test(t)?'H':'F'))||g[0]}],
+  [/\b(ta fille|ton fils|ton enfant|tes enfants|ton bébé|ta petite fille|ton petit-fils)\b/i,L=>{const k=L.family.filter(x=>(x.type==='child'||x.type==='grandkid')&&x.alive);return k[Math.floor(Math.random()*k.length)]}],
+  [/\b(ton conjoint|ta conjointe|ton mari|ta femme|ton épouse|ton partenaire|ta partenaire|ta moitié|ton amoureux|ton amoureuse|ton petit ami|ta petite amie|ton fiancé|ta fiancée)\b/i,L=>L.partner?partnerOf(L):null],
+  [/\b(ton patron|ta patronne|ton chef|ta cheffe|ton supérieur|ta supérieure|ton employeur)\b/i,L=>bossOf(L)],
+  [/\b(ton ami|ton amie|ton meilleur ami|ta meilleure amie|ton pote|ton copain|ta copine|tes amis|un ami|une amie|un copain)\b/i,L=>{const f=friends(L);return f[Math.floor(Math.random()*f.length)]}]];
+const STRANGER_RE=/\b(ton voisin|ta voisine|un inconnu|une inconnue|un homme|une femme|un type|une dame|un vieil homme|une vieille dame|un collègue|une collègue|ton collègue|ta collègue|ton professeur|ta professeure|ton prof|ta prof|un client|une cliente|un vendeur|une vendeuse|un policier|une policière|un médecin|une médecin|un inconnu)\b/i;
+function modalFace(m){
+  if(!G||!G.players)return '';const L=cur();if(!L)return '';
+  const t=String(m.text||String(m.html||'').replace(/<[^>]+>/g,' ')||'');
+  for(const [re,fn] of FACE_RULES){if(re.test(t)){const p=fn(L,t);if(p&&p.look)return avatar(p,{happy:60})}}
+  const mm=t.match(STRANGER_RE);
+  if(mm){const g=/(voisine|inconnue|femme|dame|collègue|professeure|prof\b|cliente|vendeuse|policière|médecin)/i.test(mm[0])&&!/ton collègue|un collègue|ton prof\b|ton professeur|un homme|un type|un vieil homme|un inconnu|ton voisin/i.test(mm[0])?'F':'H';
+    const age=/vieil|vieille/i.test(mm[0])?72:Math.max(20,Math.min(60,L.age+Math.floor(Math.random()*17)-8));
+    return avatar({look:AVATAR_R.random(g),gender:g,age,alive:true,rel:60},{happy:60})}
+  return '';
+}
 function nextModal(){
   curM=MQ.shift()||null;const el=$('#modal');
   if(!curM){el.hidden=true;render();return}
   $('#mbox').style.setProperty('--pc',`var(--p${(curM.pc!=null?curM.pc:G?G.turn:0)+1})`);
-  $('#micon').innerHTML=curM.icon?(ico(curM.icon)||esc(curM.icon)):'';$('#micon').hidden=!curM.icon;
+  {const mi=$('#micon');let face='';try{face=curM.av!==undefined?curM.av:modalFace(curM)}catch(e){console.error(e)}
+   mi.classList.toggle('av',!!face);mi.innerHTML=face||(curM.icon?(ico(curM.icon)||esc(curM.icon)):'');mi.hidden=!(face||curM.icon)}
   $('#mtitle').textContent=curM.title||'';
   const tx=$('#mtext');tx.onclick=null;if(curM.html)tx.innerHTML=curM.html;else tx.textContent=curM.text||'';
   const ch=curM.choices||(curM.mount?[]:[{t:'Continuer'}]);
@@ -12123,8 +12334,12 @@ function statLine(n,v){return `<div class="stat"><b>${esc(n)}</b><span class="n"
 function card(k,v,s,extra){return `<div class="card">${k?`<div class="ck">${esc(k)}</div>`:''}${v?`<div class="cv">${esc(v)}</div>`:''}${s?`<div class="cs">${esc(s)}</div>`:''}${extra||''}</div>`}
 const EMO_RE=/^((?:\p{Extended_Pictographic}|\p{Regional_Indicator})(?:\uFE0F|\u20E3|\p{Emoji_Modifier}|\u200D(?:\p{Extended_Pictographic}))*)\s*/u;
 function hueOf(k){let h=0;for(const ch of String(k))h=(h*31+ch.codePointAt(0))>>>0;return 1+h%7}
-const ico=k=>(k&&typeof iconSvg==='function'&&iconSvg(k))||null;
-function icTile(ic){if(!ic)return '';const s=ico(ic);return s?`<span class="ic h${hueOf(ic)}">${s}</span>`:`<span class="ic">${ic}</span>`}
+/* Style des icônes : emoji en couleur (par défaut) ou icônes au trait. */
+const ICMODE={mode:(()=>{try{return localStorage.getItem('dv.icons')==='line'?'line':'emoji'}catch(e){return 'emoji'}})()};
+try{document.documentElement.dataset.icons=ICMODE.mode}catch(e){}
+const ico=k=>(ICMODE.mode==='emoji'?null:(k&&typeof iconSvg==='function'&&iconSvg(k)))||null;
+function toggleIcons(){ICMODE.mode=ICMODE.mode==='emoji'?'line':'emoji';try{localStorage.setItem('dv.icons',ICMODE.mode)}catch(e){}document.documentElement.dataset.icons=ICMODE.mode;render()}
+function icTile(ic){if(!ic)return '';const s=ico(ic);return s?`<span class="ic h${hueOf(ic)}">${s}</span>`:`<span class="ic e h${hueOf(ic)}">${ic}</span>`}
 function emoSplit(t){const m=String(t).match(EMO_RE);return m?[m[1],String(t).slice(m[0].length)]:[null,String(t)]}
 function emoInline(t){const [e,r]=emoSplit(t);if(!e)return esc(r);const s=ico(e);return (s||esc(e))+' '+esc(r)}
 function row(o){const ic=o.av?`<span class="ic av">${o.av}</span>`:icTile(o.ic);return `<button type="button" class="row${o.danger?' danger':''}" ${o.dis?'disabled':''} data-a="${o.dis?-1:A(o.a)}">${ic}<span class="rt"><b>${esc(o.t)}</b>${o.s?`<small>${esc(o.s)}</small>`:''}</span>${o.right==='›'?'<span class="rr chev">›</span>':o.right?`<span class="rr">${o.right}</span>`:''}</button>`}
@@ -12155,10 +12370,17 @@ function avatar(p,o={}){
   return `<span class="avw${p.alive===false?' dead':''}">${svg}</span>`;
 }
 /* ---------- Éditeur d’apparence ---------- */
-const LOOK_OPTS={hair:[['court','Court'],['rase','Rasé'],['meche','Mèche'],['boucle','Bouclé'],['afro','Afro'],['milong','Mi-long'],['long','Long'],['carre','Carré'],['queue','Queue'],['chignon','Chignon'],['tresses','Tresses'],['crete','Crête'],['chauve','Chauve']],
+const LOOK_OPTS={hair:[['court','Court'],['rase','Rasé'],['meche','Mèche'],['undercut','Undercut'],['pixie','Pixie'],['boucle','Bouclé'],['afro','Afro'],['milong','Mi-long'],['ondule','Ondulé'],['long','Long'],['frange','Frange'],['carre','Carré'],['queue','Queue'],['chignon','Chignon'],['manbun','Chignon homme'],['tresses','Tresses'],['locs','Locks'],['crete','Crête'],['degarni','Dégarni'],['chauve','Chauve']],
+  face:[['ovale','Ovale'],['rond','Rond'],['carre','Carré'],['long','Allongé'],['coeur','En cœur']],
+  nose:[['droit','Droit'],['fin','Fin'],['large','Large'],['retrousse','Retroussé'],['aquilin','Aquilin']],
+  lips:[['fines','Fines'],['moyennes','Moyennes'],['pleines','Pleines']],
+  makeup:[['aucun','Aucun'],['naturel','Naturel'],['rouge','Rouge à lèvres'],['rose','Rose'],['prune','Prune'],['smoky','Smoky']],
+  mark:[['aucune','Aucune'],['grain','Grain de beauté'],['cicatrice','Cicatrice'],['acne','Acné']],
   eyes:[['ronds','Ronds'],['amande','En amande'],['rieurs','Rieurs'],['miclos','Mi-clos']],brows:[['naturels','Naturels'],['arques','Arqués'],['epais','Épais'],['fins','Fins']],
-  beard:[['aucune','Aucune'],['barbe3j','3 jours'],['barbe','Barbe'],['bouc','Bouc'],['moustache','Moustache']],glasses:[['aucune','Aucunes'],['rondes','Rondes'],['carrees','Carrées'],['solaires','Solaires']],
-  acc:[['aucun','Aucun'],['boucles','Boucles'],['casquette','Casquette'],['bonnet','Bonnet'],['bandeau','Bandeau'],['fleur','Fleur']],top:[['tshirt','T-shirt'],['sweat','Sweat'],['chemise','Chemise'],['costume','Costume'],['robe','Robe'],['pull','Pull']]};
+  beard:[['aucune','Aucune'],['barbe3j','3 jours'],['barbe','Barbe'],['barbelongue','Barbe longue'],['bouc','Bouc'],['goatee','Bouc et moustache'],['moustache','Moustache'],['collier','Collier'],['favoris','Favoris']],
+  glasses:[['aucune','Aucunes'],['rondes','Rondes'],['carrees','Carrées'],['demi','Demi-cerclées'],['aviateur','Aviateur'],['chat','Œil de chat'],['solaires','Solaires']],
+  acc:[['aucun','Aucun'],['boucles','Boucles'],['piercing','Piercing'],['casquette','Casquette'],['bonnet','Bonnet'],['chapeau','Chapeau'],['bandana','Bandana'],['voile','Voile'],['bandeau','Bandeau'],['fleur','Fleur']],
+  top:[['tshirt','T-shirt'],['polo','Polo'],['sweat','Sweat'],['chemise','Chemise'],['veste','Veste'],['costume','Costume'],['robe','Robe'],['debardeur','Débardeur'],['pull','Pull'],['blouse','Blouse']]};
 function normLook(l,g){
   const base=AVATAR_R.random(g);l=l||{};const out=Object.assign({},base);
   if(typeof l.hair==='number'||l.shirt!=null){out.skin=Math.min(7,Math.round((l.skin||0)*7/5));out.hc=[0,1,2,4,5,7][l.hc]??base.hc;out.eye=[0,3,2,1][l.eye]??base.eye;out.topc=(l.shirt||0)%10;return out}
@@ -12173,8 +12395,9 @@ function ledInner(id){
   const opts=(k,mini)=>`<div class="${mini?'opts':'chips'}">${LOOK_OPTS[k].map(([v,n])=>`<button type="button" class="${look[k]===v?'on':''}" data-lk="${k}|${v}|s">${mini?`<span class="mav">${A.render(Object.assign({},look,{[k]:v}),{age:ma,gender:ctx.gender,mood:70})}</span>`:''}${esc(n)}</button>`).join('')}</div>`;
   const sec=(t,b)=>`<div class="led-sec"><h4>${t}</h4>${b}</div>`;
   return `<div class="led-top"><div class="led-prev">${big}</div><div class="led-acts"><button type="button" class="btn" data-led-rand="${id}">Style aléatoire</button><button type="button" class="btn" data-lk="freckles|1|b">${look.freckles?'Retirer':'Ajouter'} les taches de rousseur</button></div></div>`
-    +sec('Peau',sw('skin',A.SKINS))+sec('Coiffure',opts('hair',1))+sec('Couleur des cheveux',sw('hc',A.HAIR_COLORS))
+    +sec('Peau',sw('skin',A.SKINS))+sec('Forme du visage',opts('face',1))+sec('Coiffure',opts('hair',1))+sec('Couleur des cheveux',sw('hc',A.HAIR_COLORS))
     +sec('Yeux',sw('eye',A.EYE_COLORS)+'<div style="height:10px"></div>'+opts('eyes'))+sec('Sourcils',opts('brows'))
+    +sec('Nez',opts('nose'))+sec('Lèvres',opts('lips'))+sec('Maquillage',opts('makeup'))+sec('Particularités',opts('mark'))
     +(ma>=16?sec('Pilosité',opts('beard',1)):'')+sec('Lunettes',opts('glasses',1))+sec('Accessoire',opts('acc',1))
     +sec('Tenue',opts('top',1)+'<div style="height:10px"></div>'+sw('topc',A.TOP_COLORS))+sec('Fond du portrait',sw('bg',A.BG_COLORS));
 }
@@ -12202,7 +12425,7 @@ function renderMain(){
   const app=$('#app'),su=$('#setup');
   if(!G){app.hidden=true;if(su.hidden){buildSetup();su.hidden=false}return}
   su.hidden=true;app.hidden=false;
-  const L=cur();app.style.setProperty('--pc',`var(--p${G.turn+1})`);
+  const L=cur();const rs=document.documentElement.style;rs.setProperty('--pc',`var(--p${G.turn+1})`);rs.setProperty('--pc-2',`var(--p${G.turn+1}-2)`);
   $('#players').innerHTML=G.mode===2?G.players.map((p,i)=>`<span class="chip${i===G.turn?' on':''}" style="--c:var(--p${i+1})"><span class="cav">${avatar(p,{happy:p.st.happy})}</span><span class="ctx"><b>${esc(p.first)}</b><small>${fmtk(p.money)}</small></span></span>`).join(''):'';
   const pt=L.partner?partnerOf(L):null;
   $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small>${fmt(L.money)}${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
@@ -12210,7 +12433,7 @@ function renderMain(){
   log.innerHTML=L.log.map(b=>`<div class="yr"><div class="ya">${b.age}<small>${b.age>1?'ans':'an'}</small></div><div class="yl">${b.lines.map(logLine).join('')}</div></div>`).join('')+(L.alive?'':obitHtml(L));
   if(L.alive)log.scrollTop=log.scrollHeight;else{const ob=log.querySelector('.obit');if(ob)log.scrollTop=ob.offsetTop-30}
   $('#stats').innerHTML=[['😊','Bonheur',L.st.happy],['❤️','Santé',L.st.health],['🧠','Intelligence',L.st.smarts],['✨','Apparence',L.st.looks]].map(([i,n,v])=>`<div class="stat m"><span class="si">${ico(i)||i}</span><b>${n}</b><span class="n">${v} %</span>${bar(v)}</div>`).join('');
-  $('#tWorkL').textContent=inSchool(L)?'École':'Métier';
+  $('#tWorkL').textContent=inSchool(L)?'École':'Métier';{const te=$('#tWork .te');if(te)te.textContent=inSchool(L)?'🎓':'💼'}
   document.querySelectorAll('.tabs .tab').forEach(b=>b.disabled=!L.alive);
   $('#ageBtn').disabled=!L.alive||busy();
 }
@@ -12339,7 +12562,7 @@ function pAsset(id){return ()=>{
     H.push(act(L,{ic:'🔧',t:'Rénover',s:fmt(a.value*.05),cost:Math.round(a.value*.05),key:'ren_'+id,fn:L=>{a.cond=100;a.value=Math.round(a.value*1.06);return out(L,'Travaux terminés. Le bien prend de la valeur.')}}));
   }
   if(a.kind==='car')H.push(act(L,{ic:'🔧',t:'Passer au garage',s:'600 €',cost:600,key:'gar_'+id,fn:L=>{a.cond=clamp((a.cond||50)+35);return out(L,'Vidange, freins et pneus neufs.')}}));
-  if(a.kind==='instrument')H.push(act(L,{ic:'🎶',t:'En jouer',key:'play_'+id,fn:L=>{const k=a.name.includes('Piano')?'piano':a.name.includes('Batterie')?'batterie':a.name.includes('Violon')?'violon':'guitare';L.skills[k]=clamp((L.skills[k]||0)+R(2,6));chg(L,{happy:3});return out(L,'Tu joues pendant des heures.')}}));
+  if(a.kind==='instrument')H.push(act(L,{ic:'🎶',t:'En jouer',key:'play_'+id,fn:L=>{const gs=gearSkill(a.name);const k=gs?gs[0]:a.name.includes('Piano')?'piano':a.name.includes('Batterie')?'batterie':a.name.includes('Violon')?'violon':'guitare';L.skills[k]=clamp((L.skills[k]||0)+R(2,6)+(gs?gs[1]:0));chg(L,{happy:3});return out(L,'Tu joues pendant des heures.')}}));
   H.push(row({ic:'💶',t:'Vendre',s:`Tu toucherais ${fmt(net)}`,danger:1,a:()=>pushPanel(confirmP(`Vendre : ${a.name}`,`Tu toucheras ${fmt(net)}.`,()=>{L.assets=L.assets.filter(x=>x.id!==id);if(L.home===id)L.home=null;L.money+=net;STACK.pop();return out(L,`Tu vends ${a.name.toLowerCase()} pour ${fmt(a.value)}.`)},'Vendre'))}));
   return {title:a.name,html:card(a.kind==='house'?'Immobilier':'Bien',fmt(a.value),`${a.loan?`Crédit restant : ${fmt(a.loan)} sur ${An(a.left)} · `:''}${a.cond!=null?`État : ${a.cond} %`:''}`,'')+group('',H)};
 }}
@@ -12377,7 +12600,7 @@ function shopGive(L,it,price,how){
   const [n,p0,min,ic,fx,kind]=it;const f=Object.assign({},fx);
   const sk=f.skill;delete f.skill;const pop=f.pop;delete f.pop;
   L.assets.push({id:nid(),kind:kind||'goods',name:n,value:Math.round(shopPrice(L,p0)*.5)});
-  chg(L,f);if(sk)L.skills[sk[0]]=clamp((L.skills[sk[0]]||0)+sk[1]);if(pop&&L.edu)L.edu.pop=clamp(L.edu.pop+pop);
+  chg(L,f);if(sk)L.skills[sk[0]]=clamp((L.skills[sk[0]]||0)+sk[1]);else{const gs=gearSkill(n);if(gs)L.skills[gs[0]]=clamp((L.skills[gs[0]]||0)+gs[1]+1)}if(pop&&L.edu)L.edu.pop=clamp(L.edu.pop+pop);
   if(price>0)spend(L,price);
   return out(L,`${ic} ${how} : ${n.toLowerCase()}.`);
 }
@@ -12408,7 +12631,7 @@ function shopBuy(L,it){
   modal({title:n,icon:ic,text:`Prix : ${fmt(price)}. Tu as ${fmt(L.money)} sur ton compte.${only==='parents'&&!ask?' Il faut l’accord de tes parents.':''}`,choices:ch});
 }
 function pShop(){const L=cur();const ts=SHOP.map(([id,ic,t,sub,list])=>ntile(ic,t,sub,shopCat(id)));return {title:'Boutique',html:note(L.age<18?'Achète avec ton argent de poche ou demande à tes parents : plus ils t’aiment, plus ils disent oui.':'Tes petits plaisirs du quotidien.')+tiles(ts)}}
-const shopCat=id=>()=>{const L=cur();const cat=SHOP.find(c=>c[0]===id);const rows=cat[4].map(it=>{const [n,p0,min,ic,fx,kind,only]=it;const owned=L.assets.some(a=>a.name===n);const price=shopPrice(L,p0);return act(L,{ic,t:n,s:`${fmt(price)}${only==='parents'?' · accord des parents':''}`,min,dis:owned?'Tu l’as déjà':L.prison?'En prison':'',fn:L=>{shopBuy(L,it);return ''}})});return {title:cat[2],html:group('',rows)}};
+const shopCat=id=>()=>{const L=cur();const cat=SHOP.find(c=>c[0]===id);const rows=cat[4].map(it=>{const [n,p0,min,ic,fx,kind,only]=it;const owned=L.assets.some(a=>a.name===n);const price=shopPrice(L,p0);return act(L,{ic,t:n,s:`${fmt(price)}${gearSkill(n)?` · aide en ${(LESSONS.find(l=>l.k===gearSkill(n)[0])||{n:''}).n.toLowerCase()}`:''}${only==='parents'?' · accord des parents':''}`,min,dis:owned?'Tu l’as déjà':L.prison?'En prison':'',fn:L=>{shopBuy(L,it);return ''}})});return {title:cat[2],html:group('',rows)}};
 
 function pCollect(){const L=cur();if(!L.collectMk||L.collectMk.age!==L.age)L.collectMk={age:L.age,px:COLLECTIBLES.map(([n,p,v])=>Math.max(5,Math.round(p*Math.exp(gauss()*v*.6))))};return {title:'Objets de collection',html:note('La cote de chaque objet évolue chaque année. Achète bas, revends haut.')+group('Brocante, salles de vente et vide-greniers',COLLECTIBLES.map(([n,p,v],i)=>{const px=L.collectMk.px[i];return act(L,{ic:'🧸',t:n,s:`${fmt(px)} · cote ${px>=p?'en hausse':'en baisse'}`,cost:px,min:12,fn:L=>{L.assets.push({id:nid(),kind:'collectible',name:n,value:px,vol:v});chg(L,{happy:3});return out(L,`Tu ajoutes à ta collection : ${n.toLowerCase()}.`)}})}))}}
 
@@ -12578,7 +12801,21 @@ function pAct(){
   const L=cur();if(L.prison)return pPrison();
   const items=actItems(L);
   const ts=ACT_CATS.map(([id,ic,t])=>{const its=items.filter(i=>i[0]===id);const av=its.filter(i=>(i[5]||0)<=L.age);if(!av.length)return '';const names=av.map(i=>i[2]);return tile({ic,t,s:names.slice(0,3).join(', ')+(names.length>3?'…':''),a:()=>pushPanel(actCatPanel(id))})});
-  return {title:'Activités',html:tiles(ts)};
+  const sug=actPick(L,items).map(([i,why])=>tile({ic:i[1],t:i[2],s:why,a:()=>pushPanel(i[4])}));
+  return {title:'Activités',html:(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
+}
+/* Suggestions du moment, d’après la situation du personnage. */
+function actPick(L,items){
+  const by=n=>items.find(i=>i[2]===n&&i[4]&&(i[5]||0)<=L.age);const out=[];
+  const add=(n,ok,why)=>{const i=ok&&by(n);if(i&&!out.some(o=>o[0]===i))out.push([i,why])};
+  add('Santé',L.ill.length>0,'Tu ne te sens pas bien');
+  add('Amour',!L.partner&&L.age>=14&&L.age<85,'Tu es célibataire');
+  add('Leçons et loisirs',L.age>=4&&L.age<22,'Développe tes talents');
+  add('Sorties',L.st.happy<55&&L.age>=10,'Un petit coup de blues ?');
+  add('Corps et esprit',L.st.health<60,'Reprends des forces');
+  add('Réseaux sociaux',L.age>=13&&!L.social.verified,'Gagne en notoriété');
+  add('Vacances',L.age>=18&&L.money>4000,'Tu as de quoi te faire plaisir');
+  return out.slice(0,3);
 }
 function pLove(){const L=cur();return {title:'Amour',html:group('',[act(L,{ic:'💘',t:'Appli de rencontre',s:'Fais défiler les profils',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':L.partner?'Tu es en couple (tu peux quand même regarder…)':'',fn:L=>{findLove(L)}}),act(L,{ic:'🍸',t:'Speed dating',s:'30 €',cost:30,min:18,key:'speed',fn:L=>{findLove(L);return ''}}),act(L,{ic:'💋',t:'Tenter de séduire un inconnu au bar',min:18,key:'bar_love',fn:L=>{findLove(L);return ''}})])}}
 function pMind(){
@@ -12735,7 +12972,7 @@ function pMenu(){
   const nR=Object.values(G.ribbons).filter(Boolean).length,nC=Object.keys(G.challenges).length;
   return {title:'Menu',html:group('Outils',modCall('menuRows',cur()).flat())+group('Collection',[nav('🎀','Rubans',`${nR} sur ${RIBBONS.length}`,pRibbons),nav('🏅','Défis',`${nC} sur ${CHALLENGES.length}`,pChallenges),nav('🪦','Cimetière familial',`${G.cemetery.length} vie${G.cemetery.length>1?'s':''} terminée${G.cemetery.length>1?'s':''}`,pCem)])
     +group('Personnage',[nav('🪪','Fiche personnage','Toutes tes statistiques',pSheet),nav('🌳','Arbre généalogique','Ta famille',pTree),nav('⏳','Machine à remonter le temps','Reviens en arrière',pTime)])
-    +group('Partie',[G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
+    +group('Partie',[row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
       row({ic:'🗑️',t:'Nouvelle partie',s:'Efface la partie en cours',danger:1,a:()=>pushPanel(confirmP('Nouvelle partie ?','La partie en cours, les rubans et les défis seront effacés de ce navigateur.',()=>{G=null;try{localStorage.removeItem(KEY)}catch(e){}closeSheet();return ''},'Tout effacer'))})])
     +`<p class="cs" style="text-align:center;opacity:.6;margin:14px 0 0">Double Vie · version ${window.DV_VERSION||'locale'}</p>`+`<h3 class="sec">Comment jouer</h3><div class="card"><div class="cs">Le bouton <b>Âge</b> fait passer une année. Entre deux années, explore les onglets : études et métier, biens, relations, activités. Touche ton avatar pour voir ta fiche complète. À deux, vous jouez chacun votre tour et vous pouvez vous déclarer votre flamme, vous marier et avoir des enfants ensemble. Tout est débloqué : mode Dieu, machine à remonter le temps, carrières spéciales, royauté, zoo, Bourse, agent secret, mouvement spirituel, marché noir. La partie est sauvegardée automatiquement dans ce navigateur.</div></div>`};
 }
