@@ -102,13 +102,14 @@
 
 ### NIVEAU 3 — Chantiers moyens (M) : sensation de jeu et confort
 
-- [ ] **11. « Juice »** : compteur d'argent animé, variations de jauges flottantes (+3 ❤️), confettis (anniversaire, diplôme, naissance), vibrations, sons discrets avec interrupteur.
+- [x] **11. « Juice »** *(fait le 21/10 : compteur d'argent animé, variations de jauges flottantes, confettis sur diplôme/mariage/naissance, vibrations, sons synthétisés désactivés par défaut, réglages dans le Menu)*. Reste : gâteau 🎂 d'anniversaire et clignement des yeux (niveau 5).
 - [ ] **12. Événements illustrés** : cartes d'événement avec décor et avatars des personnes concernées, transitions entre les années.
 - [ ] **13. Prise en main en 60 secondes** : tutoriel court, aides contextuelles, popup « Quoi de neuf », rappel des modules disponibles.
 - [ ] **14. Fil de vie 2.0** : chronologie, filtre « moments importants », « vieillir jusqu'au prochain événement », **album des portraits par âge** (l'avatar qui vieillit).
 - [ ] **15. Bilan de fin de vie + carte à partager** (image via le partage du téléphone) + « photo de famille ».
 - [ ] **16. Personnalisation++** : tenues par métier et par époque, évolution du style avec l'âge, thèmes de couleurs de l'appli, cadres de portrait.
-- [ ] **17. Infrastructure** : dépôt GitHub pour la source, tests automatiques à chaque modification, publication automatique, découpage du paquet pour un démarrage plus rapide, stats d'équilibrage en local.
+- [x] **17a. Infrastructure de base** *(fait le 21/10 : dépôt avec `src/`, `tools/`, `tests/`, batterie `node tests/run_all.js`, publication par `python3 tools/build_pwa.py --publish`, pilote automatique de nuit)*.
+- [ ] **17b. Infrastructure, suite** : exécution automatique des tests sur GitHub à chaque envoi (GitHub Actions, nécessite l'autorisation « workflow » du jeton), découpage du paquet pour un démarrage plus rapide, stats d'équilibrage en local.
 - [ ] **18. Accessibilité et réglages** : taille du texte, daltonisme, réduction des animations, bascule clair/sombre manuelle, version anglaise.
 - [ ] **19. Sauvegarde 2.0** : transfert d'un téléphone à l'autre (code QR ou fichier), sauvegarde automatique téléchargeable, restauration guidée.
 
@@ -131,7 +132,7 @@
 
 ## 5. Ordre de réalisation proposé
 
-1. **Vague 1 — Fondations et plaisir immédiat** : #17 infrastructure (dépôt, tests, publication automatique) → #11 juice → #13 prise en main → #15 bilan partageable → petits chantiers #20, #21, #22, #23.
+1. **Vague 1 — Fondations et plaisir immédiat** : ~~#17a infrastructure~~ → ~~#11 juice~~ → #13 prise en main → #15 bilan partageable → petits chantiers #20, #21, #22, #23 (puis #17b).
 2. **Vague 2 — Ce qui nous distingue** : #1 Duo 2.0 (écran de passage, moments à deux, vie secrète, jokers, bilan comparatif) → Rêves (#2, partie objectifs).
 3. **Vague 3 — Profondeur et contenu** : #2 (mémoire, personnages récurrents) → #3 contenu ×3 → #4 relations → #5 carrières → #6 scènes interactives.
 4. **Vague 4 — Durée de vie** : #7 rejouabilité → #8 ères → #9 santé → #10 foyer → #12, #14, #16, #18, #19.

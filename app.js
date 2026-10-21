@@ -12259,6 +12259,111 @@ function gBurglary(L,C){
 
 ;
 
+/* ===== fx.js ===== */
+/* Deux Vies — effets de jeu : compteur d’argent, variations de jauges, confettis, vibrations et sons discrets.
+   Tout est optionnel (Menu → Sons / Vibrations) et respecte « réduire les animations » du téléphone. */
+const FX=(()=>{
+  const st={haptic:true,sound:false};
+  try{const v=JSON.parse(localStorage.getItem('dv.fx')||'{}');if(typeof v.haptic==='boolean')st.haptic=v.haptic;if(typeof v.sound==='boolean')st.sound=v.sound}catch(e){}
+  const persist=()=>{try{localStorage.setItem('dv.fx',JSON.stringify(st))}catch(e){}};
+  const calm=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}};
+  const last={cash:{},st:{},log:{}};
+  let ac=null;
+
+  /* ---------- Sons (synthétisés, aucun fichier) ---------- */
+  function tone(f,d,type,vol,when){
+    if(!st.sound)return;
+    try{
+      ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+      const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+(when||0);
+      o.type=type;o.frequency.value=f;o.connect(g);g.connect(ac.destination);
+      g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);
+    }catch(e){}
+  }
+  const SOUNDS={
+    tap:()=>tone(520,.07,'triangle',.05),
+    age:()=>tone(660,.07,'sine',.05),
+    coin:()=>{tone(880,.08,'square',.03);tone(1318,.14,'square',.03,.08)},
+    bad:()=>{tone(220,.2,'sawtooth',.04);tone(165,.26,'sawtooth',.04,.14)},
+    win:()=>[523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.05,i*.09))
+  };
+  const play=n=>{const f=SOUNDS[n];if(f)f()};
+  const buzz=p=>{if(st.haptic&&navigator.vibrate){try{navigator.vibrate(p)}catch(e){}}};
+
+  /* ---------- Calque d’effets ---------- */
+  function layer(){let l=document.getElementById('fxl');if(!l){l=document.createElement('div');l.id='fxl';l.className='fxl';l.setAttribute('aria-hidden','true');document.body.appendChild(l)}return l}
+
+  function confetti(n){
+    if(calm())return;n=n||80;const L=layer(),W=innerWidth,H=innerHeight,cols=['#FF4F93','#2F6BFF','#FFC63A','#1FB254','#8B5CF6','#FF9A1F'];
+    for(let i=0;i<n;i++){
+      const p=document.createElement('i');p.className='cf';const w=6+Math.random()*6,h=8+Math.random()*8;
+      p.style.cssText=`left:${Math.random()*W}px;width:${w}px;height:${h}px;background:${cols[i%cols.length]};border-radius:${Math.random()<.3?'50%':'2px'}`;
+      L.appendChild(p);if(!p.animate){p.remove();continue}
+      const dx=(Math.random()-.5)*160,dy=H*(.55+Math.random()*.45),rot=(Math.random()-.5)*900;
+      const a=p.animate([{transform:'translate(0,-20px) rotate(0deg)',opacity:1},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:1,offset:.85},{transform:`translate(${dx*1.1}px,${dy+30}px) rotate(${rot*1.1}deg)`,opacity:0}],{duration:1500+Math.random()*1200,delay:Math.random()*250,easing:'cubic-bezier(.25,.6,.4,1)',fill:'forwards'});
+      a.onfinish=()=>p.remove();
+    }
+  }
+
+  function deltas(items){
+    if(calm()||!items.length)return;const host=document.getElementById('stats');if(!host)return;
+    const r=host.getBoundingClientRect(),L=layer();
+    items.slice(0,4).forEach(([e,d],i)=>{
+      const el=document.createElement('div');el.className='fxd '+(d>0?'up':'down');el.textContent=`${d>0?'+':'−'}${Math.abs(d)} ${e}`;
+      el.style.left=Math.max(8,Math.min(innerWidth-90,r.left+10+i*((r.width-20)/4)))+'px';el.style.top=(r.top-6)+'px';
+      L.appendChild(el);if(!el.animate){el.remove();return}
+      const a=el.animate([{transform:'translateY(6px) scale(.8)',opacity:0},{transform:'translateY(-10px) scale(1.05)',opacity:1,offset:.2},{transform:'translateY(-44px) scale(1)',opacity:1,offset:.75},{transform:'translateY(-62px)',opacity:0}],{duration:1500,delay:i*120,easing:'ease-out',fill:'both'});
+      a.onfinish=()=>el.remove();
+    });
+  }
+
+  /* ---------- Réactions au journal de l’année ---------- */
+  const WIN=/(^|\s)(🎓|💒|👶|🎉|🏆|🥇|🎂|💍|🎊)|JACKPOT|diplôm|décroches ton bac|promotion|se marie|félicitations|enceinte|accouch/i;
+  const BAD=/(^|\s)(☠️|🕯️|🚑|🔒)|décès|est mort|est morte|meurt|licenci|accident|divorc|te quitte|condamn|incendie/i;
+  function reactions(txt){
+    if(WIN.test(txt)){confetti();play('win');buzz([30,40,30])}
+    else if(BAD.test(txt)){play('bad');buzz([60,40,80])}
+  }
+
+  /* ---------- Appelé après chaque affichage de l’écran principal ---------- */
+  function afterRender(L){
+    if(!G||!L)return;const k=G.turn+'|'+L.first+'|'+L.last+'|'+(L.gen||1);const quiet=document.hidden;
+    const cn=document.querySelector('#idcard .cn');
+    if(cn){
+      const to=+cn.dataset.v,from=last.cash[k];last.cash[k]=to;
+      if(from!=null&&from!==to&&!calm()&&!quiet){
+        const cash=cn.closest('.cash');if(cash)cash.classList.add(to>from?'up':'down');
+        if(to-from>=1000)play('coin');
+        const t0=performance.now();cn.textContent=fmt(from);
+        const step=t=>{const p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3);cn.textContent=fmt(from+(to-from)*e);
+          if(p<1)requestAnimationFrame(step);else setTimeout(()=>{if(cash)cash.classList.remove('up','down')},500)};
+        requestAnimationFrame(step);
+      }
+    }
+    const cu={happy:L.st.happy,health:L.st.health,smarts:L.st.smarts,looks:L.st.looks},pv=last.st[k];last.st[k]=cu;
+    if(pv&&!quiet){
+      const it=[];for(const [f,e] of [['happy','😊'],['health','❤️'],['smarts','🧠'],['looks','✨']]){const d=Math.round(cu[f]-pv[f]);if(Math.abs(d)>=2)it.push([e,d])}
+      it.sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));deltas(it);
+    }
+    const lb=L.log&&L.log[L.log.length-1];
+    if(lb){
+      const sig={age:lb.age,n:lb.lines.length},pl=last.log[k];last.log[k]=sig;
+      if(pl&&!quiet){
+        const fresh=pl.age===sig.age?(sig.n>pl.n?lb.lines.slice(pl.n):[]):lb.lines;
+        if(fresh.length)reactions(fresh.join(' '));
+      }
+    }
+  }
+
+  function toggle(key){st[key]=!st[key];persist();if(st.sound)play('tap');if(st.haptic&&key==='haptic')buzz(20);try{render()}catch(e){}}
+
+  document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.age');if(b&&!b.disabled){buzz(8);play('age')}},true);
+
+  return {st,toggle,afterRender,confetti,deltas,play,buzz,modal:()=>{buzz(12);play('tap')}};
+})();
+
+;
+
 /* ===== ui.js ===== */
 /* Deux Vies — interface */
 
@@ -12288,6 +12393,7 @@ function modalFace(m){
 function nextModal(){
   curM=MQ.shift()||null;const el=$('#modal');
   if(!curM){el.hidden=true;render();return}
+  try{FX.modal()}catch(e){}
   $('#mbox').style.setProperty('--pc',`var(--p${(curM.pc!=null?curM.pc:G?G.turn:0)+1})`);
   {const mi=$('#micon');let face='';try{face=curM.av!==undefined?curM.av:modalFace(curM)}catch(e){console.error(e)}
    mi.classList.toggle('av',!!face);mi.innerHTML=face||(curM.icon?(ico(curM.icon)||esc(curM.icon)):'');mi.hidden=!(face||curM.icon)}
@@ -12428,7 +12534,7 @@ function renderMain(){
   const L=cur();const rs=document.documentElement.style;rs.setProperty('--pc',`var(--p${G.turn+1})`);rs.setProperty('--pc-2',`var(--p${G.turn+1}-2)`);
   $('#players').innerHTML=G.mode===2?G.players.map((p,i)=>`<span class="chip${i===G.turn?' on':''}" style="--c:var(--p${i+1})"><span class="cav">${avatar(p,{happy:p.st.happy})}</span><span class="ctx"><b>${esc(p.first)}</b><small>${fmtk(p.money)}</small></span></span>`).join(''):'';
   const pt=L.partner?partnerOf(L):null;
-  $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small>${fmt(L.money)}${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
+  $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small><span class="cn" data-v="${Math.round(L.money)}">${fmt(L.money)}</span>${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
   const log=$('#log');
   log.innerHTML=L.log.map(b=>`<div class="yr"><div class="ya">${b.age}<small>${b.age>1?'ans':'an'}</small></div><div class="yl">${b.lines.map(logLine).join('')}</div></div>`).join('')+(L.alive?'':obitHtml(L));
   if(L.alive)log.scrollTop=log.scrollHeight;else{const ob=log.querySelector('.obit');if(ob)log.scrollTop=ob.offsetTop-30}
@@ -12436,6 +12542,7 @@ function renderMain(){
   $('#tWorkL').textContent=inSchool(L)?'École':'Métier';{const te=$('#tWork .te');if(te)te.textContent=inSchool(L)?'🎓':'💼'}
   document.querySelectorAll('.tabs .tab').forEach(b=>b.disabled=!L.alive);
   $('#ageBtn').disabled=!L.alive||busy();
+  try{FX.afterRender(L)}catch(e){console.error(e)}
 }
 function render(){ACTS=[];renderMain();if(STACK.length&&G)showSheet()}
 
@@ -12972,7 +13079,7 @@ function pMenu(){
   const nR=Object.values(G.ribbons).filter(Boolean).length,nC=Object.keys(G.challenges).length;
   return {title:'Menu',html:group('Outils',modCall('menuRows',cur()).flat())+group('Collection',[nav('🎀','Rubans',`${nR} sur ${RIBBONS.length}`,pRibbons),nav('🏅','Défis',`${nC} sur ${CHALLENGES.length}`,pChallenges),nav('🪦','Cimetière familial',`${G.cemetery.length} vie${G.cemetery.length>1?'s':''} terminée${G.cemetery.length>1?'s':''}`,pCem)])
     +group('Personnage',[nav('🪪','Fiche personnage','Toutes tes statistiques',pSheet),nav('🌳','Arbre généalogique','Ta famille',pTree),nav('⏳','Machine à remonter le temps','Reviens en arrière',pTime)])
-    +group('Partie',[row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
+    +group('Partie',[row({ic:'🔊',t:'Sons',s:FX.st.sound?'Activés · touche pour couper':'Coupés · touche pour activer',a:()=>FX.toggle('sound')}),row({ic:'📳',t:'Vibrations',s:FX.st.haptic?'Activées · touche pour couper':'Coupées · touche pour activer',a:()=>FX.toggle('haptic')}),row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
       row({ic:'🗑️',t:'Nouvelle partie',s:'Efface la partie en cours',danger:1,a:()=>pushPanel(confirmP('Nouvelle partie ?','La partie en cours, les rubans et les défis seront effacés de ce navigateur.',()=>{G=null;try{localStorage.removeItem(KEY)}catch(e){}closeSheet();return ''},'Tout effacer'))})])
     +`<p class="cs" style="text-align:center;opacity:.6;margin:14px 0 0">Double Vie · version ${window.DV_VERSION||'locale'}</p>`+`<h3 class="sec">Comment jouer</h3><div class="card"><div class="cs">Le bouton <b>Âge</b> fait passer une année. Entre deux années, explore les onglets : études et métier, biens, relations, activités. Touche ton avatar pour voir ta fiche complète. À deux, vous jouez chacun votre tour et vous pouvez vous déclarer votre flamme, vous marier et avoir des enfants ensemble. Tout est débloqué : mode Dieu, machine à remonter le temps, carrières spéciales, royauté, zoo, Bourse, agent secret, mouvement spirituel, marché noir. La partie est sauvegardée automatiquement dans ce navigateur.</div></div>`};
 }

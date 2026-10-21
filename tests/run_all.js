@@ -12,6 +12,7 @@ const T=[
  ['migration d’anciennes sauvegardes','legacymig.js',[],o=>/errs": \[\]|errs \[\]/.test(o)],
  ['boutique des enfants','kidshop.js',[],o=>!/Error|TypeError/.test(o)],
  ['matériel et compétences','geartest.js',[],o=>/errs \[\]/.test(o)],
+ ['effets (animations, sons, réglages)','fx.js',[],o=>/"ok":true/.test(o)],
  ['hors connexion (paquet publié)','pwatest2.js',[],o=>/erreurs \[\]/.test(o)&&/"cached":8/.test(o)]
 ];
 let bad=0;

@@ -26,6 +26,7 @@ function modalFace(m){
 function nextModal(){
   curM=MQ.shift()||null;const el=$('#modal');
   if(!curM){el.hidden=true;render();return}
+  try{FX.modal()}catch(e){}
   $('#mbox').style.setProperty('--pc',`var(--p${(curM.pc!=null?curM.pc:G?G.turn:0)+1})`);
   {const mi=$('#micon');let face='';try{face=curM.av!==undefined?curM.av:modalFace(curM)}catch(e){console.error(e)}
    mi.classList.toggle('av',!!face);mi.innerHTML=face||(curM.icon?(ico(curM.icon)||esc(curM.icon)):'');mi.hidden=!(face||curM.icon)}
@@ -166,7 +167,7 @@ function renderMain(){
   const L=cur();const rs=document.documentElement.style;rs.setProperty('--pc',`var(--p${G.turn+1})`);rs.setProperty('--pc-2',`var(--p${G.turn+1}-2)`);
   $('#players').innerHTML=G.mode===2?G.players.map((p,i)=>`<span class="chip${i===G.turn?' on':''}" style="--c:var(--p${i+1})"><span class="cav">${avatar(p,{happy:p.st.happy})}</span><span class="ctx"><b>${esc(p.first)}</b><small>${fmtk(p.money)}</small></span></span>`).join(''):'';
   const pt=L.partner?partnerOf(L):null;
-  $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small>${fmt(L.money)}${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
+  $('#idcard').innerHTML=`<button type="button" class="avatar" data-a="${A(()=>openPanel(pSheet))}" aria-label="Fiche personnage">${avOf(L,L)}</button><div class="who"><h1>${esc(L.first)} ${esc(L.last)}</h1><p>${esc([An(L.age),jobLabel(L)].join(' · '))}</p><p class="bdgs">${badges(L)}${pt?`<span class="bdg pt">${emoInline('💞 '+pt.first)}</span>`:''}</p></div><div class="cash"><small>Compte</small><span class="cn" data-v="${Math.round(L.money)}">${fmt(L.money)}</span>${Math.abs(netWorth(L)-L.money)>=1000?`<em>Patrimoine ${fmtk(netWorth(L))}</em>`:''}</div>`;
   const log=$('#log');
   log.innerHTML=L.log.map(b=>`<div class="yr"><div class="ya">${b.age}<small>${b.age>1?'ans':'an'}</small></div><div class="yl">${b.lines.map(logLine).join('')}</div></div>`).join('')+(L.alive?'':obitHtml(L));
   if(L.alive)log.scrollTop=log.scrollHeight;else{const ob=log.querySelector('.obit');if(ob)log.scrollTop=ob.offsetTop-30}
@@ -174,6 +175,7 @@ function renderMain(){
   $('#tWorkL').textContent=inSchool(L)?'École':'Métier';{const te=$('#tWork .te');if(te)te.textContent=inSchool(L)?'🎓':'💼'}
   document.querySelectorAll('.tabs .tab').forEach(b=>b.disabled=!L.alive);
   $('#ageBtn').disabled=!L.alive||busy();
+  try{FX.afterRender(L)}catch(e){console.error(e)}
 }
 function render(){ACTS=[];renderMain();if(STACK.length&&G)showSheet()}
 
@@ -710,7 +712,7 @@ function pMenu(){
   const nR=Object.values(G.ribbons).filter(Boolean).length,nC=Object.keys(G.challenges).length;
   return {title:'Menu',html:group('Outils',modCall('menuRows',cur()).flat())+group('Collection',[nav('🎀','Rubans',`${nR} sur ${RIBBONS.length}`,pRibbons),nav('🏅','Défis',`${nC} sur ${CHALLENGES.length}`,pChallenges),nav('🪦','Cimetière familial',`${G.cemetery.length} vie${G.cemetery.length>1?'s':''} terminée${G.cemetery.length>1?'s':''}`,pCem)])
     +group('Personnage',[nav('🪪','Fiche personnage','Toutes tes statistiques',pSheet),nav('🌳','Arbre généalogique','Ta famille',pTree),nav('⏳','Machine à remonter le temps','Reviens en arrière',pTime)])
-    +group('Partie',[row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
+    +group('Partie',[row({ic:'🔊',t:'Sons',s:FX.st.sound?'Activés · touche pour couper':'Coupés · touche pour activer',a:()=>FX.toggle('sound')}),row({ic:'📳',t:'Vibrations',s:FX.st.haptic?'Activées · touche pour couper':'Coupées · touche pour activer',a:()=>FX.toggle('haptic')}),row({ic:'🎨',t:'Style des icônes',s:ICMODE.mode==='emoji'?'Emoji en couleur · touche pour passer au trait':'Icônes au trait · touche pour passer aux emoji',a:toggleIcons}),G.mode===1?nav('👥','Ajouter un second joueur','Jouez à deux sur le même téléphone',pNewLife(G.players.length)):null,
       row({ic:'🗑️',t:'Nouvelle partie',s:'Efface la partie en cours',danger:1,a:()=>pushPanel(confirmP('Nouvelle partie ?','La partie en cours, les rubans et les défis seront effacés de ce navigateur.',()=>{G=null;try{localStorage.removeItem(KEY)}catch(e){}closeSheet();return ''},'Tout effacer'))})])
     +`<p class="cs" style="text-align:center;opacity:.6;margin:14px 0 0">Double Vie · version ${window.DV_VERSION||'locale'}</p>`+`<h3 class="sec">Comment jouer</h3><div class="card"><div class="cs">Le bouton <b>Âge</b> fait passer une année. Entre deux années, explore les onglets : études et métier, biens, relations, activités. Touche ton avatar pour voir ta fiche complète. À deux, vous jouez chacun votre tour et vous pouvez vous déclarer votre flamme, vous marier et avoir des enfants ensemble. Tout est débloqué : mode Dieu, machine à remonter le temps, carrières spéciales, royauté, zoo, Bourse, agent secret, mouvement spirituel, marché noir. La partie est sauvegardée automatiquement dans ce navigateur.</div></div>`};
 }
