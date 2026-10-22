@@ -410,6 +410,15 @@ function npcHealthYear(L,p){
   for(const k of p.ill)if(DIS[k])p.health=clamp((p.health??70)+DIS[k].h/2);
   if(!p.ill.length)p.health=clamp((p.health??70)+(p.age<50?R(0,2):R(-3,1)));
 }
+/* Testament : ce que laisse un proche dépend de votre relation, du temps écoulé depuis votre dernière rencontre (p.seen) et de ce que vous avez fait pour lui (p.memo). */
+function willFactor(L,p){
+  const gap=Math.max(0,L.age-(p.seen==null?L.age:p.seen)),m=p.memo||{};
+  let f=1;
+  if(p.rel>=75)f*=1.3;else if(p.rel<35)f*=.5;
+  if(gap>=5)f*=.5;else if(gap>=3)f*=.8;
+  if(m.gave>0)f*=1.15;if(m.refused>0)f*=.85;
+  return {f,gap};
+}
 function familyYear(L){
   for(const p of L.family){
     if(!p.alive)continue;p.age++;npcHealthYear(L,p);
@@ -418,8 +427,10 @@ function familyYear(L){
       p.alive=false;chg(L,{happy:-(p.type==='friend'||p.type==='ex'?4:p.type==='parent'?15:p.type==='child'?25:10)});
       say(L,`🕯️ ${cap(poss(p))}, ${p.first}, est ${p.gender==='F'?'morte':'mort'} à ${p.age} ans.`);
       if((p.type==='parent'||p.type==='grand')&&L.age>=16&&chance(p.type==='parent'?.75:.4)){
-        if(chance(.25)){const it=pick([['Montre à gousset de famille',R(800,6000)],['Collier de perles ancien',R(1500,12000)],['Pendule ancienne',R(600,4000)],['Tableau de famille',R(1000,30000)],['Service en argent',R(900,5000)]]);L.assets.push({id:nid(),kind:'heirloom',name:it[0],value:it[1]});say(L,`Tu hérites d’un objet de famille : ${it[0].toLowerCase()}.`)}
-        else{const h=R(2000,p.type==='parent'?90000:30000)*(L.royal?20:1);earn(L,h,1);say(L,`Tu hérites de ${fmt(h)}.`)}
+        const w=willFactor(L,p);
+        if(p.rel<25&&w.gap>=5&&chance(.6))say(L,`📜 ${p.first} ne te laisse rien : vous ne vous parliez plus depuis ${An(w.gap)}.`);
+        else if(chance(.25)){const it=pick([['Montre à gousset de famille',R(800,6000)],['Collier de perles ancien',R(1500,12000)],['Pendule ancienne',R(600,4000)],['Tableau de famille',R(1000,30000)],['Service en argent',R(900,5000)]]);L.assets.push({id:nid(),kind:'heirloom',name:it[0],value:it[1]});say(L,`Tu hérites d’un objet de famille : ${it[0].toLowerCase()}.`)}
+        else{const h=Math.round(R(2000,p.type==='parent'?90000:30000)*(L.royal?20:1)*w.f);earn(L,h,1);say(L,`Tu hérites de ${fmt(h)}.${w.f>=1.3?` Dans son testament, ${p.gender==='F'?'elle':'il'} disait que tu comptais énormément pour ${p.gender==='F'?'elle':'lui'}.`:w.f<=.6?` Le testament est plus maigre que prévu : vous vous étiez perdus de vue.`:''}`)}
       }
       if(L.royal&&p.royal&&!L.royal.throne)royalSuccession(L,p);
       continue;

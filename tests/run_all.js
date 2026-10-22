@@ -16,6 +16,7 @@ const T=[
  ['simplicité (idées rapides, éléments masqués, récents)','simplicity.js',[],o=>/"ok":true/.test(o)],
  ['proches vivants (agents)','agents.js',[],o=>/"ok":true/.test(o)],
  ['souvenirs et rappels','memory.js',[],o=>/"ok":true/.test(o)],
+ ['mémoire des proches et héritage','will.js',[],o=>/"ok":true/.test(o)],
  ['rêves de vie','dreams.js',[],o=>/"ok":true/.test(o)],
  ['trait choisi à la création','traits.js',[],o=>/"ok":true/.test(o)],
  ['jalons de l’enfance','events4.js',[],o=>/"ok":true/.test(o)],
