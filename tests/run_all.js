@@ -18,6 +18,7 @@ const T=[
  ['souvenirs et rappels','memory.js',[],o=>/"ok":true/.test(o)],
  ['mémoire des proches et héritage','will.js',[],o=>/"ok":true/.test(o)],
  ['personnages récurrents','recurring.js',[],o=>/"ok":true/.test(o)],
+ ['projets des proches','goals.js',[],o=>/"ok":true/.test(o)],
  ['personnalité qui se révèle','persona.js',[],o=>/"ok":true/.test(o)],
  ['à deux, chacun chez soi','duo.js',[],o=>/"ok":true/.test(o)],
  ['rêves de vie','dreams.js',[],o=>/"ok":true/.test(o)],

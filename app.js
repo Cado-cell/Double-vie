@@ -10478,6 +10478,29 @@ const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&p.age>=12&&['pare
 const em=t=>t;
 function pickWeighted(items){const tot=items.reduce((s,x)=>s+x[1],0);let r=Math.random()*tot;for(const [v,w] of items){r-=w;if(r<=0)return v}return items[items.length-1][0]}
 
+/* Phrases variées : l'intention (appel, visite, dispute…) × la personnalité × la relation. {n} prénom, {e} accord au féminin. */
+const fx=(s,p)=>s.replace(/\{n\}/g,p.first).replace(/\{e\}/g,p.gender==='F'?'e':'');
+const LINES={
+  call:{hi:['📞 {n} t’appelle, déjà en train de rire : « Raconte-moi TOUT ! » Vous parlez deux heures.','📞 {n} t’appelle sans raison, juste pour dire « Coucou ! ». Une heure plus tard, vous êtes encore là.','📞 Le téléphone sonne : c’est {n}, plein de nouvelles et de questions.'],
+    mid:['📞 {n} t’appelle pour prendre de tes nouvelles. Vous parlez deux heures.','📞 {n} t’appelle en sortant du travail. Vous papotez un bon moment.','📞 Un appel de {n} : rien de grave, juste un point sur la vie de chacun.'],
+    lo:['📞 {n} t’appelle, un peu gêné{e}, pour demander si tout va bien. La conversation est courte mais sincère.','📞 {n} appelle rarement ; là, c’est pour dire que tu lui as traversé l’esprit.','📞 {n} laisse un message, puis rappelle : « Je ne suis pas doué{e} au téléphone, mais je pensais à toi. »']},
+  birthday:{hi:['🎂 {n} te souhaite ton anniversaire avec un message beaucoup trop long, des émojis et un gâteau en photo.','🎂 {n} arrive avec un cadeau emballé n’importe comment et une chanson chantée faux.','🎂 {n} n’a pas oublié ton anniversaire : une carte, un appel et un dessin.'],
+    lo:['🎂 {n} t’envoie un « Bon anniversaire » poli, trois jours après la date.','🎂 Un message de {n} : « Bon anniv ! » Court, mais il est là.','🎂 {n} pense à ton anniversaire au dernier moment et rattrape avec un grand sourire.']},
+  visit:{hi:['🚪 {n} passe te voir à l’improviste, avec un gâteau à moitié écrasé.','🚪 {n} sonne à ta porte, un sac de courses dans chaque main : « On mange ensemble ! »','🚪 {n} débarque sans prévenir et reste jusqu’à minuit.'],
+    mid:['🚪 {n} passe prendre un café. Une heure, et vous refaites le monde.','🚪 {n} est dans le coin et en profite pour te voir.','🚪 Visite de {n} : un bon moment à la table de la cuisine.'],
+    lo:['🚪 {n} passe te voir, un peu gêné{e}, et reste vingt minutes. C’est déjà beaucoup.','🚪 {n} vient te rendre un objet, mais reste boire un thé.','🚪 {n} frappe timidement à la porte : « Je ne dérange pas ? »']},
+  fight:{hi:['💢 {n} s’énerve contre toi après un malentendu. Le ton monte, la porte claque.','💢 {n} explose pour une remarque de rien du tout. Tout le monde regrette déjà.','💢 Une dispute éclate avec {n}, devant tout le monde. Ça va laisser des traces.'],
+    lo:['💢 {n} te fait froid{e} après un malentendu. Pas de cris, mais des silences.','💢 {n} te répond sèchement, puis se tait. L’ambiance est lourde.','💢 {n} te reproche quelque chose à demi-mot, puis change de sujet.']},
+  peace:{hi:['🤝 {n} te tend la main après vos mots de travers. Vous vous réconciliez.','🤝 {n} t’appelle : « Je suis désolé{e}, on peut se parler ? » Les larmes coulent des deux côtés.','🤝 {n} fait le premier pas. Vous riez de votre dispute.'],
+    lo:['🤝 {n} t’envoie un message maladroit pour faire la paix. Tu réponds. Voilà.','🤝 {n} laisse un petit mot sur ton pare-brise : « Pardon. » Ça suffit.','🤝 {n} te propose un café « pour mettre les choses à plat ». Ça marche.']},
+  neglect:{hi:['📭 {n} trouve que tu ne donnes plus de nouvelles depuis {gap}, et le dit avec douceur.','📭 « Tu me manques », écrit {n}. Cela fait {gap} que vous ne vous êtes pas vus.'],
+    lo:['📭 {n} trouve que tu ne donnes plus de nouvelles depuis {gap}. Le ton est sec.','📭 {n} fait remarquer, vexé{e}, qu’il se passe {gap} sans signe de toi.']}
+};
+function line(kind,p,P,gap){
+  const set=LINES[kind];
+  const k=kind==='birthday'?(p.rel>=70?'hi':'lo'):kind==='fight'?(P.impulsif>=60?'hi':'lo'):(kind==='peace'||kind==='neglect')?(P.loyal>=50?'hi':'lo'):(P.sociable>=60?'hi':P.sociable<=30?'lo':'mid');
+  return fx(pick(set[k]||set.mid||set.hi),p).replace(/\{gap\}/g,gap!=null?An(gap):'');
+}
 function act(L,p){
   if(p.seen==null)p.seen=L.age;
   const S=t=>{say(L,t);return true};
@@ -10494,14 +10517,14 @@ function act(L,p){
   if(m.refused>0&&!m.grudged&&P.loyal<70)opts.push(['grudge',1.5]);
   const k=pickWeighted(opts);
   switch(k){
-    case 'call':p.rel=clamp(p.rel+2);p.seen=L.age;return S(`📞 ${p.first} t’appelle pour prendre de tes nouvelles. Vous parlez deux heures.`);
-    case 'birthday':p.rel=clamp(p.rel+2);p.seen=L.age;return S(`🎂 ${p.first} te souhaite ton anniversaire avec un message beaucoup trop long.`);
-    case 'visit':p.rel=clamp(p.rel+3);p.seen=L.age;chg(L,{happy:2});return S(`🚪 ${p.first} passe te voir à l’improviste, avec un gâteau à moitié écrasé.`);
+    case 'call':p.rel=clamp(p.rel+2);p.seen=L.age;return S(line('call',p,P));
+    case 'birthday':p.rel=clamp(p.rel+2);p.seen=L.age;return S(line('birthday',p,P));
+    case 'visit':p.rel=clamp(p.rel+3);p.seen=L.age;chg(L,{happy:2});return S(line('visit',p,P));
     case 'job':{const j=pick(NPC_JOBS.filter(x=>x!=='sans emploi'));p.job=j;return S(`🗞️ ${p.first} change de métier : ${j}.`)}
     case 'move':{const c=pick(COUNTRIES[L.country].cities);p.rel=clamp(p.rel-2);return S(`📦 ${p.first} déménage à ${c}. Les week-ends ensemble vont devenir rares.`)}
-    case 'fight':p.rel=clamp(p.rel-10);return S(`💢 ${p.first} s’énerve contre toi après un malentendu. Le ton monte, la porte claque.`);
-    case 'peace':p.rel=clamp(p.rel+10);p.seen=L.age;return S(`🤝 ${p.first} te tend la main après vos mots de travers. Vous vous réconciliez.`);
-    case 'neglect':p.rel=clamp(p.rel-6);return S(`📭 ${p.first} trouve que tu ne donnes plus de nouvelles depuis ${An(gap)}.${p.type==='parent'||p.type==='grand'?' Tu sens que son testament pourrait s’en ressentir.':''}`);
+    case 'fight':p.rel=clamp(p.rel-10);return S(line('fight',p,P));
+    case 'peace':p.rel=clamp(p.rel+10);p.seen=L.age;return S(line('peace',p,P));
+    case 'neglect':p.rel=clamp(p.rel-6);return S(`${line('neglect',p,P,gap)}${p.type==='parent'||p.type==='grand'?' Tu sens que son testament pourrait s’en ressentir.':''}`);
     case 'thanks':{m.thanked=1;p.rel=clamp(p.rel+8);p.seen=L.age;const back=P.loyal>50?Math.round(m.gave*.5/50)*50:0;if(back>=50){earn(L,back);return S(`🎁 ${p.first} se souvient de ton coup de pouce et te rend ${fmt(back)} avec un petit mot.`)}return S(`💌 ${p.first} te dit que ton aide l’a marqué${ge(p,'','e')} : « Je n’oublie pas. »`)}
     case 'grudge':m.grudged=1;p.rel=clamp(p.rel-4);return S(`😒 ${p.first} n’a pas oublié le jour où tu as refusé de l’aider. Il y a des silences qui durent.`);
     case 'money':{
@@ -10722,6 +10745,74 @@ function year(L){
   try{rumor(L)}catch(e){console.error('recurring.rumor',e)}
 }
 registerMod({id:MOD,born(L){if(L)L.rec={}},heirInit(D,L){if(L)L.rec={}},year});
+})();
+
+;
+
+/* ===== mod_goals.js ===== */
+/* Deux Vies — module « Projets des proches » (id goals)
+   Chaque proche a ses propres buts : un projet de vie (métier, famille, argent, aventure, études, passion) qui avance un peu chaque
+   année, que tu peux soutenir (argent ou encouragements), et dont tu apprends la réussite. État par personne : p.goal = {k, t, prog, done?, asked?},
+   p.memo (partagé avec mod_agents : gave / refused) pour que l'aide donnée ou refusée compte dans la relation et dans l'héritage. */
+(()=>{
+const MOD='goals';
+const GOALS={
+  metier:{ic:'💼',t:['décrocher la promotion de sa vie','se reconvertir dans le métier de ses rêves','passer son permis poids lourd','devenir chef d’équipe']},
+  famille:{ic:'👨‍👩‍👧',t:['fonder une famille','se marier cet été','adopter un enfant','emménager avec son amoureux ou son amoureuse']},
+  argent:{ic:'🏠',t:['acheter son premier appartement','rembourser toutes ses dettes','mettre assez de côté pour voyager','s’offrir une voiture neuve']},
+  aventure:{ic:'🧭',t:['faire le tour du monde','traverser un désert à vélo','apprendre à surfer à Hawaï','partir un an au Canada']},
+  etudes:{ic:'🎓',t:['reprendre des études','décrocher un diplôme','apprendre trois langues','passer le concours de ses rêves']},
+  passion:{ic:'🎨',t:['ouvrir un petit restaurant','monter un groupe de musique','écrire un roman','ouvrir une boutique de plantes']}
+};
+const WHO=['parent','sibling','friend','child'];
+const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&WHO.includes(p.type)&&p.age>=14&&p.age<=62&&p.tag!=='rival'&&p.tag!=='voisin'&&!(p.type==='child'&&p.age<18));
+const kinds=p=>Object.keys(GOALS).filter(k=>(k!=='etudes'||p.age<38)&&(k!=='famille'||(p.age>=20&&p.age<=46&&p.type!=='parent'))&&(k!=='metier'||p.age>=20));
+
+function assign(L,p){
+  const k=pick(kinds(p));p.goal={k,t:pick(GOALS[k].t),prog:R(0,20)};return p.goal;
+}
+function done(L,p){
+  const g=p.goal;g.done=L.age;g.prog=100;
+  const il=ge(p,'il','elle'),close=p.rel>=60;
+  const news={
+    metier:()=>{p.job=pick(NPC_JOBS.filter(x=>x!=='sans emploi'));return `🎯 ${p.first} y est arrivé${ge(p,'','e')} : ${g.t}. ${close?'Un appel joyeux, vous trinquez à distance.':'Tu l’apprends par un ami commun.'}`},
+    famille:()=>`🎯 ${p.first} a réalisé son projet : ${g.t}. ${close?`Tu es invité${ge(L,'','e')} à fêter ça.`:'Une carte arrive dans ta boîte aux lettres.'}`,
+    argent:()=>`🎯 ${p.first} y est enfin : ${g.t}. ${close?`${il} te fait visiter, très fier${ge(p,'','e')}.`:'Une photo des clés circule dans la famille.'}`,
+    aventure:()=>`🎯 ${p.first} a réalisé son rêve : ${g.t}. ${close?'Une carte postale arrive, avec un grand soleil dessiné dessus.':'Les photos tournent sur les réseaux.'}`,
+    etudes:()=>`🎯 ${p.first} a réussi : ${g.t}. ${close?'Tu as eu droit à un message en majuscules.':'La famille applaudit de loin.'}`,
+    passion:()=>`🎯 ${p.first} s’est lancé${ge(p,'','e')} : ${g.t}. ${close?'Tu es dans les premiers invités.':'Tu en entends parler au détour d’une conversation.'}`
+  };
+  say(L,news[g.k]());
+  if(close){chg(L,{happy:2});p.rel=clamp(p.rel+3)}
+  const m=p.memo||(p.memo={});if(m.gave>0&&p.rel>=50&&!g.thanked){g.thanked=1;p.rel=clamp(p.rel+6);say(L,`💌 ${p.first} te remercie : « Sans ton aide, je n’y serais pas arrivé${ge(p,'','e')}. »`)}
+}
+function ask(L,p){
+  const g=p.goal,m=p.memo||(p.memo={});g.asked=1;
+  const amt=Math.max(50,Math.round(R(150,1200)*Math.min(2,costOf(L))/50)*50),can=L.money>=amt*2;
+  modal({title:`Le projet de ${p.first}`,icon:GOALS[g.k].ic,av:avatar(p,{happy:65}),text:`${p.first} te parle de son projet : ${g.t}. « Ça avance, mais un petit coup de pouce changerait tout. »`,choices:[
+    can?{t:`Donner ${fmt(amt)}`,fn:()=>{if(L.money<amt)return 'Tu n’as plus assez d’argent.';L.money-=amt;g.prog=Math.min(100,g.prog+30);p.rel=clamp(p.rel+10);p.seen=L.age;m.gave=(m.gave||0)+amt;chg(L,{karma:2,happy:2});track(L,'given',amt);return out(L,`💶 Tu donnes ${fmt(amt)} à ${p.first} pour son projet. ${ge(p,'Il','Elle')} en a les larmes aux yeux.`)}}:null,
+    {t:'L’encourager de tout cœur',fn:()=>{g.prog=Math.min(100,g.prog+8);p.rel=clamp(p.rel+4);p.seen=L.age;return out(L,`💬 Tu crois en ${p.first}, et ça se voit. ${ge(p,'Il','Elle')} repart gonflé${ge(p,'','e')} à bloc.`)}},
+    {t:'Pas cette fois',fn:()=>{p.rel=clamp(p.rel-3);m.refused=(m.refused||0)+1;return out(L,`🙁 ${p.first} comprend, mais ça se sent. Le projet avancera sans toi.`)}}].filter(Boolean)});
+}
+function year(L){
+  if(!L||L.age<10||L.alive===false||L.prison)return;
+  let news=0,asked=false;
+  for(const p of eligible(L)){
+    if(!p.goal){if(chance(.12))assign(L,p);continue}
+    const g=p.goal;if(g.done!=null){if(L.age-g.done>=8&&chance(.15))assign(L,p);continue}
+    g.prog=Math.min(100,g.prog+R(6,16));
+    if(g.prog>=100){if(news<2){done(L,p);news++}else g.prog=96;continue}
+    if(!asked&&!g.asked&&g.prog>=30&&g.prog<=80&&p.rel>=50&&chance(.3)){asked=true;ask(L,p)}
+  }
+}
+function personRows(L,p){
+  const g=p&&p.goal;if(!g||p.alive===false)return [];
+  if(g.done!=null)return [row({ic:'✅',t:'Projet réalisé',s:`${g.t} · à ${g.done} ans`})];
+  return [row({ic:GOALS[g.k].ic,t:'Son projet',s:`${g.t} · ${Math.round(g.prog)} %`,right:mini?mini(Math.round(g.prog)):''}),
+    act(L,{ic:'💬',t:'L’encourager',s:'Un mot qui donne des ailes',key:'enc'+p.id,fn:L=>{p.goal.prog=Math.min(100,p.goal.prog+6);p.rel=clamp(p.rel+3);p.seen=L.age;return out(L,`💬 Tu encourages ${p.first}. ${ge(p,'Il','Elle')} y croit un peu plus.`)}})];
+}
+registerMod({id:MOD,year,personRows});
+window.GOALS_KINDS=Object.keys(GOALS);
 })();
 
 ;

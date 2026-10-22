@@ -12,6 +12,29 @@ const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&p.age>=12&&['pare
 const em=t=>t;
 function pickWeighted(items){const tot=items.reduce((s,x)=>s+x[1],0);let r=Math.random()*tot;for(const [v,w] of items){r-=w;if(r<=0)return v}return items[items.length-1][0]}
 
+/* Phrases variées : l'intention (appel, visite, dispute…) × la personnalité × la relation. {n} prénom, {e} accord au féminin. */
+const fx=(s,p)=>s.replace(/\{n\}/g,p.first).replace(/\{e\}/g,p.gender==='F'?'e':'');
+const LINES={
+  call:{hi:['📞 {n} t’appelle, déjà en train de rire : « Raconte-moi TOUT ! » Vous parlez deux heures.','📞 {n} t’appelle sans raison, juste pour dire « Coucou ! ». Une heure plus tard, vous êtes encore là.','📞 Le téléphone sonne : c’est {n}, plein de nouvelles et de questions.'],
+    mid:['📞 {n} t’appelle pour prendre de tes nouvelles. Vous parlez deux heures.','📞 {n} t’appelle en sortant du travail. Vous papotez un bon moment.','📞 Un appel de {n} : rien de grave, juste un point sur la vie de chacun.'],
+    lo:['📞 {n} t’appelle, un peu gêné{e}, pour demander si tout va bien. La conversation est courte mais sincère.','📞 {n} appelle rarement ; là, c’est pour dire que tu lui as traversé l’esprit.','📞 {n} laisse un message, puis rappelle : « Je ne suis pas doué{e} au téléphone, mais je pensais à toi. »']},
+  birthday:{hi:['🎂 {n} te souhaite ton anniversaire avec un message beaucoup trop long, des émojis et un gâteau en photo.','🎂 {n} arrive avec un cadeau emballé n’importe comment et une chanson chantée faux.','🎂 {n} n’a pas oublié ton anniversaire : une carte, un appel et un dessin.'],
+    lo:['🎂 {n} t’envoie un « Bon anniversaire » poli, trois jours après la date.','🎂 Un message de {n} : « Bon anniv ! » Court, mais il est là.','🎂 {n} pense à ton anniversaire au dernier moment et rattrape avec un grand sourire.']},
+  visit:{hi:['🚪 {n} passe te voir à l’improviste, avec un gâteau à moitié écrasé.','🚪 {n} sonne à ta porte, un sac de courses dans chaque main : « On mange ensemble ! »','🚪 {n} débarque sans prévenir et reste jusqu’à minuit.'],
+    mid:['🚪 {n} passe prendre un café. Une heure, et vous refaites le monde.','🚪 {n} est dans le coin et en profite pour te voir.','🚪 Visite de {n} : un bon moment à la table de la cuisine.'],
+    lo:['🚪 {n} passe te voir, un peu gêné{e}, et reste vingt minutes. C’est déjà beaucoup.','🚪 {n} vient te rendre un objet, mais reste boire un thé.','🚪 {n} frappe timidement à la porte : « Je ne dérange pas ? »']},
+  fight:{hi:['💢 {n} s’énerve contre toi après un malentendu. Le ton monte, la porte claque.','💢 {n} explose pour une remarque de rien du tout. Tout le monde regrette déjà.','💢 Une dispute éclate avec {n}, devant tout le monde. Ça va laisser des traces.'],
+    lo:['💢 {n} te fait froid{e} après un malentendu. Pas de cris, mais des silences.','💢 {n} te répond sèchement, puis se tait. L’ambiance est lourde.','💢 {n} te reproche quelque chose à demi-mot, puis change de sujet.']},
+  peace:{hi:['🤝 {n} te tend la main après vos mots de travers. Vous vous réconciliez.','🤝 {n} t’appelle : « Je suis désolé{e}, on peut se parler ? » Les larmes coulent des deux côtés.','🤝 {n} fait le premier pas. Vous riez de votre dispute.'],
+    lo:['🤝 {n} t’envoie un message maladroit pour faire la paix. Tu réponds. Voilà.','🤝 {n} laisse un petit mot sur ton pare-brise : « Pardon. » Ça suffit.','🤝 {n} te propose un café « pour mettre les choses à plat ». Ça marche.']},
+  neglect:{hi:['📭 {n} trouve que tu ne donnes plus de nouvelles depuis {gap}, et le dit avec douceur.','📭 « Tu me manques », écrit {n}. Cela fait {gap} que vous ne vous êtes pas vus.'],
+    lo:['📭 {n} trouve que tu ne donnes plus de nouvelles depuis {gap}. Le ton est sec.','📭 {n} fait remarquer, vexé{e}, qu’il se passe {gap} sans signe de toi.']}
+};
+function line(kind,p,P,gap){
+  const set=LINES[kind];
+  const k=kind==='birthday'?(p.rel>=70?'hi':'lo'):kind==='fight'?(P.impulsif>=60?'hi':'lo'):(kind==='peace'||kind==='neglect')?(P.loyal>=50?'hi':'lo'):(P.sociable>=60?'hi':P.sociable<=30?'lo':'mid');
+  return fx(pick(set[k]||set.mid||set.hi),p).replace(/\{gap\}/g,gap!=null?An(gap):'');
+}
 function act(L,p){
   if(p.seen==null)p.seen=L.age;
   const S=t=>{say(L,t);return true};
@@ -28,14 +51,14 @@ function act(L,p){
   if(m.refused>0&&!m.grudged&&P.loyal<70)opts.push(['grudge',1.5]);
   const k=pickWeighted(opts);
   switch(k){
-    case 'call':p.rel=clamp(p.rel+2);p.seen=L.age;return S(`📞 ${p.first} t’appelle pour prendre de tes nouvelles. Vous parlez deux heures.`);
-    case 'birthday':p.rel=clamp(p.rel+2);p.seen=L.age;return S(`🎂 ${p.first} te souhaite ton anniversaire avec un message beaucoup trop long.`);
-    case 'visit':p.rel=clamp(p.rel+3);p.seen=L.age;chg(L,{happy:2});return S(`🚪 ${p.first} passe te voir à l’improviste, avec un gâteau à moitié écrasé.`);
+    case 'call':p.rel=clamp(p.rel+2);p.seen=L.age;return S(line('call',p,P));
+    case 'birthday':p.rel=clamp(p.rel+2);p.seen=L.age;return S(line('birthday',p,P));
+    case 'visit':p.rel=clamp(p.rel+3);p.seen=L.age;chg(L,{happy:2});return S(line('visit',p,P));
     case 'job':{const j=pick(NPC_JOBS.filter(x=>x!=='sans emploi'));p.job=j;return S(`🗞️ ${p.first} change de métier : ${j}.`)}
     case 'move':{const c=pick(COUNTRIES[L.country].cities);p.rel=clamp(p.rel-2);return S(`📦 ${p.first} déménage à ${c}. Les week-ends ensemble vont devenir rares.`)}
-    case 'fight':p.rel=clamp(p.rel-10);return S(`💢 ${p.first} s’énerve contre toi après un malentendu. Le ton monte, la porte claque.`);
-    case 'peace':p.rel=clamp(p.rel+10);p.seen=L.age;return S(`🤝 ${p.first} te tend la main après vos mots de travers. Vous vous réconciliez.`);
-    case 'neglect':p.rel=clamp(p.rel-6);return S(`📭 ${p.first} trouve que tu ne donnes plus de nouvelles depuis ${An(gap)}.${p.type==='parent'||p.type==='grand'?' Tu sens que son testament pourrait s’en ressentir.':''}`);
+    case 'fight':p.rel=clamp(p.rel-10);return S(line('fight',p,P));
+    case 'peace':p.rel=clamp(p.rel+10);p.seen=L.age;return S(line('peace',p,P));
+    case 'neglect':p.rel=clamp(p.rel-6);return S(`${line('neglect',p,P,gap)}${p.type==='parent'||p.type==='grand'?' Tu sens que son testament pourrait s’en ressentir.':''}`);
     case 'thanks':{m.thanked=1;p.rel=clamp(p.rel+8);p.seen=L.age;const back=P.loyal>50?Math.round(m.gave*.5/50)*50:0;if(back>=50){earn(L,back);return S(`🎁 ${p.first} se souvient de ton coup de pouce et te rend ${fmt(back)} avec un petit mot.`)}return S(`💌 ${p.first} te dit que ton aide l’a marqué${ge(p,'','e')} : « Je n’oublie pas. »`)}
     case 'grudge':m.grudged=1;p.rel=clamp(p.rel-4);return S(`😒 ${p.first} n’a pas oublié le jour où tu as refusé de l’aider. Il y a des silences qui durent.`);
     case 'money':{
