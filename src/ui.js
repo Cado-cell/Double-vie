@@ -443,10 +443,10 @@ function pCollect(){const L=cur();if(!L.collectMk||L.collectMk.age!==L.age)L.col
 /* ---------- Relations ---------- */
 function findLove(L,pre){
   L.used.love=(L.used.love||0)+1;
-  const g=likeG(L);const a=L.age<18?clamp(L.age+R(-1,1),14,17):Math.max(18,L.age+R(-7,7));
-  const p=pre||person(g,a,null,L.country);p.age=p.age||a;const job=p.job||(a<18?'lycéen':a<23&&chance(.5)?'étudiant':pick(NPC_JOBS));
-  modal({title:'Rencontre',icon:'💘',html:`<div class="cand"><div class="cavatar">${avatar(p)}</div><div><b>${esc(p.first)} ${esc(p.last)}, ${An(p.age)}</b><br><span class="muted">${esc(cap(job))}</span></div></div><div class="cand2">${statLine('Apparence',p.looks)}${statLine('Intelligence',p.smarts)}</div>`,choices:[
-    {t:'Proposer un rendez-vous',pri:1,fn:()=>{const pr=.4+(L.st.looks-p.looks)/180+(L.st.happy-50)/400+(L.fame/300);if(chance(pr)){setPartner(L,p);chg(L,{happy:10});return out(L,`💕 Premier rendez-vous réussi avec ${p.first}. Vous êtes en couple !`)}chg(L,{happy:-4});return out(L,`${p.first} ne donne pas suite.`)}},
+  const g=likeG(L);const a=L.age<18?clamp(L.age+R(-1,1),12,17):Math.max(18,L.age+R(-7,7));const teen=L.age<16;
+  const p=pre||person(g,a,null,L.country);p.age=p.age||a;const job=p.job||(a<15?'collégien':a<18?'lycéen':a<23&&chance(.5)?'étudiant':pick(NPC_JOBS));
+  modal({title:teen?'Un coup de cœur':'Rencontre',icon:'💘',html:`<div class="cand"><div class="cavatar">${avatar(p)}</div><div><b>${esc(p.first)} ${esc(p.last)}, ${An(p.age)}</b><br><span class="muted">${esc(cap(job))}</span></div></div><div class="cand2">${statLine('Apparence',p.looks)}${statLine('Intelligence',p.smarts)}</div>`,choices:[
+    {t:teen?'Lui proposer de sortir ensemble':'Proposer un rendez-vous',pri:1,fn:()=>{const pr=.4+(L.st.looks-p.looks)/180+(L.st.happy-50)/400+(L.fame/300);if(chance(pr)){setPartner(L,p);chg(L,{happy:10});return out(L,teen?`💕 ${p.first} dit oui, en rougissant. Vous sortez ensemble : cinéma, récré et petits mots dans les cahiers.`:`💕 Premier rendez-vous réussi avec ${p.first}. Vous êtes en couple !`)}chg(L,{happy:-4});return out(L,teen?`${p.first} préfère rester ${p.gender==='F'?'amie':'ami'}. Aïe, mais ça passera.`:`${p.first} ne donne pas suite.`)}},
     ...(L.age<18||p.age<18?[]:[{t:'Aventure d’un soir',fn:()=>{if(chance(.5+(L.st.looks-p.looks)/150)){chg(L,{happy:6});track(L,'partners');if(L.partner&&chance(.3))return breakUp(L,`${pn(L)} découvre ton infidélité.`);return out(L,`Une nuit passionnée avec ${p.first}. Sans lendemain.`)}return out(L,`${p.first} décline poliment.`)}}]),
     {t:L.used.love<4?'Voir un autre profil':'Plus de profils cette année',fn:()=>{if(L.used.love<4)findLove(L)}},
     {t:'Laisser tomber'}]});
@@ -507,7 +507,8 @@ function pPartner(){
   const H=[
     act(L,{ic:'💑',t:'Passer du temps ensemble',key:'pt',fn:L=>{partnerRel(L,R(4,10));chg(L,{happy:3});return out(L,pick([`Balade au bord de l’eau avec ${p.first}.`,`Soirée série sous un plaid avec ${p.first}.`,`Vous cuisinez une raclette, ${p.first} et toi.`,`Brocante du dimanche avec ${p.first}.`]))}}),
     act(L,{ic:'🕯️',t:'Dîner en amoureux',s:'80 €',cost:80,min:16,key:'pd',fn:L=>{partnerRel(L,R(5,12));chg(L,{happy:4});return out(L,`Dîner aux chandelles avec ${p.first}.`)}}),
-    typeof pGift==='function'&&L.age>=16?nav('🎁','Offrir un cadeau',L.used.pg?'Déjà fait cette année':'Fleurs, bijou, escapade…',pGift('partner'),!!L.used.pg):null,
+    typeof pGift==='function'&&L.age>=12?nav('🎁','Offrir un cadeau',L.used.pg?'Déjà fait cette année':L.age<16?'Un petit quelque chose pour lui ou elle':'Fleurs, bijou, escapade…',pGift('partner'),!!L.used.pg):null,
+    L.age<18?act(L,{ic:'🎬',t:'Sortie au cinéma',s:'10 €',cost:10,min:12,key:'pcine',fn:L=>{partnerRel(L,R(4,9));chg(L,{happy:3});return out(L,pick([`Cinéma avec ${p.first} : vous ne regardez pas vraiment le film.`,`Vous partagez un énorme pot de pop-corn avec ${p.first}.`,`Comédie samedi après-midi avec ${p.first} : fous rires garantis.`]))}}):null,
     act(L,{ic:'🏝️',t:'Partir en week-end en amoureux',s:'900 €',cost:900,min:18,key:'pw',fn:L=>{partnerRel(L,R(8,16));chg(L,{happy:7});track(L,'trips');return out(L,`Week-end à ${pick(['Venise','Étretat','Annecy','Biarritz','Lisbonne'])} avec ${p.first}.`)}}),
     act(L,{ic:'💬',t:'Faire un compliment',key:'pc',fn:L=>{partnerRel(L,R(2,6));return out(L,`${p.first} rougit.`)}}),
     act(L,{ic:'💢',t:'Se disputer',key:'px',fn:L=>{partnerRel(L,-R(8,15));chg(L,{happy:-3});return out(L,`Grosse dispute avec ${p.first}.`)}})];
@@ -537,10 +538,10 @@ const wTag=(L,p)=>{const w=p&&p.type!=='pet'?npcWealth(L,p):null;return w&&!w.po
 function spendTime(L,p){p.seen=L.age;p.rel=clamp(p.rel+R(3,10));chg(L,{happy:2});return out(L,pick([`Cinéma avec ${p.first}.`,`Longue balade avec ${p.first}.`,`Soirée jeux de société avec ${p.first}.`,`Pique-nique avec ${p.first}.`]))}
 function pRel(){
   const L=cur();let h='';const top=[];
-  if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:'Trouver l’amour',s:'Applis, soirées, coups de foudre',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':'',fn:L=>{findLove(L)}}));
+  if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:L.age<16?'Un coup de cœur à l’école':'Trouver l’amour',s:L.age<16?'Un(e) camarade te plaît ?':'Applis, soirées, coups de foudre',min:12,dis:(L.used.love||0)>=4?L.age<16?'Plus de coups de cœur cette année':'Plus de profils cette année':'',fn:L=>{findLove(L)}}));
   if(G.mode===2&&G.players.length>1){
     const oi=1-G.turn,o=G.players[oi];const fam=L.family.some(p=>p.first===o.first&&p.last===o.last);
-    if(o&&o.alive&&!L.partner&&!o.partner&&!L.prison&&!fam)top.push(act(L,{ic:'💌',t:`Déclarer ta flamme à ${o.first}`,s:`Joueur ${oi+1} · ${An(o.age)}`,min:14,dis:o.age<14?`${o.first} est trop jeune`:'',key:'decl',fn:L=>{declare(L)}}));
+    if(o&&o.alive&&!L.partner&&!o.partner&&!L.prison&&!fam)top.push(act(L,{ic:'💌',t:`Déclarer ta flamme à ${o.first}`,s:`Joueur ${oi+1} · ${An(o.age)}`,min:12,dis:o.age<12?`${o.first} est trop jeune`:(Math.min(L.age,o.age)<18&&Math.abs(L.age-o.age)>2)?'Trop d’écart d’âge':'',key:'decl',fn:L=>{declare(L)}}));
   }
   if(!L.prison)top.push(act(L,{ic:'🤝',t:'Se faire un nouvel ami',s:'École, travail, voisinage',min:4,key:'friend',fn:L=>{const f=addFriend(L);chg(L,{happy:4});return out(L,`Tu te lies d’amitié avec ${f.first}.`)}}));
   h+=group('Rencontres',top);
@@ -623,7 +624,7 @@ function actPick(L,items){
   const by=n=>items.find(i=>i[2]===n&&i[4]&&(i[5]||0)<=L.age);const out=[];
   const add=(n,ok,why)=>{const i=ok&&by(n);if(i&&!out.some(o=>o[0]===i))out.push([i,why])};
   add('Santé',L.ill.length>0,'Tu ne te sens pas bien');
-  add('Amour',!L.partner&&L.age>=14&&L.age<85,'Tu es célibataire');
+  add('Amour',!L.partner&&L.age>=12&&L.age<85,L.age<16?'Un(e) camarade te plaît peut-être':'Tu es célibataire');
   add('Leçons et loisirs',L.age>=4&&L.age<22,'Développe tes talents');
   add('Sorties',L.st.happy<55&&L.age>=10,'Un petit coup de blues ?');
   add('Corps et esprit',L.st.health<60,'Reprends des forces');
@@ -633,7 +634,7 @@ function actPick(L,items){
   add('Vacances',L.age>=18&&L.money>4000,'Tu as de quoi te faire plaisir');
   return out.slice(0,3);
 }
-function pLove(){const L=cur();return {title:'Amour',html:group('',[act(L,{ic:'💘',t:'Appli de rencontre',s:'Fais défiler les profils',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':L.partner?'Tu es en couple (tu peux quand même regarder…)':'',fn:L=>{findLove(L)}}),act(L,{ic:'🍸',t:'Speed dating',s:'30 €',cost:30,min:18,key:'speed',fn:L=>{findLove(L);return ''}}),act(L,{ic:'💋',t:'Tenter de séduire un inconnu au bar',min:18,key:'bar_love',fn:L=>{findLove(L);return ''}})])}}
+function pLove(){const L=cur();return {title:'Amour',html:group('',[L.age<16?act(L,{ic:'💘',t:'Un coup de cœur à l’école',s:'Un(e) camarade te plaît ?',min:12,dis:(L.used.love||0)>=4?'Plus de coups de cœur cette année':L.partner?'Tu sors déjà avec quelqu’un':'',fn:L=>{findLove(L)}}):act(L,{ic:'💘',t:'Appli de rencontre',s:'Fais défiler les profils',min:16,dis:(L.used.love||0)>=4?'Plus de profils cette année':L.partner?'Tu es en couple (tu peux quand même regarder…)':'',fn:L=>{findLove(L)}}),act(L,{ic:'🍸',t:'Speed dating',s:'30 €',cost:30,min:18,key:'speed',fn:L=>{findLove(L);return ''}}),act(L,{ic:'💋',t:'Tenter de séduire un inconnu au bar',min:18,key:'bar_love',fn:L=>{findLove(L);return ''}})])}}
 function pMind(){
   const L=cur();
   return {title:'Corps et esprit',html:group('',[

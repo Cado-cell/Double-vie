@@ -270,8 +270,8 @@ registerMod({
     D(L);
     return [
       act(L,{ic:'💌',t:'Mot doux',s:'Un petit mot qui touche (ou pas)',key:'dl_mot',fn:L=>pairLine(L,p,'mot',MOTS,'Tu glisses un mot doux')}),
-      act(L,{ic:'😘',t:'Répliques de séduction',s:'Charme, humour, risque de ringardise',key:'dl_sed',fn:L=>pairLine(L,p,'sed',SEDUC,'Tu tentes une réplique de séduction')})
-    ];
+      L.age>=16&&num(p.age,20)>=16?act(L,{ic:'😘',t:'Répliques de séduction',s:'Charme, humour, risque de ringardise',key:'dl_sed',fn:L=>pairLine(L,p,'sed',SEDUC,'Tu tentes une réplique de séduction')}):null
+    ].filter(Boolean);
   }
 });
 })();

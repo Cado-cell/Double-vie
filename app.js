@@ -2219,7 +2219,7 @@ function evApply(L,c,ev){
       case 'track':for(const t in v)track(L,t,v[t]);break;
       case 'next_forced_event_id':evForce(L,v,c.next_forced_delay);break;
       case 'probability_of_retaliation_trigger':if(c.retaliation_event_id&&chance(v))evForce(L,c.retaliation_event_id,c.retaliation_delay);break;
-      case 'chain_now':{const e=evById(v);if(e&&evCond(L,e.conditions))evRun(L,e);break}
+      case 'chain_now':{const e=evById(v);if(e&&evCond(L,e.conditions)&&!teenBlocked(L,e))evRun(L,e);break}
       case 'mod_effect':{const m=modById(v.mod);if(m&&m.effects&&m.effects[v.fn]){const r=m.effects[v.fn](L,v.args||{});if(r&&!txt)txt=r}break}
     }
   }
@@ -2235,14 +2235,19 @@ function evRun(L,ev){
   return 1;
 }
 
+/* Mineurs : parmi les évènements de couple, seuls ceux qui conviennent à leur âge peuvent se produire (pas de crise dans l'appartement,
+   de divorce ni de bébé). Évènements autorisés : ceux dont l'id commence par evt_teen_, et quelques évènements simples. */
+const TEEN_COUPLE_OK=id=>/^evt_teen_/.test(id)||['evt_couple_gift','evt_couple_jealous'].includes(id);
+const coupleCond=c=>!!c&&(c.has_partner===true||!!c.partner_status||(!!c.mod_cond&&c.mod_cond.mod==='couple'));
+const teenBlocked=(L,e)=>L.age<18&&!!e&&!!e.id&&coupleCond(e.conditions)&&!TEEN_COUPLE_OK(e.id);
 function rollEvents(L){
   let q=0;
   const due=(L.forced||[]).filter(f=>f.at<=L.age);L.forced=(L.forced||[]).filter(f=>f.at>L.age);
-  for(const f of due){const e=evById(f.id);if(e)q+=evRun(L,e)}
+  for(const f of due){const e=evById(f.id);if(e&&!teenBlocked(L,e))q+=evRun(L,e)}
   const n=+wpick({1:.55,2:.3,3:.15});
   const pool=[];
   for(const e of EVENTS){if(e.once&&L.flags['e_'+e.id])continue;if(!!L.prison!==!!e.jail)continue;let ok=false;try{ok=!!e.w(L)}catch(x){}if(ok)pool.push({e,w:1,legacy:1})}
-  for(const e of evAll()){if(e.once&&L.flags['e_'+e.id])continue;if(!!L.prison!==!!(e.conditions&&e.conditions.in_prison))continue;let ok=false;try{ok=evCond(L,e.conditions)}catch(x){console.error(x)}if(ok)pool.push({e,w:Math.max(.02,(e.probability_weight??.5)*2)})}
+  for(const e of evAll()){if(e.once&&L.flags['e_'+e.id])continue;if(teenBlocked(L,e))continue;if(!!L.prison!==!!(e.conditions&&e.conditions.in_prison))continue;let ok=false;try{ok=evCond(L,e.conditions)}catch(x){console.error(x)}if(ok)pool.push({e,w:Math.max(.02,(e.probability_weight??.5)*2)})}
   {const cnt={},key=p=>p.legacy?'classic':(p.e.category||'?');pool.forEach(p=>{const k=key(p);cnt[k]=(cnt[k]||0)+1});pool.forEach(p=>{p.w=p.w/Math.sqrt(cnt[key(p)])})}
   for(let i=0;i<n&&pool.length;i++){
     const w={};pool.forEach((p,j)=>w[j]=p.w);const j=+wpick(w);const {e,legacy}=pool.splice(j,1)[0];
@@ -12000,8 +12005,8 @@ registerMod({
     D(L);
     return [
       act(L,{ic:'💌',t:'Mot doux',s:'Un petit mot qui touche (ou pas)',key:'dl_mot',fn:L=>pairLine(L,p,'mot',MOTS,'Tu glisses un mot doux')}),
-      act(L,{ic:'😘',t:'Répliques de séduction',s:'Charme, humour, risque de ringardise',key:'dl_sed',fn:L=>pairLine(L,p,'sed',SEDUC,'Tu tentes une réplique de séduction')})
-    ];
+      L.age>=16&&num(p.age,20)>=16?act(L,{ic:'😘',t:'Répliques de séduction',s:'Charme, humour, risque de ringardise',key:'dl_sed',fn:L=>pairLine(L,p,'sed',SEDUC,'Tu tentes une réplique de séduction')}):null
+    ].filter(Boolean);
   }
 });
 })();
@@ -13138,6 +13143,43 @@ EVENT_DB.push(...[
 
 ;
 
+/* ===== events_db5.js ===== */
+/* Deux Vies — évènements 5 : amours d'école (préfixe evt_teen_). Seuls évènements de couple possibles avant 18 ans (voir teenBlocked dans events.js). */
+(()=>{
+EVENT_DB.push(...[
+{id:'evt_teen_cine',category:'love',icon:'🎬',conditions:{has_partner:true,min_age:12,max_age:17},probability_weight:0.5,
+ prompt_text:'{partner} te propose d’aller au cinéma samedi après-midi. Vous hésitez entre une comédie et un film d’horreur.',
+ choices:[
+  {choice_text:'Une comédie, bien sûr.',consequences:{relationship_partner_modifier:6,happiness_modifier:3,bank_balance_modifier:-10,result_text:'Vous riez si fort que le voisin de devant se retourne. Le pop-corn finit par terre.'}},
+  {choice_text:'Le film d’horreur !',consequences:{relationship_partner_modifier:5,happiness_modifier:2,bank_balance_modifier:-10,result_text:'Vous sursautez en même temps, puis vous faites semblant de ne pas avoir eu peur.'}},
+  {choice_text:'Inviter aussi les copains.',consequences:{relationship_partner_modifier:2,karma_modifier:1,happiness_modifier:3,bank_balance_modifier:-25,result_text:'On est huit dans la rangée. Vous ne vous parlez presque pas, mais tout le monde s’amuse.'}}]},
+{id:'evt_teen_jalousie',category:'love',icon:'👀',conditions:{has_partner:true,min_age:12,max_age:17},probability_weight:0.35,
+ prompt_text:'Pendant la récré, tu vois {partner} éclater de rire avec quelqu’un d’autre. Ton cœur fait un petit bond de travers.',
+ choices:[
+  {choice_text:'En parler calmement après les cours.',consequences:{relationship_partner_modifier:5,karma_modifier:1,result_text:'« Mais c’est juste un ami ! » Vous finissez par en rire ensemble.'}},
+  {choice_text:'Bouder toute la journée.',consequences:{relationship_partner_modifier:-6,stress_level_increment:3,result_text:'Une journée entière de silence. Toute la classe l’a remarqué.'}},
+  {choice_text:'Faire comme si de rien n’était.',consequences:{stress_level_increment:2,happiness_modifier:-1,result_text:'Tu serres les dents. Ça passera… sans doute.'}}]},
+{id:'evt_teen_parents',category:'love',icon:'🏠',once:true,conditions:{has_partner:true,min_age:13,max_age:17},probability_weight:0.3,
+ prompt_text:'Les parents de {partner} voudraient te rencontrer. Ils ont « juste quelques questions à te poser ».',
+ choices:[
+  {choice_text:'Mettre ta plus belle chemise.',consequences:{relationship_partner_modifier:6,happiness_modifier:2,result_text:'Tu réponds poliment à tout, même à la question sur tes projets d’avenir. Le père acquiert une certaine estime pour toi.'}},
+  {choice_text:'Les inviter chez toi pour un goûter.',consequences:{relationship_partner_modifier:4,relationship_parents_modifier:3,result_text:'Les deux familles se découvrent autour d’un gâteau. Tes parents sortent les vieilles photos. Quelle horreur.'}},
+  {choice_text:'Trouver une excuse.',consequences:{relationship_partner_modifier:-5,stress_level_increment:2,result_text:'« Désolé, j’ai un devoir… » Personne n’est dupe.'}}]},
+{id:'evt_teen_boum',category:'love',icon:'🎶',conditions:{has_partner:true,min_age:13,max_age:17},probability_weight:0.4,
+ prompt_text:'Une fête est organisée chez un camarade de classe. {partner} te demande si tu viens.',
+ choices:[
+  {choice_text:'Y aller avec {partner}.',consequences:{relationship_partner_modifier:5,happiness_modifier:4,result_text:'Vous dansez n’importe comment, vous riez beaucoup. Un souvenir de plus.'}},
+  {choice_text:'Rester réviser.',consequences:{smarts_modifier:1,relationship_partner_modifier:-2,happiness_modifier:-1,result_text:'Les maths te remercient. Ton cœur un peu moins.'}}]},
+{id:'evt_teen_rupture',category:'love',icon:'💔',conditions:{has_partner:true,min_age:12,max_age:17},probability_weight:0.18,
+ prompt_text:'Un message de {partner} s’affiche sur ton téléphone : « Je crois qu’on devrait rester amis. »',
+ choices:[
+  {choice_text:'Accepter, la gorge serrée.',consequences:{break_up:true,happiness_modifier:-4,result_text:'Vous restez amis, mais les regards sont un peu gênés dans la cour.'}},
+  {choice_text:'Demander une explication.',consequences:{relationship_partner_modifier:4,stress_level_increment:2,result_text:'Vous parlez longuement derrière le gymnase. Ça repart, doucement.'}}]}
+]);
+})();
+
+;
+
 /* ===== games.js ===== */
 /* Deux Vies — mini-jeux (s’affichent dans la fenêtre modale) */
 
@@ -14003,10 +14045,10 @@ function pCollect(){const L=cur();if(!L.collectMk||L.collectMk.age!==L.age)L.col
 /* ---------- Relations ---------- */
 function findLove(L,pre){
   L.used.love=(L.used.love||0)+1;
-  const g=likeG(L);const a=L.age<18?clamp(L.age+R(-1,1),14,17):Math.max(18,L.age+R(-7,7));
-  const p=pre||person(g,a,null,L.country);p.age=p.age||a;const job=p.job||(a<18?'lycéen':a<23&&chance(.5)?'étudiant':pick(NPC_JOBS));
-  modal({title:'Rencontre',icon:'💘',html:`<div class="cand"><div class="cavatar">${avatar(p)}</div><div><b>${esc(p.first)} ${esc(p.last)}, ${An(p.age)}</b><br><span class="muted">${esc(cap(job))}</span></div></div><div class="cand2">${statLine('Apparence',p.looks)}${statLine('Intelligence',p.smarts)}</div>`,choices:[
-    {t:'Proposer un rendez-vous',pri:1,fn:()=>{const pr=.4+(L.st.looks-p.looks)/180+(L.st.happy-50)/400+(L.fame/300);if(chance(pr)){setPartner(L,p);chg(L,{happy:10});return out(L,`💕 Premier rendez-vous réussi avec ${p.first}. Vous êtes en couple !`)}chg(L,{happy:-4});return out(L,`${p.first} ne donne pas suite.`)}},
+  const g=likeG(L);const a=L.age<18?clamp(L.age+R(-1,1),12,17):Math.max(18,L.age+R(-7,7));const teen=L.age<16;
+  const p=pre||person(g,a,null,L.country);p.age=p.age||a;const job=p.job||(a<15?'collégien':a<18?'lycéen':a<23&&chance(.5)?'étudiant':pick(NPC_JOBS));
+  modal({title:teen?'Un coup de cœur':'Rencontre',icon:'💘',html:`<div class="cand"><div class="cavatar">${avatar(p)}</div><div><b>${esc(p.first)} ${esc(p.last)}, ${An(p.age)}</b><br><span class="muted">${esc(cap(job))}</span></div></div><div class="cand2">${statLine('Apparence',p.looks)}${statLine('Intelligence',p.smarts)}</div>`,choices:[
+    {t:teen?'Lui proposer de sortir ensemble':'Proposer un rendez-vous',pri:1,fn:()=>{const pr=.4+(L.st.looks-p.looks)/180+(L.st.happy-50)/400+(L.fame/300);if(chance(pr)){setPartner(L,p);chg(L,{happy:10});return out(L,teen?`💕 ${p.first} dit oui, en rougissant. Vous sortez ensemble : cinéma, récré et petits mots dans les cahiers.`:`💕 Premier rendez-vous réussi avec ${p.first}. Vous êtes en couple !`)}chg(L,{happy:-4});return out(L,teen?`${p.first} préfère rester ${p.gender==='F'?'amie':'ami'}. Aïe, mais ça passera.`:`${p.first} ne donne pas suite.`)}},
     ...(L.age<18||p.age<18?[]:[{t:'Aventure d’un soir',fn:()=>{if(chance(.5+(L.st.looks-p.looks)/150)){chg(L,{happy:6});track(L,'partners');if(L.partner&&chance(.3))return breakUp(L,`${pn(L)} découvre ton infidélité.`);return out(L,`Une nuit passionnée avec ${p.first}. Sans lendemain.`)}return out(L,`${p.first} décline poliment.`)}}]),
     {t:L.used.love<4?'Voir un autre profil':'Plus de profils cette année',fn:()=>{if(L.used.love<4)findLove(L)}},
     {t:'Laisser tomber'}]});
@@ -14067,7 +14109,8 @@ function pPartner(){
   const H=[
     act(L,{ic:'💑',t:'Passer du temps ensemble',key:'pt',fn:L=>{partnerRel(L,R(4,10));chg(L,{happy:3});return out(L,pick([`Balade au bord de l’eau avec ${p.first}.`,`Soirée série sous un plaid avec ${p.first}.`,`Vous cuisinez une raclette, ${p.first} et toi.`,`Brocante du dimanche avec ${p.first}.`]))}}),
     act(L,{ic:'🕯️',t:'Dîner en amoureux',s:'80 €',cost:80,min:16,key:'pd',fn:L=>{partnerRel(L,R(5,12));chg(L,{happy:4});return out(L,`Dîner aux chandelles avec ${p.first}.`)}}),
-    typeof pGift==='function'&&L.age>=16?nav('🎁','Offrir un cadeau',L.used.pg?'Déjà fait cette année':'Fleurs, bijou, escapade…',pGift('partner'),!!L.used.pg):null,
+    typeof pGift==='function'&&L.age>=12?nav('🎁','Offrir un cadeau',L.used.pg?'Déjà fait cette année':L.age<16?'Un petit quelque chose pour lui ou elle':'Fleurs, bijou, escapade…',pGift('partner'),!!L.used.pg):null,
+    L.age<18?act(L,{ic:'🎬',t:'Sortie au cinéma',s:'10 €',cost:10,min:12,key:'pcine',fn:L=>{partnerRel(L,R(4,9));chg(L,{happy:3});return out(L,pick([`Cinéma avec ${p.first} : vous ne regardez pas vraiment le film.`,`Vous partagez un énorme pot de pop-corn avec ${p.first}.`,`Comédie samedi après-midi avec ${p.first} : fous rires garantis.`]))}}):null,
     act(L,{ic:'🏝️',t:'Partir en week-end en amoureux',s:'900 €',cost:900,min:18,key:'pw',fn:L=>{partnerRel(L,R(8,16));chg(L,{happy:7});track(L,'trips');return out(L,`Week-end à ${pick(['Venise','Étretat','Annecy','Biarritz','Lisbonne'])} avec ${p.first}.`)}}),
     act(L,{ic:'💬',t:'Faire un compliment',key:'pc',fn:L=>{partnerRel(L,R(2,6));return out(L,`${p.first} rougit.`)}}),
     act(L,{ic:'💢',t:'Se disputer',key:'px',fn:L=>{partnerRel(L,-R(8,15));chg(L,{happy:-3});return out(L,`Grosse dispute avec ${p.first}.`)}})];
@@ -14097,10 +14140,10 @@ const wTag=(L,p)=>{const w=p&&p.type!=='pet'?npcWealth(L,p):null;return w&&!w.po
 function spendTime(L,p){p.seen=L.age;p.rel=clamp(p.rel+R(3,10));chg(L,{happy:2});return out(L,pick([`Cinéma avec ${p.first}.`,`Longue balade avec ${p.first}.`,`Soirée jeux de société avec ${p.first}.`,`Pique-nique avec ${p.first}.`]))}
 function pRel(){
   const L=cur();let h='';const top=[];
-  if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:'Trouver l’amour',s:'Applis, soirées, coups de foudre',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':'',fn:L=>{findLove(L)}}));
+  if(!L.partner&&!L.prison)top.push(act(L,{ic:'💘',t:L.age<16?'Un coup de cœur à l’école':'Trouver l’amour',s:L.age<16?'Un(e) camarade te plaît ?':'Applis, soirées, coups de foudre',min:12,dis:(L.used.love||0)>=4?L.age<16?'Plus de coups de cœur cette année':'Plus de profils cette année':'',fn:L=>{findLove(L)}}));
   if(G.mode===2&&G.players.length>1){
     const oi=1-G.turn,o=G.players[oi];const fam=L.family.some(p=>p.first===o.first&&p.last===o.last);
-    if(o&&o.alive&&!L.partner&&!o.partner&&!L.prison&&!fam)top.push(act(L,{ic:'💌',t:`Déclarer ta flamme à ${o.first}`,s:`Joueur ${oi+1} · ${An(o.age)}`,min:14,dis:o.age<14?`${o.first} est trop jeune`:'',key:'decl',fn:L=>{declare(L)}}));
+    if(o&&o.alive&&!L.partner&&!o.partner&&!L.prison&&!fam)top.push(act(L,{ic:'💌',t:`Déclarer ta flamme à ${o.first}`,s:`Joueur ${oi+1} · ${An(o.age)}`,min:12,dis:o.age<12?`${o.first} est trop jeune`:(Math.min(L.age,o.age)<18&&Math.abs(L.age-o.age)>2)?'Trop d’écart d’âge':'',key:'decl',fn:L=>{declare(L)}}));
   }
   if(!L.prison)top.push(act(L,{ic:'🤝',t:'Se faire un nouvel ami',s:'École, travail, voisinage',min:4,key:'friend',fn:L=>{const f=addFriend(L);chg(L,{happy:4});return out(L,`Tu te lies d’amitié avec ${f.first}.`)}}));
   h+=group('Rencontres',top);
@@ -14183,7 +14226,7 @@ function actPick(L,items){
   const by=n=>items.find(i=>i[2]===n&&i[4]&&(i[5]||0)<=L.age);const out=[];
   const add=(n,ok,why)=>{const i=ok&&by(n);if(i&&!out.some(o=>o[0]===i))out.push([i,why])};
   add('Santé',L.ill.length>0,'Tu ne te sens pas bien');
-  add('Amour',!L.partner&&L.age>=14&&L.age<85,'Tu es célibataire');
+  add('Amour',!L.partner&&L.age>=12&&L.age<85,L.age<16?'Un(e) camarade te plaît peut-être':'Tu es célibataire');
   add('Leçons et loisirs',L.age>=4&&L.age<22,'Développe tes talents');
   add('Sorties',L.st.happy<55&&L.age>=10,'Un petit coup de blues ?');
   add('Corps et esprit',L.st.health<60,'Reprends des forces');
@@ -14193,7 +14236,7 @@ function actPick(L,items){
   add('Vacances',L.age>=18&&L.money>4000,'Tu as de quoi te faire plaisir');
   return out.slice(0,3);
 }
-function pLove(){const L=cur();return {title:'Amour',html:group('',[act(L,{ic:'💘',t:'Appli de rencontre',s:'Fais défiler les profils',min:14,dis:(L.used.love||0)>=4?'Plus de profils cette année':L.partner?'Tu es en couple (tu peux quand même regarder…)':'',fn:L=>{findLove(L)}}),act(L,{ic:'🍸',t:'Speed dating',s:'30 €',cost:30,min:18,key:'speed',fn:L=>{findLove(L);return ''}}),act(L,{ic:'💋',t:'Tenter de séduire un inconnu au bar',min:18,key:'bar_love',fn:L=>{findLove(L);return ''}})])}}
+function pLove(){const L=cur();return {title:'Amour',html:group('',[L.age<16?act(L,{ic:'💘',t:'Un coup de cœur à l’école',s:'Un(e) camarade te plaît ?',min:12,dis:(L.used.love||0)>=4?'Plus de coups de cœur cette année':L.partner?'Tu sors déjà avec quelqu’un':'',fn:L=>{findLove(L)}}):act(L,{ic:'💘',t:'Appli de rencontre',s:'Fais défiler les profils',min:16,dis:(L.used.love||0)>=4?'Plus de profils cette année':L.partner?'Tu es en couple (tu peux quand même regarder…)':'',fn:L=>{findLove(L)}}),act(L,{ic:'🍸',t:'Speed dating',s:'30 €',cost:30,min:18,key:'speed',fn:L=>{findLove(L);return ''}}),act(L,{ic:'💋',t:'Tenter de séduire un inconnu au bar',min:18,key:'bar_love',fn:L=>{findLove(L);return ''}})])}}
 function pMind(){
   const L=cur();
   return {title:'Corps et esprit',html:group('',[

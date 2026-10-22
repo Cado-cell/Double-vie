@@ -22,6 +22,7 @@ const T=[
  ['personnalité qui se révèle','persona.js',[],o=>/"ok":true/.test(o)],
  ['à deux, chacun chez soi','duo.js',[],o=>/"ok":true/.test(o)],
  ['cadeaux','gifts.js',[],o=>/"ok":true/.test(o)],
+ ['amours d’école','teenlove.js',[],o=>/"ok":true/.test(o)],
  ['usure et entretien des biens','wear.js',[],o=>/"ok":true/.test(o)],
  ['rêves de vie','dreams.js',[],o=>/"ok":true/.test(o)],
  ['trait choisi à la création','traits.js',[],o=>/"ok":true/.test(o)],

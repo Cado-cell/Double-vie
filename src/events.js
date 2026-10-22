@@ -206,7 +206,7 @@ function evApply(L,c,ev){
       case 'track':for(const t in v)track(L,t,v[t]);break;
       case 'next_forced_event_id':evForce(L,v,c.next_forced_delay);break;
       case 'probability_of_retaliation_trigger':if(c.retaliation_event_id&&chance(v))evForce(L,c.retaliation_event_id,c.retaliation_delay);break;
-      case 'chain_now':{const e=evById(v);if(e&&evCond(L,e.conditions))evRun(L,e);break}
+      case 'chain_now':{const e=evById(v);if(e&&evCond(L,e.conditions)&&!teenBlocked(L,e))evRun(L,e);break}
       case 'mod_effect':{const m=modById(v.mod);if(m&&m.effects&&m.effects[v.fn]){const r=m.effects[v.fn](L,v.args||{});if(r&&!txt)txt=r}break}
     }
   }
@@ -222,14 +222,19 @@ function evRun(L,ev){
   return 1;
 }
 
+/* Mineurs : parmi les évènements de couple, seuls ceux qui conviennent à leur âge peuvent se produire (pas de crise dans l'appartement,
+   de divorce ni de bébé). Évènements autorisés : ceux dont l'id commence par evt_teen_, et quelques évènements simples. */
+const TEEN_COUPLE_OK=id=>/^evt_teen_/.test(id)||['evt_couple_gift','evt_couple_jealous'].includes(id);
+const coupleCond=c=>!!c&&(c.has_partner===true||!!c.partner_status||(!!c.mod_cond&&c.mod_cond.mod==='couple'));
+const teenBlocked=(L,e)=>L.age<18&&!!e&&!!e.id&&coupleCond(e.conditions)&&!TEEN_COUPLE_OK(e.id);
 function rollEvents(L){
   let q=0;
   const due=(L.forced||[]).filter(f=>f.at<=L.age);L.forced=(L.forced||[]).filter(f=>f.at>L.age);
-  for(const f of due){const e=evById(f.id);if(e)q+=evRun(L,e)}
+  for(const f of due){const e=evById(f.id);if(e&&!teenBlocked(L,e))q+=evRun(L,e)}
   const n=+wpick({1:.55,2:.3,3:.15});
   const pool=[];
   for(const e of EVENTS){if(e.once&&L.flags['e_'+e.id])continue;if(!!L.prison!==!!e.jail)continue;let ok=false;try{ok=!!e.w(L)}catch(x){}if(ok)pool.push({e,w:1,legacy:1})}
-  for(const e of evAll()){if(e.once&&L.flags['e_'+e.id])continue;if(!!L.prison!==!!(e.conditions&&e.conditions.in_prison))continue;let ok=false;try{ok=evCond(L,e.conditions)}catch(x){console.error(x)}if(ok)pool.push({e,w:Math.max(.02,(e.probability_weight??.5)*2)})}
+  for(const e of evAll()){if(e.once&&L.flags['e_'+e.id])continue;if(teenBlocked(L,e))continue;if(!!L.prison!==!!(e.conditions&&e.conditions.in_prison))continue;let ok=false;try{ok=evCond(L,e.conditions)}catch(x){console.error(x)}if(ok)pool.push({e,w:Math.max(.02,(e.probability_weight??.5)*2)})}
   {const cnt={},key=p=>p.legacy?'classic':(p.e.category||'?');pool.forEach(p=>{const k=key(p);cnt[k]=(cnt[k]||0)+1});pool.forEach(p=>{p.w=p.w/Math.sqrt(cnt[key(p)])})}
   for(let i=0;i<n&&pool.length;i++){
     const w={};pool.forEach((p,j)=>w[j]=p.w);const j=+wpick(w);const {e,legacy}=pool.splice(j,1)[0];
