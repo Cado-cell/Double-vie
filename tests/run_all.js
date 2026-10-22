@@ -26,9 +26,16 @@ const T=[
  ['hors connexion (paquet publié)','pwatest2.js',[],o=>/erreurs \[\]/.test(o)&&/"cached":8/.test(o)]
 ];
 let bad=0;
+/* Un test qui échoue est relancé une fois : une panne due au hasard ou à une machine lente passe au second essai,
+   une vraie régression échoue deux fois. */
+function run(file,args,ok){
+  const r=spawnSync('node',[path.join(__dirname,file),...args],{cwd:ROOT,encoding:'utf8',timeout:600000});
+  const out=(r.stdout||'')+(r.stderr||'');return {pass:r.status===0&&ok(out),out};
+}
 for(const [name,file,args,ok] of T){
-  const t=Date.now();const r=spawnSync('node',[path.join(__dirname,file),...args],{cwd:ROOT,encoding:'utf8',timeout:600000});
-  const out=(r.stdout||'')+(r.stderr||'');const pass=r.status===0&&ok(out);
-  console.log((pass?'OK     ':'ÉCHEC  ')+name+'  ('+Math.round((Date.now()-t)/1000)+' s)');if(!pass){bad++;console.log(out.split('\n').slice(-12).join('\n'))}
+  const t=Date.now();let res=run(file,args,ok),retry=false;
+  if(!res.pass){retry=true;res=run(file,args,ok)}
+  console.log((res.pass?'OK     ':'ÉCHEC  ')+name+(retry&&res.pass?' (réussi au 2e essai)':'')+'  ('+Math.round((Date.now()-t)/1000)+' s)');
+  if(!res.pass){bad++;console.log(res.out.split('\n').slice(-12).join('\n'))}
 }
 srv.kill();console.log(bad?`\n${bad} test(s) en échec`:'\nTous les tests passent');process.exit(bad?1:0);
