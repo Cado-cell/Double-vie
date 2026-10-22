@@ -3,6 +3,9 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 22/10/2026
+- Quatre personnes reviennent dans ta vie, avec une histoire et des choix : un rival d'école (du défi en CM2 à la réunion d'anciens élèves, en passant par le bac et la promotion), un meilleur ami d'enfance (le déménagement, les retrouvailles, le mariage), un voisin pénible (excuses, gâteau ou dispute… et ce que ça donne des années plus tard) et l'ex qui t'écrit à 2 h du matin. Ils ont un visage, un nom et un rôle dans l'onglet Relations.
+- Des rumeurs circulent sur toi et sur tes proches.
+- Personnalité qui se révèle : ce que tu fais le plus souvent (soirées, travail, études, voyages, dons, sport, famille) finit par faire de toi un « Fêtard », un « Bosseur », un « Cérébral », un « Aventurier », un « Grand cœur », un « Zen » ou un « Pilier de famille ». Chaque personnalité amène des évènements à elle ; rester fidèle à toi-même rend heureux tous les 5 ans et peut te valoir un prix dans le bilan. La fiche est dans ton personnage → Personnalité.
 - Bourse : la page d'une action est plus courte (acheter 1, investir 1 000 ou 10 000 €, montant libre ; « vendre la moitié » et « tout vendre » n'apparaissent que si tu en possèdes).
 - Traits : « Qualités » et « Défauts » sont deux sections repliables au lieu d'une liste de 15 lignes.
 - Anniversaire : un gâteau s'envole au-dessus de ton portrait aux âges qui comptent (1, 5, 10, 16, 18, 21, 30, 40…), et tes yeux clignent.

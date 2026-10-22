@@ -1459,12 +1459,12 @@ function npcWealth(L,p){
 function person(g,age,last,country,parents){
   return {id:nid(),first:rname(g,country),last:last||rlast(country),gender:g,age,rel:R(55,95),alive:true,looks:R(10,100),smarts:R(10,100),health:R(60,100),crazy:R(0,70),fame:chance(.03)?R(20,80):R(0,8),ill:[],type:'friend',look:genLook(parents&&parents[0]&&parents[0].look,parents&&parents[1]&&parents[1].look,g),job:age>=22?pick(NPC_JOBS):''};
 }
-function role(p){const F=p.gender==='F';switch(p.type){
+function role(p){const F=p.gender==='F';if(p.type==='friend'&&p.tag){if(p.tag==='rival')return F?'Rivale':'Rival';if(p.tag==='bestie')return F?'Meilleure amie':'Meilleur ami';if(p.tag==='voisin')return F?'Voisine':'Voisin'}switch(p.type){
   case 'parent':return F?'Mère':'Père';case 'sibling':return F?'Sœur':'Frère';case 'child':return F?'Fille':'Fils';
   case 'grand':return F?'Grand-mère':'Grand-père';case 'grandkid':return F?'Petite-fille':'Petit-fils';
   case 'friend':return p.coworker?(F?'Collègue':'Collègue'):(F?'Amie':'Ami');case 'enemy':return F?'Ennemie':'Ennemi';
   case 'ex':return F?'Ex':'Ex';case 'boss':return F?'Patronne':'Patron';case 'pet':return p.species;default:return ''}}
-function poss(p){const r=role(p).toLowerCase();if(p.type==='friend'||p.type==='pet'||p.type==='ex'||p.type==='enemy')return 'ton '+r;return (p.gender==='F'?'ta ':'ton ')+r}
+function poss(p){const r=role(p).toLowerCase();if(p.tag&&p.type==='friend')return (p.gender==='F'?'ta ':'ton ')+r;if(p.type==='friend'||p.type==='pet'||p.type==='ex'||p.type==='enemy')return 'ton '+r;return (p.gender==='F'?'ta ':'ton ')+r}
 const kids=L=>L.family.filter(p=>p.type==='child'&&p.alive);
 const allKids=L=>L.family.filter(p=>p.type==='child');
 const friends=L=>L.family.filter(p=>p.type==='friend'&&p.alive);
@@ -10471,7 +10471,7 @@ const MOD='agents';
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
 /* Personnalité stable, déduite de l'identité du personnage. */
 const pers=p=>{const h=hash(p.id||p.first);return {sociable:h%100,loyal:(h>>>7)%100,impulsif:Math.min(100,Math.round(((p.crazy??40)+((h>>>14)%100))/2))}};
-const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&p.age>=12&&['parent','sibling','friend','grand','child'].includes(p.type)&&!(p.type==='child'&&p.age<18));
+const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&p.age>=12&&['parent','sibling','friend','grand','child'].includes(p.type)&&p.tag!=='rival'&&p.tag!=='voisin'&&!(p.type==='child'&&p.age<18));
 const em=t=>t;
 function pickWeighted(items){const tot=items.reduce((s,x)=>s+x[1],0);let r=Math.random()*tot;for(const [v,w] of items){r-=w;if(r<=0)return v}return items[items.length-1][0]}
 
@@ -10519,6 +10519,298 @@ function year(L){
   try{if(act(L,p))track(L,'agentEvents')}catch(e){console.error(e)}
 }
 registerMod({id:MOD,year});
+})();
+
+;
+
+/* ===== mod_recurring.js ===== */
+/* Deux Vies — module « Personnages récurrents » (id recurring)
+   Quatre personnes qui reviennent dans la vie, chacune avec une histoire en plusieurs étapes et des choix qui comptent :
+   le rival d'école, le meilleur ami d'enfance, le voisin pénible et l'ex qui revient. Ils vivent dans L.family
+   (visage, relation) avec p.tag ('rival', 'bestie', 'voisin'). Ajoute aussi des rumeurs légères.
+   État par vie : L.rec = {rival:{id,step,stance}, bestie:{id,step}, voisin:{id,step}, ex:{step,y}}, L.rumorAt. */
+(()=>{
+const MOD='recurring';
+const st=L=>{if(!L.rec||typeof L.rec!=='object')L.rec={};return L.rec};
+const live=(L,k)=>{const r=st(L)[k];const p=r&&r.id?byId(L,r.id):null;return p&&p.alive!==false?p:null};
+const face=p=>{try{return avatar(p,{happy:60})}catch(e){return ''}};
+const sx=(p,m,f)=>p.gender==='F'?f:m;
+function newPerson(L,k,tag,age,rel,gender){
+  const p=person(gender||pick(['H','F']),Math.max(3,age),null,L.country);
+  p.type='friend';p.tag=tag;p.rel=rel;p.seen=L.age;L.family.push(p);
+  const r=st(L)[k]||(st(L)[k]={});r.id=p.id;r.step=0;r.y=L.age;
+  return p;
+}
+const mood=(L,d)=>chg(L,d);
+
+/* ---------- Le rival d'école ---------- */
+function arcRival(L){
+  const rec=st(L);let r=rec.rival;
+  if(!r){
+    if(!(L.age>=8&&L.age<=12&&chance(.35)))return false;
+    const p=newPerson(L,'rival','rival',L.age+R(-1,1),35);r=rec.rival;
+    modal({title:'Un rival en classe',icon:'🥊',av:face(p),text:`${p.first}, ${sx(p,'le nouveau','la nouvelle')} de la classe, te toise : « Je suis meilleur${sx(p,'','e')} que toi en tout. »`,choices:[
+      {t:'Relever le défi',fn:()=>{p.rel=25;r.stance='duel';mood(L,{smarts:1,happy:-1,discipline:1});r.step=1;return out(L,`🥊 Duel lancé avec ${p.first}. Tout est prétexte à comparer les notes.`)}},
+      {t:'Proposer de réviser ensemble',fn:()=>{p.rel=62;r.stance='friend';mood(L,{happy:2});r.step=1;return out(L,`📚 Tu révises avec ${p.first}. Le courant passe mieux que prévu.`)}},
+      {t:'L’ignorer',fn:()=>{p.rel=38;r.stance='ignore';r.step=1;return out(L,`🙄 Tu fais comme si ${p.first} n’existait pas. Pas facile quand on est assis à côté.`)}}]});
+    return true;
+  }
+  const p=live(L,'rival');if(!p)return false;
+  if(r.step===1&&L.age>=16&&L.age<=19&&chance(.5)){
+    const mine=L.st.smarts*.6+((L.edu&&L.edu.grades)||50)*.4,his=(p.smarts??50)+R(-12,12),win=mine>=his;
+    const sty=r.stance;
+    const txt=`Les résultats tombent : ${win?`tu finis devant ${p.first}`:`${p.first} finit devant toi`}. `+(sty==='duel'?'Le duel de toute une scolarité se termine… pour l’instant.':sty==='friend'?'Vous aviez révisé ensemble, ça compte.':'Vous ne vous parliez presque pas, mais tout le monde a regardé.');
+    r.step=2;
+    modal({title:'Les résultats',icon:'📋',av:face(p),text:txt,choices:[
+      {t:win?'Rester beau joueur':'Féliciter, la tête haute',fn:()=>{p.rel=clamp(p.rel+10);mood(L,{happy:win?4:1,karma:1});return out(L,`🤝 Tu serres la main de ${p.first}. ${sx(p,'Il','Elle')} ne s’y attendait pas.`)}},
+      {t:win?'Lui rappeler ta victoire':'Dire que les notes sont truquées',fn:()=>{p.rel=clamp(p.rel-10);mood(L,{happy:win?3:-2,karma:-1});return out(L,`😏 ${p.first} serre les dents. La rivalité est relancée.`)}}]});
+    return true;
+  }
+  if(r.step===2&&L.age>=24&&L.age<=40&&L.job&&!L.prison&&chance(.35)){
+    r.step=3;
+    modal({title:'Ton ancien rival',icon:'💼',av:face(p),text:`${p.first}, ton rival d’école, est en lice pour la même promotion que toi. Quelle coïncidence.`,choices:[
+      {t:'Jouer franc jeu',fn:()=>{
+        if(chance(((L.job.perf||50)+25)/130)){L.job.sal=Math.round((L.job.sal||0)*1.05);mood(L,{happy:3});p.rel=clamp(p.rel+3);return out(L,`💼 Tu l’emportes à la loyale, devant ${p.first}. Une revanche qui a le goût du café de la machine.`)}
+        L.job.perf=clamp((L.job.perf||50)-3);mood(L,{happy:-2});return out(L,`💼 ${p.first} décroche la place. Tu lui serres la main sans le dire.`)}},
+      p.rel>=35?{t:'Proposer de faire équipe',fn:()=>{p.rel=clamp(p.rel+12);L.job.perf=clamp((L.job.perf||50)+4);mood(L,{karma:2,happy:3});return out(L,`🤝 Vous présentez un projet à deux. Plus personne ne comprend comment vous êtes devenus alliés.`)}}:null,
+      {t:'Un petit coup bas',danger:true,fn:()=>{mood(L,{karma:-3});
+        if(chance(.55)){L.job.perf=clamp((L.job.perf||50)+8);p.rel=5;p.type='enemy';return out(L,`😈 Ça marche. ${p.first} ne t’adresse plus la parole, et tu dors très bien.`)}
+        L.job.perf=clamp((L.job.perf||50)-8);mood(L,{happy:-4,stress:3});return out(L,'😳 Ça se sait. Les regards en réunion en disent long.')}}].filter(Boolean)});
+    return true;
+  }
+  if(r.step===3&&L.age>=45&&chance(.4)){
+    r.step=4;
+    modal({title:'Réunion d’anciens élèves',icon:'🎓',av:face(p),text:`Retrouvailles de l’école. ${p.first} s’avance vers toi, un verre à la main. Trente ans ont passé, les notes n’ont plus d’importance.`,choices:[
+      {t:'Tendre la main',fn:()=>{p.rel=clamp(p.rel+25);if(p.type==='enemy')p.type='friend';mood(L,{happy:3,karma:1});return out(L,`🥂 Vous trinquez à vos vieilles bagarres de cour de récré. ${p.first} est devenu${sx(p,'','e')} un${sx(p,'','e')} vrai${sx(p,'','e')} ami${sx(p,'','e')}.`)}},
+      {t:'Rester distant',fn:()=>{p.rel=clamp(p.rel-3);return out(L,`🙂 Un hochement de tête, deux phrases polies. ${p.first} repart vers le buffet.`)}}]});
+    return true;
+  }
+  return false;
+}
+
+/* ---------- Le meilleur ami d'enfance ---------- */
+function arcBestie(L){
+  const rec=st(L);let r=rec.bestie;
+  if(!r){
+    if(!(L.age>=6&&L.age<=9&&chance(.5)))return false;
+    const p=newPerson(L,'bestie','bestie',L.age,88);r=rec.bestie;r.step=1;r.since=L.age;
+    say(L,`🧒 À l’école, tu te lies d’amitié avec ${p.first}. Une de ces amitiés qui promettent de durer toute la vie.`);
+    return true;
+  }
+  const p=live(L,'bestie');if(!p)return false;
+  if(r.step===1&&L.age>=11&&L.age<=14&&chance(.5)){
+    r.step=2;p.far=true;
+    modal({title:'Un départ',icon:'📦',av:face(p),text:`${p.first}, ton meilleur ami d’enfance, t’annonce que sa famille déménage à l’autre bout du pays. Vous avez une semaine.`,choices:[
+      {t:'Promettre de s’écrire chaque semaine',fn:()=>{p.rel=70;r.stance='lettres';mood(L,{happy:-2});return out(L,`✉️ Vous échangez vos adresses et un serment solennel. ${p.first} s’en va, le nez dans la vitre.`)}},
+      {t:'Lui offrir ton objet préféré',fn:()=>{p.rel=80;r.stance='cadeau';mood(L,{happy:-3,karma:1});return out(L,`🎁 Tu donnes ton objet préféré à ${p.first}. Il sera gardé toute une vie.`)}},
+      {t:'Faire comme si ça ne te touchait pas',fn:()=>{p.rel=55;r.stance='froid';return out(L,`😶 « C’est pas grave. » Tu y repenseras longtemps.`)}}]});
+    return true;
+  }
+  if(r.step===2&&L.age>=17&&L.age<=24&&chance(.5)){
+    r.step=3;
+    modal({title:'Un message du passé',icon:'📱',av:face(p),text:`Un message s’affiche : « Salut, c’est ${p.first} ! Tu te souviens de moi ? » Dix ans de silence en une ligne.`,choices:[
+      {t:'Répondre tout de suite',fn:()=>{p.rel=clamp(p.rel+22);p.seen=L.age;p.far=false;mood(L,{happy:4});return out(L,`📱 Vous parlez jusqu’à l’aube. Rien n’a changé, tout a changé, c’est parfait.`)}},
+      {t:'Mettre un petit pouce',fn:()=>{p.rel=clamp(p.rel+5);return out(L,`👍 Un pouce, un cœur, et la vie reprend son cours. Dommage.`)}},
+      {t:'Ne pas répondre',fn:()=>{p.rel=clamp(p.rel-20);mood(L,{happy:-1});return out(L,`📵 Tu laisses le message sans réponse. Il y a des fantômes qu’on préfère laisser dormir.`)}}]});
+    return true;
+  }
+  if(r.step===3&&L.age>=25&&L.age<=40&&chance(.45)){
+    r.step=4;
+    if(p.rel<40){say(L,`📭 Tu apprends par un ami commun que ${p.first} s’est marié${sx(p,'','e')}. Vous vous êtes perdus de vue, c’est comme ça.`);return true}
+    modal({title:'Témoin de mariage',icon:'💒',av:face(p),text:`${p.first} se marie et te demande d’être ${sx(p,'son témoin','sa témoin')}. « Qui d’autre ? », dit-${sx(p,'il','elle')}.`,choices:[
+      {t:L.money>=300?'Accepter avec joie (cadeau : 300 €)':'Accepter avec joie',fn:()=>{if(L.money>=300)spend(L,300);p.rel=clamp(p.rel+12);p.seen=L.age;mood(L,{happy:5,karma:1});return out(L,`💒 Ton discours fait pleurer toute la salle, y compris le DJ.`)}},
+      {t:'Accepter, sans cadeau',fn:()=>{p.rel=clamp(p.rel+4);p.seen=L.age;mood(L,{happy:2});return out(L,`💒 Tu es là, c’est l’essentiel. Le cadeau suivra, peut-être.`)}},
+      {t:'Décliner poliment',fn:()=>{p.rel=clamp(p.rel-20);mood(L,{happy:-3});return out(L,`😔 ${p.first} cache sa déception. Un « pas de souci » qui pèse une tonne.`)}}]});
+    return true;
+  }
+  if(r.step===4&&L.age>=55&&L.age<=78&&chance(.3)){
+    r.step=5;const n=Math.max(1,L.age-(r.since||7));
+    modal({title:'Des décennies d’amitié',icon:'🥂',av:face(p),text:`${p.first} t’appelle : « Cela fait ${n} ans qu’on se connaît. On ne va pas laisser passer ça. »`,choices:[
+      {t:'Faire le voyage pour le retrouver',fn:()=>{if(L.money>=400)spend(L,400);p.rel=95;p.seen=L.age;mood(L,{happy:8});return out(L,`🥂 Vous trinquez dans la même cuisine qu’à dix ans. L’adresse est restée, les rides aussi.`)}},
+      {t:'Un long appel vidéo',fn:()=>{p.rel=clamp(p.rel+5);p.seen=L.age;mood(L,{happy:3});return out(L,`📞 Trois heures de souvenirs. Les petits-enfants demandent de qui vous parlez.`)}}]});
+    return true;
+  }
+  return false;
+}
+
+/* ---------- Le voisin pénible ---------- */
+const SOUCIS=['du bruit qui passe à travers le plancher','des poubelles qui ne sont pas sorties le bon jour','de ton paillasson qui dépasse de trois centimètres','d’une place de parking « qui lui appartient depuis 1987 »','de la musique du samedi soir','de ton vélo dans le couloir'];
+function arcVoisin(L){
+  const rec=st(L);let r=rec.voisin;
+  if(!r){
+    if(!(L.age>=22&&!(L.withParents&&parentsAlive(L))&&chance(.25)))return false;
+    const p=newPerson(L,'voisin','voisin',R(48,72),40);r=rec.voisin;
+    modal({title:'Le voisin',icon:'🚪',av:face(p),text:`${p.first}, ${sx(p,'ton voisin','ta voisine')} du dessus, sonne à ta porte à neuf heures du soir : « Je voulais juste vous dire que j’entends tout. »`,choices:[
+      {t:'S’excuser poliment',fn:()=>{p.rel=55;r.stance='poli';r.step=1;r.y=L.age;mood(L,{stress:-1});return out(L,`🙏 Tu t’excuses et tu promets de baisser le son. ${p.first} repart presque souriant${sx(p,'','e')}.`)}},
+      {t:'Lui répondre sèchement',fn:()=>{p.rel=20;r.stance='sec';r.step=1;r.y=L.age;mood(L,{stress:2});return out(L,`😤 La porte claque. ${p.first} note la date dans un petit carnet.`)}},
+      {t:'Lui offrir un gâteau',fn:()=>{spend(L,10);p.rel=70;r.stance='gateau';r.step=1;r.y=L.age;mood(L,{happy:1,karma:1});return out(L,`🍰 Un gâteau, quelques mots gentils. ${p.first} n’en revient pas.`)}}]});
+    return true;
+  }
+  const p=live(L,'voisin');if(!p)return false;
+  if(r.step===1&&L.age-r.y>=2&&chance(.4)){
+    r.step=2;r.y=L.age;
+    modal({title:'Encore le voisin',icon:'🙄',av:face(p),text:`${p.first} se plaint ${pick(SOUCIS)}. Il y a décidément toujours quelque chose.`,choices:[
+      {t:'En discuter calmement',fn:()=>{p.rel=clamp(p.rel+8);mood(L,{stress:-1});return out(L,`☕ Autour d’un café, le malentendu s’éclaircit. ${p.first} est moins redoutable en pantoufles.`)}},
+      {t:'Contre-attaquer',fn:()=>{p.rel=clamp(p.rel-10);mood(L,{stress:2});return out(L,`📣 Les échanges sont vifs, l’escalier a tout entendu.`)}},
+      {t:'Faire semblant de ne pas être là',fn:()=>{p.rel=clamp(p.rel-3);return out(L,`🤫 Tu retiens ta respiration jusqu’à ce que les pas s’éloignent.`)}}]});
+    return true;
+  }
+  if(r.step===2&&L.age-r.y>=3&&chance(.4)){
+    r.step=3;
+    if(p.rel>=55){mood(L,{happy:3});p.rel=clamp(p.rel+10);say(L,`🥧 ${p.first} garde ton courrier pendant tes vacances et dépose une tarte sur ton paillasson. Qui aurait cru ça ?`);return true}
+    if(p.rel>=30){say(L,`👋 Vous vous saluez maintenant d’un signe de tête dans l’escalier. C’est déjà beaucoup.`);return true}
+    modal({title:'Les rumeurs de l’immeuble',icon:'🗣️',av:face(p),text:`Tu apprends que ${p.first} raconte des choses sur toi dans tout l’immeuble. Il paraît même qu’il y a une pétition.`,choices:[
+      {t:'Frapper à sa porte pour discuter',fn:()=>{if(chance(.5)){p.rel=clamp(p.rel+25);mood(L,{happy:2});return out(L,`🕊️ ${p.first} ouvre, surpris${sx(p,'','e')}. Vous vous expliquez. La pétition finit à la poubelle.`)}p.rel=clamp(p.rel-5);mood(L,{stress:2});return out(L,`🚪 ${p.first} ne t’ouvre pas. Les rumeurs continuent de plus belle.`)}},
+      {t:'Laisser dire',fn:()=>{mood(L,{happy:-3});return out(L,`🙃 Tu laisses courir. Un jour ou l’autre, quelqu’un d’autre sera la nouvelle victime.`)}}]});
+    return true;
+  }
+  return false;
+}
+
+/* ---------- L'ex qui revient ---------- */
+function arcEx(L){
+  const rec=st(L);const r=rec.ex||(rec.ex={step:0,y:0});
+  if(r.step>=2||L.age<21)return false;
+  const exes=L.family.filter(p=>p.type==='ex'&&p.alive!==false&&p.age>=18);
+  if(!exes.length)return false;
+  if(r.step===0&&chance(.1)){
+    const p=pick(exes);r.step=1;r.y=L.age;r.id=p.id;
+    modal({title:'Un message à 2 h du matin',icon:'🌙',av:face(p),text:`Ton ex, ${p.first}, t’écrit : « Tu dors ? » Évidemment que non.`,choices:[
+      {t:'Répondre',fn:()=>{
+        if(L.partner){partnerRel(L,-12);mood(L,{stress:2});p.rel=clamp(p.rel+10);return out(L,`🌙 Tu réponds. Ton partenaire a le sommeil léger… et la mémoire longue.`)}
+        if(chance(.5)){p.rel=clamp(p.rel+25);mood(L,{happy:4});return out(L,`☕ Vous prenez un café. Les bons souvenirs reviennent, les mauvais restent poliment à la porte.`)}
+        mood(L,{happy:-1});return out(L,`☕ Un café, et vous vous rappelez très précisément pourquoi vous vous êtes quittés.`)}},
+      {t:'Ignorer',fn:()=>{p.rel=clamp(p.rel-3);return out(L,`🙈 Tu lis, tu ne réponds pas. L’écran s’éteint, l’histoire aussi.`)}},
+      {t:'Bloquer le numéro',fn:()=>{p.rel=clamp(p.rel-10);mood(L,{happy:1});return out(L,`🚫 Numéro bloqué. Un petit silence plein de paix.`)}}]});
+    return true;
+  }
+  if(r.step===1&&L.age-r.y>=6&&chance(.3)){
+    r.step=2;const p=byId(L,r.id)||pick(exes);
+    say(L,`💌 ${p.first}, ton ex, t’envoie un faire-part : ${sx(p,'il','elle')} ${pick(['se marie','vient d’avoir un bébé','ouvre sa propre boutique'])}. Tu réponds par un message gentil et un peu pincé.`);
+    mood(L,{happy:1});return true;
+  }
+  return false;
+}
+
+/* ---------- Rumeurs ---------- */
+const RUMEURS=['pense à déménager','a repris des études','s’est mis${g} au yoga','cherche un nouveau travail','a adopté un chat','prépare une surprise pour son anniversaire','n’a pas été vu${g} depuis deux semaines (en vacances, paraît-il)'];
+function rumor(L){
+  if(L.age<12||L.prison)return;
+  if(L.rumorAt!=null&&L.age-L.rumorAt<2)return;
+  if(!chance(.22))return;
+  L.rumorAt=L.age;
+  const t=L.tr||{};
+  const k=pick(['moi','autre','autre']);
+  if(k==='moi'){
+    if((t.crimes||0)>=3&&!L.prison){say(L,'🗣️ Une rumeur court sur toi : on dit que tu as des ennuis avec la loi. Les regards changent un peu.');chg(L,{happy:-1});return}
+    if((L.hid&&L.hid.karma>=65)){say(L,'🗣️ On parle de toi comme de quelqu’un de généreux. Ça fait du bien de l’entendre.');chg(L,{happy:1});return}
+    if(L.money>=500000){say(L,'🗣️ Il paraît que tu roules sur l’or. Les cousins éloignés appellent soudain beaucoup plus souvent.');return}
+  }
+  const pool=L.family.filter(p=>p.alive!==false&&p.type!=='pet'&&p.age>=10&&p.type!=='ex');
+  if(!pool.length)return;
+  const p=pick(pool),g=p.gender==='F'?'e':'';
+  say(L,`🗣️ On raconte que ${p.first} ${pick(RUMEURS).replace(/\$\{g\}/g,g)}.`);
+}
+
+function year(L){
+  if(!L||L.age<6||L.alive===false||L.prison)return;
+  const arcs=shuffle([arcRival,arcBestie,arcVoisin,arcEx]);
+  for(const f of arcs){try{if(f(L))break}catch(e){console.error('recurring',e)}}
+  try{rumor(L)}catch(e){console.error('recurring.rumor',e)}
+}
+registerMod({id:MOD,born(L){if(L)L.rec={}},heirInit(D,L){if(L)L.rec={}},year});
+})();
+
+;
+
+/* ===== mod_persona.js ===== */
+/* Deux Vies — module « Personnalité qui se révèle » (id persona)
+   Ce que tu fais le plus souvent façonne qui tu es. Chaque année, le jeu additionne tes habitudes (soirées, travail, études, voyages,
+   dons, sport, famille) ; quand l'une domine nettement, les autres te voient comme un « Fêtard », un « Bosseur »… Cette personnalité
+   amène des évènements à elle, et rester fidèle à soi-même rend heureux (récompense tous les 5 ans, prix dans le bilan).
+   État par vie : L.persona = {arch, years, bestYears, bestName}. */
+(()=>{
+const MOD='persona';
+const k=(L,n)=>(L.tr&&L.tr['k_'+n])||0,t=(L,n)=>(L.tr&&L.tr[n])||0;
+const ARCH={
+  fete:{ic:'🥳',n:['Fêtard','Fêtarde'],d:'Toujours partant pour la soirée suivante.',s:L=>2*(k(L,'party')+k(L,'bar')+k(L,'club')+k(L,'fest'))+k(L,'bar_love')},
+  bosseur:{ic:'💼',n:['Bosseur','Bosseuse'],d:'Le travail d’abord, le reste ensuite.',s:L=>2*k(L,'work')+3*k(L,'promo')+2*k(L,'raise')+8*t(L,'topCareer')+(L.job?(L.job.y||0)*.5:0)},
+  cerveau:{ic:'🧠',n:['Cérébral','Cérébrale'],d:'Un livre, une idée, une conférence : tout est bon pour apprendre.',s:L=>2*(k(L,'study')+k(L,'lib'))+k(L,'doc')+3*k(L,'dip')+k(L,'prof')+3*((L.edu&&L.edu.degrees&&L.edu.degrees.length)||0)},
+  aventurier:{ic:'🧭',n:['Aventurier','Aventurière'],d:'Le prochain billet d’avion t’attend déjà.',s:L=>3*t(L,'trips')+1.5*t(L,'crimes')+2*k(L,'speed')+2*t(L,'missions')+5*t(L,'escaped')},
+  genereux:{ic:'💝',n:['Grand cœur','Grand cœur'],d:'Donner te fait plus de bien qu’à ceux qui reçoivent.',s:L=>t(L,'given')/400+3*k(L,'benevolat')+2*k(L,'adopt')+Math.max(0,((L.hid&&L.hid.karma)||50)-50)/3},
+  zen:{ic:'🧘',n:['Zen','Zen'],d:'Respirer, marcher, courir : le calme avant tout.',s:L=>2*k(L,'gym')+k(L,'yoga')+k(L,'med')+k(L,'walk')+k(L,'diet')},
+  famille:{ic:'👨‍👩‍👧',n:['Pilier de famille','Pilier de famille'],d:'Les tiens sont ton monde.',s:L=>4*allKids(L).length+.8*t(L,'marriedYears')+(L.family||[]).filter(p=>p.alive!==false&&p.rel>=75&&(p.type==='parent'||p.type==='sibling'||p.type==='child')).length}
+};
+const KEYS=Object.keys(ARCH);
+const nm=(L,a)=>ARCH[a].n[L.gender==='F'?1:0];
+const ps=L=>{if(!L.persona||typeof L.persona!=='object')L.persona={arch:null,years:0,bestYears:0,bestName:''};return L.persona};
+const scores=L=>KEYS.map(a=>[a,Math.round(ARCH[a].s(L)*10)/10]).sort((x,y)=>y[1]-x[1]);
+
+function year(L){
+  if(!L||L.age<14||L.alive===false)return;
+  const P=ps(L),sc=scores(L),[a,s1]=sc[0],s2=sc[1][1];
+  const clear=s1>=14&&s1>=s2*1.25?a:null;
+  if(!clear){if(P.arch){P.arch=null;P.years=0}return}
+  if(P.arch===clear){
+    P.years++;
+    if(P.years>P.bestYears){P.bestYears=P.years;P.bestName=nm(L,clear)}
+    if(P.years%5===0){chg(L,{happy:3});track(L,'coherent');say(L,`🪞 Cela fait ${P.years} ans que tu es fidèle à toi-même : « ${nm(L,clear)} ». Ça rend ${ge(L,'heureux','heureuse')}.`)}
+    return;
+  }
+  const first=!P.bestYears&&!P.arch;
+  P.arch=clear;P.years=1;if(!P.bestYears){P.bestYears=1;P.bestName=nm(L,clear)}
+  say(L,`🪞 ${first?'Ta personnalité se dessine':'Les gens te voient autrement'} : on te prend maintenant pour ${ARCH[clear].ic} « ${nm(L,clear)} ».`);
+}
+
+const conds={arch:(L,args)=>!!(L.persona&&L.persona.arch===args.k)};
+const E=(id,k,icon,prompt,choices)=>({id:'persona_'+id,category:'persona',icon,conditions:Object.assign({min_age:16,mod_cond:{mod:MOD,fn:'arch',args:{k}}},id==='bosseur'?{has_job:true}:{}),probability_weight:.14,prompt_text:prompt,choices});
+const eventsDb=[
+  E('fete','fete','🎶','Un ami t’envoie un message : « After chez moi, tout de suite, ramène du monde ! » Il est deux heures du matin.',[
+    {choice_text:'Y aller, évidemment.',consequences:{happiness_modifier:5,health_modifier:-2,bank_balance_modifier:-60,result_text:'Tu rentres au lever du soleil avec un chapeau qui n’est pas le tien.'}},
+    {choice_text:'Passer ton tour pour une fois.',consequences:{happiness_modifier:-1,health_modifier:1,result_text:'Tu dors huit heures. Ça ne te ressemble pas, et tu te sens bizarrement fier.'}},
+    {choice_text:'Organiser la prochaine chez toi.',consequences:{happiness_modifier:4,bank_balance_modifier:-150,add_friend:{},result_text:'Ta soirée devient une légende de l’immeuble. Quelqu’un a oublié un canapé.'}}]),
+  E('bosseur','bosseur','📞','Un chasseur de têtes t’appelle : « On entend beaucoup de bien de vous. Un café, cette semaine ? »',[
+    {choice_text:'Négocier une meilleure offre.',consequences:{salary_multiplier:1.05,job_performance_modifier:3,result_text:'Ton patron comprend soudain ton vrai potentiel. Ton salaire aussi.'}},
+    {choice_text:'Rester fidèle à ton équipe.',consequences:{karma_modifier:1,happiness_modifier:2,job_performance_modifier:4,result_text:'Tu choisis le camp de la loyauté. Ton équipe ne l’oubliera pas.'}},
+    {choice_text:'Raccrocher : tu as une réunion.',consequences:{job_performance_modifier:2,stress_level_increment:2,result_text:'Tu travailles. Le chasseur de têtes rappelle quand même, plus tard.'}}]),
+  E('cerveau','cerveau','🎤','Une conférence passionnante sur « tout ce qu’on ne sait pas encore » a lieu près de chez toi. Il reste une place au premier rang.',[
+    {choice_text:'Poser LA question.',consequences:{smarts_modifier:2,happiness_modifier:2,result_text:'Le conférencier reste silencieux trois secondes, puis dit : « Excellente question. » Tu fais semblant de ne pas rougir.'}},
+    {choice_text:'Prendre des notes pendant deux heures.',consequences:{smarts_modifier:3,result_text:'Ton cahier est plein, ta tête aussi.'}},
+    {choice_text:'Dormir au fond de la salle.',consequences:{happiness_modifier:1,health_modifier:1,result_text:'Tu dormais mieux que prévu. Le conférencier n’a rien vu.'}}]),
+  E('aventurier','aventurier','✈️','Une compagnie aérienne casse ses prix : une destination au bout du monde, départ demain, pas de retour garanti à l’heure.',[
+    {choice_text:'Partir sur un coup de tête (800 €).',consequences:{bank_balance_modifier:-800,happiness_modifier:6,smarts_modifier:1,track:{trips:1},result_text:'Tu atterris au bout du monde avec un sac à moitié rempli. C’est exactement ce qu’il te fallait.'}},
+    {choice_text:'Réserver pour plus tard.',consequences:{happiness_modifier:1,result_text:'Le billet « plus tard » ne partira jamais, mais l’idée fait du bien.'}},
+    {choice_text:'Rester raisonnable.',consequences:{happiness_modifier:-2,result_text:'Tu dis non. Ton passeport soupire dans le tiroir.'}}]),
+  E('genereux','genereux','🤲','Une association qui aide des familles du quartier cherche des bénévoles pour le week-end. Tu connais le responsable, il te regarde avec espoir.',[
+    {choice_text:'Donner ton week-end.',consequences:{karma_modifier:3,happiness_modifier:4,result_text:'Tu rentres fatigué et le cœur plein. Quelqu’un t’a appelé « monsieur le sauveur ».'}},
+    {choice_text:'Faire un don de 200 €.',consequences:{bank_balance_modifier:-200,karma_modifier:2,happiness_modifier:2,track:{given:200},result_text:'Un reçu, un merci, un sourire sincère.'}},
+    {choice_text:'Pas cette fois.',consequences:{happiness_modifier:-1,result_text:'Tu t’excuses. Le responsable hoche la tête, un peu déçu.'}}]),
+  E('zen','zen','🧘','Un ami te propose un stage de silence de trois jours dans la montagne. Pas de téléphone, pas de parole, beaucoup de soupe.',[
+    {choice_text:'Y aller (150 €).',consequences:{bank_balance_modifier:-150,stress_level_increment:-8,happiness_modifier:3,health_modifier:1,result_text:'Trois jours de silence, trois jours de paix. Tu as presque entendu une pensée traverser.'}},
+    {choice_text:'Méditer chez toi.',consequences:{stress_level_increment:-3,result_text:'Dix minutes de respiration, un chat qui miaule. C’est déjà ça.'}},
+    {choice_text:'Trop calme pour toi.',consequences:{happiness_modifier:0,result_text:'Tu préfères le bruit de ton quotidien. Chacun son rythme.'}}]),
+  E('famille','famille','🍲','Dimanche midi : tout le monde vient chez toi sans prévenir. La marmite est vide et le frigo aussi.',[
+    {choice_text:'Cuisiner pour tout le monde.',consequences:{relationship_parents_modifier:4,happiness_modifier:4,bank_balance_modifier:-40,result_text:'Un festin improvisé et les rires qui vont avec. Tu es le centre de la famille.'}},
+    {choice_text:'Inviter aussi les voisins.',consequences:{karma_modifier:1,happiness_modifier:3,add_friend:{},result_text:'La table est trop petite, la soirée aussi. Les voisins reviennent la semaine suivante.'}},
+    {choice_text:'Commander des pizzas.',consequences:{happiness_modifier:2,bank_balance_modifier:-60,result_text:'Personne ne se plaint. Les cartons font office de nappe.'}}])
+];
+
+function pPersona(){
+  const L=cur();if(!L)return {title:'Personnalité',html:note('Aucun personnage.')};
+  const P=ps(L),sc=scores(L).slice(0,5),top=sc[0][1]||1;
+  const head=P.arch?card(`${ARCH[P.arch].ic} ${nm(L,P.arch)}`,`${P.years} an${P.years>1?'s':''}`,ARCH[P.arch].d,''):
+    note(L.age<14?'Ta personnalité se dessinera à partir de 14 ans, d’après ce que tu fais le plus souvent.':'Elle se dessine encore. Continue : ce que tu fais le plus souvent finira par se voir.');
+  return {title:'Personnalité',html:head+note('Chaque choix compte. Rester fidèle à toi-même rend heureux : un petit bonus tous les 5 ans, et un prix dans ton bilan.')
+    +`<h3 class="sec">Ce que tu fais le plus souvent</h3>`+sc.map(([a,s])=>statLine(`${ARCH[a].ic} ${nm(L,a)}`,Math.round(Math.min(100,s/Math.max(top,20)*100)))).join('')};
+}
+registerMod({
+  id:MOD,born(L){if(L)L.persona={arch:null,years:0,bestYears:0,bestName:''}},heirInit(D,L){if(L)L.persona={arch:null,years:0,bestYears:0,bestName:''}},
+  year,conds,eventsDb,
+  sheetRows(L){
+    const P=ps(L);
+    return [nav('🪞','Personnalité',P.arch?`${nm(L,P.arch)} depuis ${P.years} an${P.years>1?'s':''}`:L.age<14?'Se dessine à partir de 14 ans':'Se dessine avec tes choix',pPersona)];
+  }
+});
 })();
 
 ;
@@ -12733,6 +13025,8 @@ function lifeAwards(L){
   if((t.scandals||0)>=2)add(5,'📰','Dans les journaux',(t.scandals)+' scandales');
   if(L.st&&L.st.smarts>=90)add(4,'🧠','Esprit brillant','');
   const dn=(L.dreams||[]).filter(d=>d.done!=null).length;if(dn>=2)add(7,'🌟','Rêveur comblé',dn+' rêves réalisés');
+  if(L.persona&&L.persona.bestYears>=10)add(6,'🪞',ge(L,'Fidèle à lui-même','Fidèle à elle-même'),`${L.persona.bestName} pendant ${L.persona.bestYears} ans`);
+  if((L.rec&&L.rec.bestie&&L.rec.bestie.step>=5))add(5,'🤝','Ami pour la vie','un meilleur ami d’enfance gardé');
   if(L.age>=95)add(6,'🎂','Centenaire ou presque',L.age+' ans');
   A.sort((a,b)=>b.score-a.score);
   return A.slice(0,3);

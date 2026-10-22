@@ -91,12 +91,12 @@ function npcWealth(L,p){
 function person(g,age,last,country,parents){
   return {id:nid(),first:rname(g,country),last:last||rlast(country),gender:g,age,rel:R(55,95),alive:true,looks:R(10,100),smarts:R(10,100),health:R(60,100),crazy:R(0,70),fame:chance(.03)?R(20,80):R(0,8),ill:[],type:'friend',look:genLook(parents&&parents[0]&&parents[0].look,parents&&parents[1]&&parents[1].look,g),job:age>=22?pick(NPC_JOBS):''};
 }
-function role(p){const F=p.gender==='F';switch(p.type){
+function role(p){const F=p.gender==='F';if(p.type==='friend'&&p.tag){if(p.tag==='rival')return F?'Rivale':'Rival';if(p.tag==='bestie')return F?'Meilleure amie':'Meilleur ami';if(p.tag==='voisin')return F?'Voisine':'Voisin'}switch(p.type){
   case 'parent':return F?'Mère':'Père';case 'sibling':return F?'Sœur':'Frère';case 'child':return F?'Fille':'Fils';
   case 'grand':return F?'Grand-mère':'Grand-père';case 'grandkid':return F?'Petite-fille':'Petit-fils';
   case 'friend':return p.coworker?(F?'Collègue':'Collègue'):(F?'Amie':'Ami');case 'enemy':return F?'Ennemie':'Ennemi';
   case 'ex':return F?'Ex':'Ex';case 'boss':return F?'Patronne':'Patron';case 'pet':return p.species;default:return ''}}
-function poss(p){const r=role(p).toLowerCase();if(p.type==='friend'||p.type==='pet'||p.type==='ex'||p.type==='enemy')return 'ton '+r;return (p.gender==='F'?'ta ':'ton ')+r}
+function poss(p){const r=role(p).toLowerCase();if(p.tag&&p.type==='friend')return (p.gender==='F'?'ta ':'ton ')+r;if(p.type==='friend'||p.type==='pet'||p.type==='ex'||p.type==='enemy')return 'ton '+r;return (p.gender==='F'?'ta ':'ton ')+r}
 const kids=L=>L.family.filter(p=>p.type==='child'&&p.alive);
 const allKids=L=>L.family.filter(p=>p.type==='child');
 const friends=L=>L.family.filter(p=>p.type==='friend'&&p.alive);

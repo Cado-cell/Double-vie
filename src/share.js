@@ -16,6 +16,8 @@ function lifeAwards(L){
   if((t.scandals||0)>=2)add(5,'📰','Dans les journaux',(t.scandals)+' scandales');
   if(L.st&&L.st.smarts>=90)add(4,'🧠','Esprit brillant','');
   const dn=(L.dreams||[]).filter(d=>d.done!=null).length;if(dn>=2)add(7,'🌟','Rêveur comblé',dn+' rêves réalisés');
+  if(L.persona&&L.persona.bestYears>=10)add(6,'🪞',ge(L,'Fidèle à lui-même','Fidèle à elle-même'),`${L.persona.bestName} pendant ${L.persona.bestYears} ans`);
+  if((L.rec&&L.rec.bestie&&L.rec.bestie.step>=5))add(5,'🤝','Ami pour la vie','un meilleur ami d’enfance gardé');
   if(L.age>=95)add(6,'🎂','Centenaire ou presque',L.age+' ans');
   A.sort((a,b)=>b.score-a.score);
   return A.slice(0,3);

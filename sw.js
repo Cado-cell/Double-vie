@@ -1,5 +1,5 @@
 /* Double Vie — service worker : hors connexion + mises à jour automatiques. */
-const VERSION='20261022-100152';
+const VERSION='20261022-102238';
 const CACHE='double-vie-'+VERSION;
 const FILES=["./", "index.html", "app.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.all(FILES.map(f=>fetch(new Request(f,{cache:'reload'})).then(r=>{if(!r.ok)throw new Error(f);return c.put(f,r)})))).then(()=>self.skipWaiting()))});

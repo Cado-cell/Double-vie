@@ -8,7 +8,7 @@ const MOD='agents';
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
 /* Personnalité stable, déduite de l'identité du personnage. */
 const pers=p=>{const h=hash(p.id||p.first);return {sociable:h%100,loyal:(h>>>7)%100,impulsif:Math.min(100,Math.round(((p.crazy??40)+((h>>>14)%100))/2))}};
-const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&p.age>=12&&['parent','sibling','friend','grand','child'].includes(p.type)&&!(p.type==='child'&&p.age<18));
+const eligible=L=>(L.family||[]).filter(p=>p&&p.alive!==false&&p.age>=12&&['parent','sibling','friend','grand','child'].includes(p.type)&&p.tag!=='rival'&&p.tag!=='voisin'&&!(p.type==='child'&&p.age<18));
 const em=t=>t;
 function pickWeighted(items){const tot=items.reduce((s,x)=>s+x[1],0);let r=Math.random()*tot;for(const [v,w] of items){r-=w;if(r<=0)return v}return items[items.length-1][0]}
 
