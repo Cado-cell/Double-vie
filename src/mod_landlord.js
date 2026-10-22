@@ -566,6 +566,7 @@ function pEvict(id){return ()=>{
     act(L,{ic:'📮',t:'Demander au locataire de partir',s:r.years<3?'Possible seulement quand le bail de trois ans se termine':'Le locataire part d’ici la fin de l’année',dis:r.notice?'Déjà demandé':r.years<3?'Bail de 3 ans en cours':'',fn:L=>{r.notice=1;chg(L,{karma:-1});return out(L,`📮 ${r.name} doit quitter le logement dans six mois.`)}})];
   return {title:'Fin du bail ou expulsion',html:h+group('Expulsion',rows)+group('Autres solutions',rows2)};
 }}
+window.landlordRenov=id=>pRenov(id);
 function pRenov(id){return ()=>{
   const L=cur();const a=L.assets.find(x=>x.id===id);
   if(!a)return {title:'Travaux',html:note('Ce bien n’existe plus.')};

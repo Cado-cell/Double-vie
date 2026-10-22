@@ -3,7 +3,7 @@
 const {spawnSync}=require('child_process');const fs=require('fs');const path=require('path');const os=require('os');
 const BUDGET={
   8:{maxRows:30,panels:60,deep:5,total:200},
-  30:{maxRows:30,panels:145,deep:150,total:700}
+  30:{maxRows:30,panels:160,deep:170,total:760}
 };
 const r=spawnSync('node',[path.join(__dirname,'audit_nav.js'),...Object.keys(BUDGET)],{cwd:path.resolve(__dirname,'..'),encoding:'utf8',timeout:900000});
 if(r.status!==0){console.log((r.stdout||'')+(r.stderr||''));console.log('{"ok":false}');process.exit(1)}

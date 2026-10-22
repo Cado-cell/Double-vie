@@ -1662,7 +1662,7 @@ function schoolYear(L){
 /* Matériel : un instrument, un kimono, un chevalet… accélère l’apprentissage de la compétence liée tant qu’on le possède. */
 const GEAR=[[/piano à queue/i,'piano',3],[/flûte|clavier|piano/i,'piano',2],[/ukul|guitare/i,'guitare',2],[/violon/i,'violon',2],[/batterie/i,'batterie',2],[/micro de karaok/i,'chant',2],[/ballon de foot/i,'football',2],[/raquette/i,'tennis',2],[/kimono/i,'judo',2],[/feutres|peinture|chevalet/i,'dessin',2],[/carnet d.écriture/i,'ecriture',2],[/kit de magie/i,'theatre',1]];
 const gearSkill=n=>{const g=GEAR.find(x=>x[0].test(n||''));return g?[g[1],g[2]]:null};
-const gearBonus=(L,k)=>L.assets.reduce((m,a)=>{const g=gearSkill(a.name);return g&&g[0]===k?Math.max(m,g[1]):m},0);
+const gearBonus=(L,k)=>L.assets.reduce((m,a)=>{const g=gearSkill(a.name);return g&&g[0]===k?Math.max(m,g[1]*(a.cond!=null&&a.cond<30?.5:1)):m},0);
 function lessonsYear(L){
   for(const k of L.lessons){
     const Ls=LESSONS.find(x=>x.k===k);if(!Ls)continue;
@@ -4179,6 +4179,7 @@ function pEvict(id){return ()=>{
     act(L,{ic:'📮',t:'Demander au locataire de partir',s:r.years<3?'Possible seulement quand le bail de trois ans se termine':'Le locataire part d’ici la fin de l’année',dis:r.notice?'Déjà demandé':r.years<3?'Bail de 3 ans en cours':'',fn:L=>{r.notice=1;chg(L,{karma:-1});return out(L,`📮 ${r.name} doit quitter le logement dans six mois.`)}})];
   return {title:'Fin du bail ou expulsion',html:h+group('Expulsion',rows)+group('Autres solutions',rows2)};
 }}
+window.landlordRenov=id=>pRenov(id);
 function pRenov(id){return ()=>{
   const L=cur();const a=L.assets.find(x=>x.id===id);
   if(!a)return {title:'Travaux',html:note('Ce bien n’existe plus.')};
@@ -10817,6 +10818,236 @@ window.GOALS_KINDS=Object.keys(GOALS);
 
 ;
 
+/* ===== mod_gifts.js ===== */
+/* Deux Vies — module « Cadeaux » (id gifts)
+   Offrir un cadeau à un proche ou à son partenaire : le choix dépend de l'âge de la personne, de ses goûts (deux centres d'intérêt
+   stables par personne) et du budget du joueur. Un cadeau par personne et par an. Un cadeau qui plaît compte beaucoup plus,
+   un cadeau trop cher offert à quelqu'un qu'on connaît mal met mal à l'aise. Pas d'état propre au module (L.used['g'+id] / 'pg'). */
+(()=>{
+const MOD='gifts';
+const TAG={jeux:'les jeux',lecture:'la lecture',sport:'le sport',tech:'la technologie',cuisine:'la cuisine',mode:'la mode',nature:'la nature et les voyages',musique:'la musique',art:'l’art',maison:'le confort de la maison'};
+const TAGS=Object.keys(TAG);
+/* [nom, prix, icône, goût, âge min, âge max, romantique] — prix pour un pays au coût de la vie moyen */
+const ITEMS=[
+  // bébés et tout-petits
+  ['Une peluche douce',15,'🧸','jeux',0,6],['Un mobile musical',25,'🎶','musique',0,3],['Des vêtements tout doux',35,'👶','mode',0,5],['Une couverture brodée',60,'🛏️','maison',0,8],
+  // enfants
+  ['Un livre illustré',12,'📚','lecture',3,11],['Un puzzle',15,'🧩','jeux',3,12],['Un ballon',18,'⚽','sport',4,14],['Un cerf-volant',15,'🪁','nature',4,12],['Un kit de peinture',25,'🎨','art',4,12],
+  ['Une boîte de Lego',35,'🧱','jeux',4,13],['Un jeu vidéo',50,'🎮','tech',6,40],['Un ukulélé',60,'🎸','musique',5,40],['Une journée au parc d’attractions',80,'🎢','jeux',4,16],
+  ['Un télescope',120,'🔭','tech',6,60],['Un vélo',150,'🚲','sport',5,15],['Une tablette',280,'💻','tech',6,16],
+  // ados
+  ['Un manga',10,'📖','lecture',11,25],['Un sweat à la mode',90,'🧥','mode',11,26],['Un casque audio',80,'🎧','musique',11,45],['Un skateboard',80,'🛹','sport',10,25],
+  ['Une place de concert',70,'🎟️','musique',12,50],['Des baskets',110,'👟','mode',11,45],['Des cours de chant',120,'🎤','musique',12,50],['Un smartphone',350,'📱','tech',11,60],['Une console de jeux',350,'🎮','tech',10,45],
+  // adultes
+  ['Des chocolats',25,'🍫','cuisine',6,99],['Un bouquet de fleurs',30,'💐','nature',10,99],['Un roman',18,'📚','lecture',14,99],['Une bonne bouteille',45,'🍷','cuisine',18,99],['Une écharpe',40,'🧣','mode',12,99],
+  ['Une enceinte',90,'🔊','musique',14,70],['Un dîner au restaurant',120,'🍽️','cuisine',16,99],['Un atelier de poterie',100,'🏺','art',16,99],['Du matériel de randonnée',180,'🥾','sport',14,70],
+  ['Une estampe',200,'🖼️','art',18,99],['Une montre',350,'⌚','mode',16,99],['Un week-end surprise',450,'🧳','nature',18,99],['Un équipement de cuisine pro',400,'🍳','cuisine',20,80],
+  ['Un ordinateur portable',900,'💻','tech',14,70],['Un vélo électrique',1200,'🚲','sport',16,75],['Un fauteuil design',700,'🛋️','maison',20,99],['Un bijou précieux',1500,'💎','mode',18,99],['Un voyage de rêve',3500,'✈️','nature',18,99],
+  // seniors
+  ['Une plante en pot',25,'🌸','nature',50,99],['Une pâtisserie de chez le meilleur',30,'🍰','cuisine',50,99],['Un livre en gros caractères',20,'📖','lecture',60,99],['Des jeux de mémoire',25,'🧩','jeux',55,99],
+  ['Un plaid bien chaud',45,'🧶','maison',55,99],['Une radio',60,'📻','musique',55,99],['Un album des photos de famille',60,'🎞️','art',50,99],['Une sortie en car',80,'🚌','nature',55,99],['Un fauteuil relax',500,'🛋️','maison',60,99],['Un séjour thermal',900,'🏖️','nature',55,99],
+  // en couple
+  ['Une lettre d’amour à la main',0,'💌','art',16,99,1],['Des roses rouges',45,'🌹','nature',16,99,1],['Un concert à deux',160,'🎶','musique',16,99,1],['Un dîner aux chandelles',180,'🕯️','cuisine',16,99,1],
+  ['Un bijou pour elle ou lui',400,'💍','mode',16,99,1],['Une escapade romantique',1200,'🏝️','nature',18,99,1]
+];
+const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const tastes=p=>{const h=hash(`${p.id||''}${p.first}${p.last||''}`),a=h%TAGS.length;let b=(h>>>9)%TAGS.length;if(b===a)b=(b+3)%TAGS.length;return [TAGS[a],TAGS[b]]};
+const px=(L,v)=>v<=0?0:Math.max(5,Math.round(v*Math.min(2,costOf(L))/5)*5);
+const tierOf=v=>v<30?1:v<120?2:v<500?3:4;
+function shuffled(arr,seed){const r=seedRng(seed),a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function give(L,p,partner,item,price){
+  const liked=tastes(p).includes(item[3]),tier=tierOf(price||0);
+  const base={1:[1,3],2:[3,6],3:[6,10],4:[10,15]}[tier];
+  let gain=R(base[0],base[1]);gain=liked?Math.round(gain*1.5):Math.max(1,Math.round(gain*.8));
+  if(item[6])gain=Math.round(gain*1.2);
+  const rel=partner?L.partner.rel:p.rel;let awkward=false;
+  if(!partner&&rel<40&&price>=500){gain=Math.max(1,Math.round(gain/2));awkward=true}
+  if(partner)partnerRel(L,gain);else{p.rel=clamp(p.rel+gain);p.seen=L.age;if(price>=100){const m=p.memo||(p.memo={});m.gave=(m.gave||0)+price}}
+  if(price>0)track(L,'given',price);
+  if(price>=200)chg(L,{karma:1,happy:1});
+  const he=ge(p,'il','elle'),rav=ge(p,'ravi','ravie');
+  if(awkward)return out(L,`🎁 ${p.first} est gêné${ge(p,'','e')} d’un cadeau aussi cher venant de quelqu’un qu’${he} connaît si peu. ${item[2]} Ça ne se refuse pas, mais…`);
+  if(liked)return out(L,`🎁 ${item[2]} ${p.first} est ${rav} : c’est exactement ce qui lui faisait envie !`);
+  return out(L,`🎁 ${item[2]} ${p.first} apprécie ton cadeau${price<=0?', fait avec le cœur':''}.`);
+}
+const pGift=id=>()=>{
+  const L=cur(),partner=id==='partner',p=partner?partnerOf(L):byId(L,id);
+  if(!p||p.alive===false)return {title:'Offrir un cadeau',html:note('Cette personne ne fait plus partie de ta vie.')};
+  const key=partner?'pg':'g'+id;
+  if(L.used[key])return {title:'Offrir un cadeau',html:note(`Tu as déjà offert un cadeau à ${p.first} cette année. Un par an et par personne, c’est la tradition.`)};
+  const money=Math.max(0,L.money),rel=partner?L.partner.rel:p.rel,know=partner||rel>=40||['parent','sibling','child','grand'].includes(p.type);
+  const tst=tastes(p);
+  const all=ITEMS.filter(i=>p.age>=i[4]&&p.age<=i[5]&&(!i[6]||partner));
+  const withPx=shuffled(all.map(i=>({i,v:px(L,i[1])})),`${p.id||p.first}:${L.age}`);
+  const aff=withPx.filter(x=>x.v>0&&x.v<=money);
+  // les cadeaux qui plaisent d'abord, puis le reste au hasard stable pour l'année
+  const liked=x=>tst.includes(x.i[3])?0:1;
+  const sorted=aff.slice().sort((a,b)=>liked(a)-liked(b));
+  const take=(lo,hi,n)=>sorted.filter(x=>x.v>=lo&&x.v<hi).slice(0,n);
+  const small=take(1,60,3),nice=take(60,500,3),big=take(500,1e9,2);
+  const dream=withPx.filter(x=>x.v>money&&x.v>=100).sort((a,b)=>a.v-b.v)[0];
+  const row1=x=>act(L,{ic:x.i[2],t:x.i[0],s:`${fmt(x.v)}${know&&tst.includes(x.i[3])?' · il ou elle adorerait':''}`,cost:x.v,key,fn:L=>give(L,p,partner,x.i,x.v)});
+  const free=withPx.find(x=>x.v===0&&x.i[6]&&partner);
+  const handmade=partner&&free?row1(free):act(L,{ic:'✂️',t:'Un cadeau fait main',s:'Gratuit, mais personnel',key,fn:L=>give(L,p,partner,['Un cadeau fait main',0,'✂️','art',0,99],0)});
+  const note1=know?`D’après ce que tu sais, ${p.first} aime ${TAG[tst[0]]} et ${TAG[tst[1]]}.`:`Tu ne connais pas assez ${p.first} pour deviner ses goûts. Tu as ${fmt(money)} de côté.`;
+  return {title:`Un cadeau pour ${p.first}`,html:note(note1+` Budget : ${fmt(money)}.`)
+    +group('Sans dépenser',[handmade])
+    +group('Petits cadeaux',small.map(row1))
+    +group('Beaux cadeaux',nice.map(row1))
+    +group('Gros cadeaux',big.map(row1))
+    +(dream?group('Un jour peut-être',[row1(dream)]):'')};
+};
+window.pGift=pGift;window.giftGive=give;
+window.giftTastes=tastes;window.giftItems=()=>ITEMS;
+registerMod({id:MOD});
+})();
+
+;
+
+/* ===== mod_wear.js ===== */
+/* Deux Vies — module « Usure et entretien des biens » (id wear)
+   Chaque bien a une barre d'état (a.cond, 100 = comme neuf) adaptée à sa nature : état du logement, du véhicule, du bateau,
+   de l'appareil, éclat d'un bijou, conservation d'une œuvre, accord d'un instrument… Sans entretien l'état baisse chaque année
+   (et la valeur avec, sous 30 %). Chaque bien a ses propres options d'entretien et de travaux (écran « Entretien » du bien).
+   Les maisons et les voitures sont usées par le moteur du jeu (engine.js) ; les autres biens le sont ici.
+   Pannes : un véhicule en très mauvais état finit par tomber en panne. État du bien : a.cond, a.prot (années de protection),
+   a.insul / a.terr / a.pool / a.ext (améliorations déjà faites sur une maison). */
+(()=>{
+const MOD='wear';
+/* lab : libellé de la barre · start : état d'un bien neuf · decay : perte annuelle [min,max] (maisons et voitures : moteur) */
+const WEAR={
+  house:{lab:'État du logement',start:80,decay:null,verb:'Travaux et améliorations',ic:'🔨'},
+  car:{lab:'État du véhicule',start:100,decay:null,verb:'Entretien et réparations',ic:'🔧'},
+  boat:{lab:'État du bateau',start:95,decay:[3,7],verb:'Entretien du bateau',ic:'⚓'},
+  plane:{lab:'État de l’appareil',start:95,decay:[2,5],verb:'Maintenance de l’appareil',ic:'🛠️'},
+  jewel:{lab:'Éclat',start:100,decay:[1,3],verb:'Entretien du bijou',ic:'✨'},
+  art:{lab:'Conservation',start:100,decay:[1,3],verb:'Conservation de l’œuvre',ic:'🖌️'},
+  instrument:{lab:'Accord et usure',start:100,decay:[2,5],verb:'Entretien de l’instrument',ic:'🎼'},
+  heirloom:{lab:'Conservation',start:70,decay:[1,2],verb:'Restauration',ic:'🏺'},
+  collectible:{lab:'État de conservation',start:90,decay:[1,2],verb:'Conservation',ic:'🧸'}
+};
+const SHORT={house:'logement',car:'véhicule',boat:'bateau',plane:'appareil',jewel:'éclat',art:'conservation',instrument:'accord',heirloom:'conservation',collectible:'conservation'};
+const fc=c=>.45+.55*Math.max(0,Math.min(100,c))/100;       // même formule que la gestion locative
+const k$=(L,v)=>Math.max(5,Math.round(v*Math.min(2,costOf(L))/10)*10);
+/* Options d'entretien par type : [clé, icône, titre, effet en mots, coût fixe, % de la valeur, coût mini, gain d'état, % de valeur gagné, drapeau « une seule fois », protection (années), condition d'affichage] */
+const OPS={
+  house:[
+    ['paint','🎨','Peinture et petits travaux','Rafraîchit l’intérieur',0,1.2,800,15,0,0,0,a=>a.cond<92],
+    ['roof','🏚️','Toiture et plomberie','Les vraies réparations',0,3,2500,30,0,0,0,a=>a.cond<75],
+    ['insul','🌡️','Isolation et fenêtres','Factures plus basses, logement plus sain',0,4,3000,10,3,'insul',0,a=>!a.insul],
+    ['terr','🌿','Terrasse et jardin','Un coin de paradis',0,5,3500,0,4,'terr',0,a=>!a.terr],
+    ['pool','🏊','Piscine','Tous les étés en vacances',0,8,9000,0,5,'pool',0,a=>!a.pool],
+    ['ext','📐','Extension : une pièce de plus','Plus de place, plus de valeur',0,15,20000,0,12,'ext',0,a=>!a.ext]
+  ],
+  car:[
+    ['serv','🛢️','Révision','Vidange, filtres, niveaux',250,0,0,25,0,0,0,a=>a.cond<85],
+    ['tyre','🛞','Pneus et freins','Pour rouler en sécurité',450,0,0,20,0,0,0,a=>a.cond<80],
+    ['body','🚘','Carrosserie','Plus de rayures, plus de valeur',900,0,0,30,3,0,0,a=>a.cond<70],
+    ['motor','⚙️','Moteur refait à neuf','La grosse opération',2500,0,0,60,8,0,0,a=>a.cond<45]
+  ],
+  boat:[
+    ['hull','🛥️','Carénage de la coque','Antifouling et peinture',0,3,300,35,0,0,0,a=>a.cond<80],
+    ['eng','⚙️','Révision du moteur','Avant la saison',0,2,200,25,0,0,0,a=>a.cond<85],
+    ['winter','🧊','Hivernage','Abri et bâche : l’usure ralentit',0,1,80,0,0,0,1,a=>!a.prot]
+  ],
+  plane:[
+    ['check','📋','Visite annuelle','Obligatoire pour voler tranquille',0,3,1500,30,0,0,0,a=>a.cond<85],
+    ['over','⚙️','Révision moteur complète','Le grand ménage mécanique',0,6,4000,40,0,0,0,a=>a.cond<60]
+  ],
+  jewel:[
+    ['clean','🧼','Nettoyage chez le bijoutier','Il brille comme au premier jour',50,0,0,25,0,0,0,a=>a.cond<90],
+    ['mount','🔩','Réparer la monture','Griffes, fermoir, chaîne',200,0,0,40,1,0,0,a=>a.cond<60]
+  ],
+  art:[
+    ['dust','🧽','Dépoussiérage par un expert','Un petit soin',150,0,0,15,0,0,0,a=>a.cond<90],
+    ['rest','🖌️','Restauration','Un restaurateur reprend l’œuvre',0,4,300,40,6,0,0,a=>a.cond<60],
+    ['glass','🪟','Vitrine et éclairage adaptés','Conservation ralentie pendant 3 ans',0,2,200,0,0,0,3,a=>!a.prot]
+  ],
+  instrument:[
+    ['tune','🎚️','Accordage','Retrouver le bon son',40,0,0,25,0,0,0,a=>a.cond<85],
+    ['luth','🪕','Révision chez un luthier','Pour qu’il dure encore',0,6,100,50,2,0,0,a=>a.cond<50]
+  ],
+  heirloom:[
+    ['rest','🏺','Restauration soignée','Redonner du lustre',0,5,200,35,4,0,0,a=>a.cond<70]
+  ],
+  collectible:[
+    ['case','🪟','Vitrine de protection','Conservation ralentie pendant 3 ans',60,0,0,20,0,0,3,a=>!a.prot]
+  ]
+};
+
+const has=a=>a&&WEAR[a.kind];
+function norm(a){
+  if(!has(a))return a;
+  if(typeof a.cond!=='number'||!isFinite(a.cond))a.cond=WEAR[a.kind].start;
+  a.cond=Math.max(0,Math.min(100,Math.round(a.cond)));return a;
+}
+window.wearStart=kind=>WEAR[kind]?WEAR[kind].start:undefined;
+window.wearNorm=norm;
+window.wearBar=a=>has(a)?statLine(WEAR[a.kind].lab,norm(a).cond):'';
+window.wearShort=a=>has(a)?`${SHORT[a.kind]} ${norm(a).cond} %`:'';
+window.wearUse=(a,n)=>{if(has(a)){norm(a);a.cond=Math.max(0,a.cond-(n||1))}};
+
+function opCost(L,a,o){return o[4]?k$(L,o[4]):k$(L,Math.max(o[6],a.value*o[5]/100))}
+function runOp(L,a,o){
+  const lab=WEAR[a.kind].lab,before=a.cond;
+  if(a.kind==='house'&&o[7]>0){const c1=Math.min(100,a.cond+o[7]);a.value=Math.round(a.value*fc(c1)/fc(a.cond));a.cond=c1}
+  else a.cond=Math.min(100,a.cond+o[7]);
+  if(o[8])a.value=Math.round(a.value*(1+o[8]/100));
+  if(o[9])a[o[9]]=1;
+  if(o[10])a.prot=o[10];
+  if(o[0]==='motor')a.cond=Math.max(a.cond,90);
+  if(['terr','pool'].includes(o[0]))chg(L,{happy:o[0]==='pool'?5:3});
+  if(o[0]==='ext')chg(L,{happy:2});
+  track(L,'repairs');
+  return out(L,`${o[1]} ${o[2]} : ${a.name.toLowerCase()}${a.cond>before?` passe à ${a.cond} % (${lab.toLowerCase()})`:' est amélioré'}.`);
+}
+const pCare=id=>()=>{
+  const L=cur(),a=L.assets.find(x=>x.id===id);
+  if(!a||!has(a))return {title:'Entretien',html:note('Ce bien n’existe plus.')};
+  norm(a);const W=WEAR[a.kind];
+  const ops=(OPS[a.kind]||[]).filter(o=>o[11](a));
+  const rows=ops.map(o=>{const c=opCost(L,a,o);return act(L,{ic:o[1],t:o[2],s:`${fmt(c)} · ${o[3]}`,cost:c,key:'care_'+o[0]+a.id,fn:L=>runOp(L,a,o)})});
+  if(a.kind==='house'&&typeof landlordRenov==='function')rows.push(nav('🏗️','Gros travaux (chantier d’un an)','Rénovation complète ou montée en gamme',landlordRenov(a.id)));
+  const warn=a.cond<30?note('Très usé : la valeur baisse plus vite'+(['car','boat','plane'].includes(a.kind)?' et une panne peut arriver n’importe quand.':'.')):'';
+  return {title:W.verb,html:card(a.name,fmt(a.value),a.prot>0?`Protégé encore ${a.prot} an${a.prot>1?'s':''} : l’usure ralentit.`:'Sans entretien, l’état baisse chaque année.',statLine(W.lab,a.cond))+warn
+    +(rows.length?group('Que faire ?',rows):note('Rien à faire pour l’instant : ce bien est en très bon état.'))};
+};
+window.wearCare=pCare;
+
+/* ---------- Une année passe ---------- */
+function breakdown(L,a){
+  const k=a.kind,what={car:'tombe en panne sur le bord de la route',boat:'prend l’eau au port',plane:'refuse de démarrer sur le tarmac'}[k];
+  const cost=k$(L,Math.max(k==='car'?600:k==='boat'?1500:6000,a.value*.12));
+  modal({title:'Panne',icon:KIND_IC[k]||'🔧',text:`${a.name} ${what}. Il est dans un état vraiment fatigué (${a.cond} %).`,choices:[
+    L.money>=cost?{t:`Faire réparer (${fmt(cost)})`,pri:1,fn:()=>{spend(L,cost);a.cond=Math.max(a.cond,70);return out(L,`🔧 Réparé pour ${fmt(cost)} : ${a.name.toLowerCase()} repart comme neuf (${a.cond} %).`)}}:null,
+    {t:'Rouler (ou naviguer) quand même',danger:true,fn:()=>{a.cond=Math.max(0,a.cond-8);if(chance(.3)){chg(L,{health:-8,stress:4,happy:-3});return out(L,`💥 Ça tourne mal : accident avec ${a.name.toLowerCase()}. Tu t’en sors avec une belle frayeur et quelques bleus.`)}return out(L,`😬 Tu t’en sors cette fois-ci, mais ${a.name.toLowerCase()} n’en a plus pour longtemps.`)}},
+    {t:'Vendre à la casse',fn:()=>{const v=Math.round(a.value*.25);L.assets=L.assets.filter(x=>x!==a);if(L.home===a.id)L.home=null;earn(L,v,1);return out(L,`🏚️ ${a.name} part à la casse pour ${fmt(v)}.`)}}].filter(Boolean)});
+}
+function year(L){
+  if(!L||L.age<10||L.alive===false)return;
+  let asked=false;
+  for(const a of [...(L.assets||[])]){
+    if(!has(a))continue;norm(a);const W=WEAR[a.kind];
+    if(W.decay){
+      const d=R(W.decay[0],W.decay[1]);a.cond=Math.max(0,a.cond-Math.round(d*(a.prot>0?.5:1)));
+    }
+    if(a.prot>0)a.prot--;
+    if(a.cond<30&&!['house','car','boat','plane'].includes(a.kind)&&a.kind!=='instrument')a.value=Math.round(a.value*.97);
+    if(a.cond<30&&!a.warned){a.warned=1;say(L,`⚠️ ${a.name} : état très dégradé (${a.cond} %). Un peu d’entretien s’impose.`)}
+    else if(a.cond>=45)a.warned=0;
+    if(!asked&&['car','boat','plane'].includes(a.kind)&&a.cond<25&&chance(.3)){asked=true;breakdown(L,a)}
+  }
+}
+registerMod({id:MOD,year,
+  assetDetailRows(L,a){
+    if(!has(a))return [];norm(a);
+    return [nav(WEAR[a.kind].ic,WEAR[a.kind].verb,`${WEAR[a.kind].lab} : ${a.cond} %`,pCare(a.id))];
+  }});
+})();
+
+;
+
 /* ===== mod_persona.js ===== */
 /* Deux Vies — module « Personnalité qui se révèle » (id persona)
    Ce que tu fais le plus souvent façonne qui tu es. Chaque année, le jeu additionne tes habitudes (soirées, travail, études, voyages,
@@ -13680,7 +13911,7 @@ function pAssets(){
   return {title:'Biens',html:h+hint('assets','Ici tu achètes, tu loues et tu investis. Un logement bien loué paie pour toi.','🏠')+tiles(ts)+(L.prison?note('Impossible de faire des achats depuis ta cellule.'):kid?note('Tu peux acheter avec ton argent de poche, ou demander à tes parents.'):'')};
 }
 function pOwned(){const L=cur();
-  return {title:'Mes biens',html:L.assets.length?group('Mes biens',L.assets.map(a=>row({ic:KIND_IC[a.kind]||'📦',t:a.name,s:`Valeur ${fmt(a.value)}${a.loan?` · il reste ${fmt(a.loan)} à rembourser`:''}${a.rented?` · loué à ${a.rented.name}`:''}${L.home===a.id?' · ta résidence':''}${a.cond!=null?` · état ${a.cond} %`:''}`,right:'›',a:()=>pushPanel(pAsset(a.id))}))):note('Tu ne possèdes rien pour l’instant.')};
+  return {title:'Mes biens',html:L.assets.length?group('Mes biens',L.assets.map(a=>row({ic:KIND_IC[a.kind]||'📦',t:a.name,s:`Valeur ${fmt(a.value)}${a.loan?` · il reste ${fmt(a.loan)} à rembourser`:''}${a.rented?` · loué à ${a.rented.name}`:''}${L.home===a.id?' · ta résidence':''}${typeof wearShort==='function'&&wearShort(a)?` · ${wearShort(a)}`:a.cond!=null?` · état ${a.cond} %`:''}`,right:typeof wearNorm==='function'&&wearNorm(a)&&a.cond!=null?`${mini(a.cond)} ›`:'›',a:()=>pushPanel(pAsset(a.id))}))):note('Tu ne possèdes rien pour l’instant.')};
 }
 function pVehicles(){const L=cur();return {title:'Véhicules',html:tiles([ntile('🚗','Voitures',L.lic.car?'Permis B en poche':'Permis B requis (sauf scooter)',pCars),ntile('⛵','Bateaux',L.lic.boat?'Permis bateau en poche':'Permis bateau requis',pBoats),ntile('✈️','Avions et hélicoptères',L.lic.pilot?'Licence de pilote en poche':'Licence de pilote requise',pPlanes)])}}
 function pLuxe(){return {title:'Luxe et collection',html:tiles([ntile('💍','Bijouterie','Bagues, montres, diamants',pJewels),ntile('🖼️','Galerie d’art','Placements qui prennent de la valeur',pArt),ntile('🧸','Objets de collection','Leur cote monte… ou s’effondre',pCollect)])}}
@@ -13694,15 +13925,11 @@ function pHousing(){
 function pAsset(id){return ()=>{
   const L=cur();const a=L.assets.find(x=>x.id===id);if(!a)return {title:'Bien',html:note('Ce bien n’existe plus.')};
   const net=a.value-(a.loan||0);const H=[];
-  if(a.kind==='house'){
-    if(L.home!==a.id&&!a.rented)H.push(act(L,{ic:'🛏️',t:'Y emménager',fn:L=>{L.home=a.id;L.withParents=false;return out(L,`Tu emménages dans ${a.name.toLowerCase()}.`)}}));
-    for(const r of modCall('assetDetailRows',L,a))H.push(...[].concat(r));
-    H.push(act(L,{ic:'🔧',t:'Rénover',s:fmt(a.value*.05),cost:Math.round(a.value*.05),key:'ren_'+id,fn:L=>{a.cond=100;a.value=Math.round(a.value*1.06);return out(L,'Travaux terminés. Le bien prend de la valeur.')}}));
-  }
-  if(a.kind==='car')H.push(act(L,{ic:'🔧',t:'Passer au garage',s:'600 €',cost:600,key:'gar_'+id,fn:L=>{a.cond=clamp((a.cond||50)+35);return out(L,'Vidange, freins et pneus neufs.')}}));
-  if(a.kind==='instrument')H.push(act(L,{ic:'🎶',t:'En jouer',key:'play_'+id,fn:L=>{const gs=gearSkill(a.name);const k=gs?gs[0]:a.name.includes('Piano')?'piano':a.name.includes('Batterie')?'batterie':a.name.includes('Violon')?'violon':'guitare';L.skills[k]=clamp((L.skills[k]||0)+R(2,6)+(gs?gs[1]:0));chg(L,{happy:3});return out(L,'Tu joues pendant des heures.')}}));
+  if(a.kind==='house'&&L.home!==a.id&&!a.rented)H.push(act(L,{ic:'🛏️',t:'Y emménager',fn:L=>{L.home=a.id;L.withParents=false;return out(L,`Tu emménages dans ${a.name.toLowerCase()}.`)}}));
+  for(const r of modCall('assetDetailRows',L,a))H.push(...[].concat(r));
+  if(a.kind==='instrument')H.push(act(L,{ic:'🎶',t:'En jouer',key:'play_'+id,fn:L=>{const gs=gearSkill(a.name);const k=gs?gs[0]:a.name.includes('Piano')?'piano':a.name.includes('Batterie')?'batterie':a.name.includes('Violon')?'violon':'guitare';L.skills[k]=clamp((L.skills[k]||0)+R(2,6)+(gs?gs[1]:0));chg(L,{happy:3});if(typeof wearUse==='function')wearUse(a,1);return out(L,'Tu joues pendant des heures.')}}));
   H.push(row({ic:'💶',t:'Vendre',s:`Tu toucherais ${fmt(net)}`,danger:1,a:()=>pushPanel(confirmP(`Vendre : ${a.name}`,`Tu toucheras ${fmt(net)}.`,()=>{L.assets=L.assets.filter(x=>x.id!==id);if(L.home===id)L.home=null;L.money+=net;STACK.pop();return out(L,`Tu vends ${a.name.toLowerCase()} pour ${fmt(a.value)}.`)},'Vendre'))}));
-  return {title:a.name,html:card(a.kind==='house'?'Immobilier':'Bien',fmt(a.value),`${a.loan?`Il reste ${fmt(a.loan)} à rembourser sur ${An(a.left)} · `:''}${a.cond!=null?`État : ${a.cond} %`:''}`,'')+group('',H)};
+  return {title:a.name,html:card(a.kind==='house'?'Immobilier':'Bien',fmt(a.value),`${a.loan?`Il reste ${fmt(a.loan)} à rembourser sur ${An(a.left)}`:''}`,typeof wearBar==='function'?wearBar(a):(a.cond!=null?statLine('État',a.cond):''))+group('',H)};
 }}
 function pHouses(){const L=cur();const M=market(L);return {title:'Immobilier',html:note('Nouvelles annonces chaque année. Les prix dépendent du pays où tu vis.')+group('Annonces',M.houses.map((x,i)=>row({ic:'🏠',t:`${x.name} · ${x.place}`,s:fmt(x.price),right:'›',a:()=>pushPanel(()=>pBuyHouse(i))})))}}
 function pBuyHouse(i){
@@ -13711,7 +13938,7 @@ function pBuyHouse(i){
   const buy=credit=>L=>{const a={id:nid(),kind:'house',name:`${x.name} · ${x.place}`,value:x.price,loan:credit?loan:0,pay:credit?pay:0,left:credit?20:0,cond:R(60,100)};L.assets.push(a);if(!L.home&&!(L.withParents&&L.age<22)){L.home=a.id;L.withParents=false}L.market.houses.splice(i,1);STACK.pop();chg(L,{happy:10});trackMax(L,'houses',L.assets.filter(a=>a.kind==='house').length);return out(L,`🏠 Tu achètes : ${x.name.toLowerCase()} (${x.place})${credit?', avec un crédit sur 20 ans':''}.`)};
   return {title:x.name,html:card(x.place,fmt(x.price),`Charges et impôt local : environ ${fmt(x.price*.008)} par an.`,'')+group('Financement',[act(L,{ic:'💶',t:'Payer comptant',s:fmt(x.price),cost:x.price,fn:buy(false)}),act(L,{ic:'🏦',t:'Emprunter sur 20 ans',s:`Tu paies ${fmt(down)} tout de suite · ${fmt(pay/12)} par mois`,dis:!ok?'Refusé : les mensualités doivent rester sous 35 % de tes revenus':'',cost:down,fn:buy(true)})])};
 }
-const buyList=(title,list,kind,ic,need)=>()=>{const L=cur();return {title,html:group('',list.map(([n,p])=>act(L,{ic,t:n,s:fmt(p),cost:p,dis:need&&need(n),fn:L=>{L.assets.push({id:nid(),kind,name:n,value:Math.round(p*.9),cond:kind==='car'?100:undefined});chg(L,{happy:kind==='jewel'?3:5});return out(L,`Tu t’offres : ${n.toLowerCase()}.`)}})))}};
+const buyList=(title,list,kind,ic,need)=>()=>{const L=cur();return {title,html:group('',list.map(([n,p])=>act(L,{ic,t:n,s:fmt(p),cost:p,dis:need&&need(n),fn:L=>{L.assets.push({id:nid(),kind,name:n,value:Math.round(p*.9),cond:typeof wearStart==='function'?wearStart(kind):undefined});chg(L,{happy:kind==='jewel'?3:5});return out(L,`Tu t’offres : ${n.toLowerCase()}.`)}})))}};
 function pCars(){const L=cur();const M=market(L);return {title:'Concession',html:group('Véhicules disponibles',M.cars.map((x,i)=>act(L,{ic:'🚗',t:x.name,s:fmt(x.price),cost:x.price,dis:!L.lic.car&&!x.scooter?'Permis B requis':'',fn:L=>{L.assets.push({id:nid(),kind:'car',name:x.name,value:x.price,cond:100});L.market.cars.splice(i,1);chg(L,{happy:6});return out(L,`🚗 Tu t’offres : ${x.name}.`)}})))}}
 const pBoats=()=>buyList('Bateaux',BOATS,'boat','⛵',n=>!cur().lic.boat&&n!=='Kayak de mer'?'Permis bateau requis':'')();
 const pPlanes=()=>buyList('Avions',PLANES,'plane','✈️',()=>!cur().lic.pilot?'Licence de pilote requise':'')();
@@ -13840,7 +14067,7 @@ function pPartner(){
   const H=[
     act(L,{ic:'💑',t:'Passer du temps ensemble',key:'pt',fn:L=>{partnerRel(L,R(4,10));chg(L,{happy:3});return out(L,pick([`Balade au bord de l’eau avec ${p.first}.`,`Soirée série sous un plaid avec ${p.first}.`,`Vous cuisinez une raclette, ${p.first} et toi.`,`Brocante du dimanche avec ${p.first}.`]))}}),
     act(L,{ic:'🕯️',t:'Dîner en amoureux',s:'80 €',cost:80,min:16,key:'pd',fn:L=>{partnerRel(L,R(5,12));chg(L,{happy:4});return out(L,`Dîner aux chandelles avec ${p.first}.`)}}),
-    act(L,{ic:'🎁',t:'Offrir un bijou',s:'400 €',cost:400,min:16,key:'pg',fn:L=>{partnerRel(L,R(8,15));return out(L,`${p.first} est ${p.gender==='F'?'ravie':'ravi'}.`)}}),
+    typeof pGift==='function'&&L.age>=16?nav('🎁','Offrir un cadeau',L.used.pg?'Déjà fait cette année':'Fleurs, bijou, escapade…',pGift('partner'),!!L.used.pg):null,
     act(L,{ic:'🏝️',t:'Partir en week-end en amoureux',s:'900 €',cost:900,min:18,key:'pw',fn:L=>{partnerRel(L,R(8,16));chg(L,{happy:7});track(L,'trips');return out(L,`Week-end à ${pick(['Venise','Étretat','Annecy','Biarritz','Lisbonne'])} avec ${p.first}.`)}}),
     act(L,{ic:'💬',t:'Faire un compliment',key:'pc',fn:L=>{partnerRel(L,R(2,6));return out(L,`${p.first} rougit.`)}}),
     act(L,{ic:'💢',t:'Se disputer',key:'px',fn:L=>{partnerRel(L,-R(8,15));chg(L,{happy:-3});return out(L,`Grosse dispute avec ${p.first}.`)}})];
@@ -13891,7 +14118,7 @@ function pPerson(id){
   const L=cur();const p=byId(L,id);if(!p)return {title:'Relations',html:note('Cette personne ne fait plus partie de ta vie.')};
   const name=p.type==='pet'?p.first:`${p.first} ${p.last}`;const head=personProfile(L,p);
   if(!p.alive)return {title:role(p),html:head+group('Souvenir',[act(L,{ic:'💐',t:'Fleurir sa tombe',s:'20 €',cost:20,key:'tomb'+id,fn:L=>{chg(L,{happy:3});return out(L,`Tu déposes des fleurs pour ${p.first}.`)}})])};
-  const H=[];const g=(t,amt,d)=>act(L,{ic:'🎁',t,s:fmt(amt),cost:amt,min:6,key:'g'+id,fn:L=>{p.rel=clamp(p.rel+d);track(L,'given',amt);return out(L,`${p.first} adore ton cadeau.`)}});
+  const H=[];
   if(p.type==='pet'){
     H.push(act(L,{ic:'🎾',t:`Jouer avec ${p.first}`,key:'t'+id,fn:L=>{p.rel=clamp(p.rel+8);chg(L,{happy:R(3,6)});return out(L,`Tu joues avec ${p.first}. Bonheur total.`)}}));
     if(['Chien','Cheval','Chèvre naine'].includes(p.species))H.push(act(L,{ic:'🌳',t:'Partir en balade',key:'w'+id,fn:L=>{p.rel=clamp(p.rel+6);chg(L,{health:2,happy:3});return out(L,`Longue balade avec ${p.first}.`)}}));
@@ -13902,8 +14129,7 @@ function pPerson(id){
     H.push(act(L,{ic:'☕',t:'Passer du temps ensemble',key:'t'+id,fn:L=>spendTime(L,p)}));
     H.push(act(L,{ic:'💬',t:'Discuter',key:'d'+id,fn:L=>{p.rel=clamp(p.rel+R(1,5));return out(L,`Bonne conversation avec ${p.first}.`)}}));
     H.push(act(L,{ic:'🌷',t:'Faire un compliment',key:'c'+id,fn:L=>{p.rel=clamp(p.rel+R(1,4));return out(L,`${p.first} est touché par ton compliment.`)}}));
-    H.push(g('Offrir des chocolats',25,R(2,6)));
-    if(L.age>=18&&!L.used['g'+id])H.push(act(L,{ic:'💎',t:'Offrir un cadeau de luxe',s:'1 500 €',cost:1500,key:'g'+id,fn:L=>{p.rel=clamp(p.rel+R(10,18));track(L,'given',1500);return out(L,`${p.first} n’en revient pas.`)}}));
+    if(L.age>=4&&typeof pGift==='function')H.push(nav('🎁','Offrir un cadeau',L.used['g'+id]?'Déjà fait cette année':'Selon ses goûts, son âge et ton budget',pGift(id),!!L.used['g'+id]));
     if((p.type==='parent'||p.type==='grand')&&L.age<30)H.push(act(L,{ic:'💶',t:'Demander de l’argent',key:'m'+id,fn:L=>{if(chance(p.rel/140)){const v=L.age<18?R(10,150):R(200,3000)*(L.royal?10:1);L.money+=v;return out(L,`${p.first} te donne ${fmt(v)}.`)}p.rel=clamp(p.rel-4);return out(L,`${p.first} refuse.`)}}));
     if(p.type==='child'){
       if(L.age>=18)H.push(act(L,{ic:'💶',t:'Lui donner 1 000 €',cost:1000,key:'m'+id,fn:L=>{p.rel=clamp(p.rel+10);track(L,'given',1000);return out(L,`${p.first} te remercie.`)}}));

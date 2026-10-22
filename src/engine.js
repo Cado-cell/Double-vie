@@ -294,7 +294,7 @@ function schoolYear(L){
 /* Matériel : un instrument, un kimono, un chevalet… accélère l’apprentissage de la compétence liée tant qu’on le possède. */
 const GEAR=[[/piano à queue/i,'piano',3],[/flûte|clavier|piano/i,'piano',2],[/ukul|guitare/i,'guitare',2],[/violon/i,'violon',2],[/batterie/i,'batterie',2],[/micro de karaok/i,'chant',2],[/ballon de foot/i,'football',2],[/raquette/i,'tennis',2],[/kimono/i,'judo',2],[/feutres|peinture|chevalet/i,'dessin',2],[/carnet d.écriture/i,'ecriture',2],[/kit de magie/i,'theatre',1]];
 const gearSkill=n=>{const g=GEAR.find(x=>x[0].test(n||''));return g?[g[1],g[2]]:null};
-const gearBonus=(L,k)=>L.assets.reduce((m,a)=>{const g=gearSkill(a.name);return g&&g[0]===k?Math.max(m,g[1]):m},0);
+const gearBonus=(L,k)=>L.assets.reduce((m,a)=>{const g=gearSkill(a.name);return g&&g[0]===k?Math.max(m,g[1]*(a.cond!=null&&a.cond<30?.5:1)):m},0);
 function lessonsYear(L){
   for(const k of L.lessons){
     const Ls=LESSONS.find(x=>x.k===k);if(!Ls)continue;

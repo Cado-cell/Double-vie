@@ -351,7 +351,7 @@ function pAssets(){
   return {title:'Biens',html:h+hint('assets','Ici tu achètes, tu loues et tu investis. Un logement bien loué paie pour toi.','🏠')+tiles(ts)+(L.prison?note('Impossible de faire des achats depuis ta cellule.'):kid?note('Tu peux acheter avec ton argent de poche, ou demander à tes parents.'):'')};
 }
 function pOwned(){const L=cur();
-  return {title:'Mes biens',html:L.assets.length?group('Mes biens',L.assets.map(a=>row({ic:KIND_IC[a.kind]||'📦',t:a.name,s:`Valeur ${fmt(a.value)}${a.loan?` · il reste ${fmt(a.loan)} à rembourser`:''}${a.rented?` · loué à ${a.rented.name}`:''}${L.home===a.id?' · ta résidence':''}${a.cond!=null?` · état ${a.cond} %`:''}`,right:'›',a:()=>pushPanel(pAsset(a.id))}))):note('Tu ne possèdes rien pour l’instant.')};
+  return {title:'Mes biens',html:L.assets.length?group('Mes biens',L.assets.map(a=>row({ic:KIND_IC[a.kind]||'📦',t:a.name,s:`Valeur ${fmt(a.value)}${a.loan?` · il reste ${fmt(a.loan)} à rembourser`:''}${a.rented?` · loué à ${a.rented.name}`:''}${L.home===a.id?' · ta résidence':''}${typeof wearShort==='function'&&wearShort(a)?` · ${wearShort(a)}`:a.cond!=null?` · état ${a.cond} %`:''}`,right:typeof wearNorm==='function'&&wearNorm(a)&&a.cond!=null?`${mini(a.cond)} ›`:'›',a:()=>pushPanel(pAsset(a.id))}))):note('Tu ne possèdes rien pour l’instant.')};
 }
 function pVehicles(){const L=cur();return {title:'Véhicules',html:tiles([ntile('🚗','Voitures',L.lic.car?'Permis B en poche':'Permis B requis (sauf scooter)',pCars),ntile('⛵','Bateaux',L.lic.boat?'Permis bateau en poche':'Permis bateau requis',pBoats),ntile('✈️','Avions et hélicoptères',L.lic.pilot?'Licence de pilote en poche':'Licence de pilote requise',pPlanes)])}}
 function pLuxe(){return {title:'Luxe et collection',html:tiles([ntile('💍','Bijouterie','Bagues, montres, diamants',pJewels),ntile('🖼️','Galerie d’art','Placements qui prennent de la valeur',pArt),ntile('🧸','Objets de collection','Leur cote monte… ou s’effondre',pCollect)])}}
@@ -365,15 +365,11 @@ function pHousing(){
 function pAsset(id){return ()=>{
   const L=cur();const a=L.assets.find(x=>x.id===id);if(!a)return {title:'Bien',html:note('Ce bien n’existe plus.')};
   const net=a.value-(a.loan||0);const H=[];
-  if(a.kind==='house'){
-    if(L.home!==a.id&&!a.rented)H.push(act(L,{ic:'🛏️',t:'Y emménager',fn:L=>{L.home=a.id;L.withParents=false;return out(L,`Tu emménages dans ${a.name.toLowerCase()}.`)}}));
-    for(const r of modCall('assetDetailRows',L,a))H.push(...[].concat(r));
-    H.push(act(L,{ic:'🔧',t:'Rénover',s:fmt(a.value*.05),cost:Math.round(a.value*.05),key:'ren_'+id,fn:L=>{a.cond=100;a.value=Math.round(a.value*1.06);return out(L,'Travaux terminés. Le bien prend de la valeur.')}}));
-  }
-  if(a.kind==='car')H.push(act(L,{ic:'🔧',t:'Passer au garage',s:'600 €',cost:600,key:'gar_'+id,fn:L=>{a.cond=clamp((a.cond||50)+35);return out(L,'Vidange, freins et pneus neufs.')}}));
-  if(a.kind==='instrument')H.push(act(L,{ic:'🎶',t:'En jouer',key:'play_'+id,fn:L=>{const gs=gearSkill(a.name);const k=gs?gs[0]:a.name.includes('Piano')?'piano':a.name.includes('Batterie')?'batterie':a.name.includes('Violon')?'violon':'guitare';L.skills[k]=clamp((L.skills[k]||0)+R(2,6)+(gs?gs[1]:0));chg(L,{happy:3});return out(L,'Tu joues pendant des heures.')}}));
+  if(a.kind==='house'&&L.home!==a.id&&!a.rented)H.push(act(L,{ic:'🛏️',t:'Y emménager',fn:L=>{L.home=a.id;L.withParents=false;return out(L,`Tu emménages dans ${a.name.toLowerCase()}.`)}}));
+  for(const r of modCall('assetDetailRows',L,a))H.push(...[].concat(r));
+  if(a.kind==='instrument')H.push(act(L,{ic:'🎶',t:'En jouer',key:'play_'+id,fn:L=>{const gs=gearSkill(a.name);const k=gs?gs[0]:a.name.includes('Piano')?'piano':a.name.includes('Batterie')?'batterie':a.name.includes('Violon')?'violon':'guitare';L.skills[k]=clamp((L.skills[k]||0)+R(2,6)+(gs?gs[1]:0));chg(L,{happy:3});if(typeof wearUse==='function')wearUse(a,1);return out(L,'Tu joues pendant des heures.')}}));
   H.push(row({ic:'💶',t:'Vendre',s:`Tu toucherais ${fmt(net)}`,danger:1,a:()=>pushPanel(confirmP(`Vendre : ${a.name}`,`Tu toucheras ${fmt(net)}.`,()=>{L.assets=L.assets.filter(x=>x.id!==id);if(L.home===id)L.home=null;L.money+=net;STACK.pop();return out(L,`Tu vends ${a.name.toLowerCase()} pour ${fmt(a.value)}.`)},'Vendre'))}));
-  return {title:a.name,html:card(a.kind==='house'?'Immobilier':'Bien',fmt(a.value),`${a.loan?`Il reste ${fmt(a.loan)} à rembourser sur ${An(a.left)} · `:''}${a.cond!=null?`État : ${a.cond} %`:''}`,'')+group('',H)};
+  return {title:a.name,html:card(a.kind==='house'?'Immobilier':'Bien',fmt(a.value),`${a.loan?`Il reste ${fmt(a.loan)} à rembourser sur ${An(a.left)}`:''}`,typeof wearBar==='function'?wearBar(a):(a.cond!=null?statLine('État',a.cond):''))+group('',H)};
 }}
 function pHouses(){const L=cur();const M=market(L);return {title:'Immobilier',html:note('Nouvelles annonces chaque année. Les prix dépendent du pays où tu vis.')+group('Annonces',M.houses.map((x,i)=>row({ic:'🏠',t:`${x.name} · ${x.place}`,s:fmt(x.price),right:'›',a:()=>pushPanel(()=>pBuyHouse(i))})))}}
 function pBuyHouse(i){
@@ -382,7 +378,7 @@ function pBuyHouse(i){
   const buy=credit=>L=>{const a={id:nid(),kind:'house',name:`${x.name} · ${x.place}`,value:x.price,loan:credit?loan:0,pay:credit?pay:0,left:credit?20:0,cond:R(60,100)};L.assets.push(a);if(!L.home&&!(L.withParents&&L.age<22)){L.home=a.id;L.withParents=false}L.market.houses.splice(i,1);STACK.pop();chg(L,{happy:10});trackMax(L,'houses',L.assets.filter(a=>a.kind==='house').length);return out(L,`🏠 Tu achètes : ${x.name.toLowerCase()} (${x.place})${credit?', avec un crédit sur 20 ans':''}.`)};
   return {title:x.name,html:card(x.place,fmt(x.price),`Charges et impôt local : environ ${fmt(x.price*.008)} par an.`,'')+group('Financement',[act(L,{ic:'💶',t:'Payer comptant',s:fmt(x.price),cost:x.price,fn:buy(false)}),act(L,{ic:'🏦',t:'Emprunter sur 20 ans',s:`Tu paies ${fmt(down)} tout de suite · ${fmt(pay/12)} par mois`,dis:!ok?'Refusé : les mensualités doivent rester sous 35 % de tes revenus':'',cost:down,fn:buy(true)})])};
 }
-const buyList=(title,list,kind,ic,need)=>()=>{const L=cur();return {title,html:group('',list.map(([n,p])=>act(L,{ic,t:n,s:fmt(p),cost:p,dis:need&&need(n),fn:L=>{L.assets.push({id:nid(),kind,name:n,value:Math.round(p*.9),cond:kind==='car'?100:undefined});chg(L,{happy:kind==='jewel'?3:5});return out(L,`Tu t’offres : ${n.toLowerCase()}.`)}})))}};
+const buyList=(title,list,kind,ic,need)=>()=>{const L=cur();return {title,html:group('',list.map(([n,p])=>act(L,{ic,t:n,s:fmt(p),cost:p,dis:need&&need(n),fn:L=>{L.assets.push({id:nid(),kind,name:n,value:Math.round(p*.9),cond:typeof wearStart==='function'?wearStart(kind):undefined});chg(L,{happy:kind==='jewel'?3:5});return out(L,`Tu t’offres : ${n.toLowerCase()}.`)}})))}};
 function pCars(){const L=cur();const M=market(L);return {title:'Concession',html:group('Véhicules disponibles',M.cars.map((x,i)=>act(L,{ic:'🚗',t:x.name,s:fmt(x.price),cost:x.price,dis:!L.lic.car&&!x.scooter?'Permis B requis':'',fn:L=>{L.assets.push({id:nid(),kind:'car',name:x.name,value:x.price,cond:100});L.market.cars.splice(i,1);chg(L,{happy:6});return out(L,`🚗 Tu t’offres : ${x.name}.`)}})))}}
 const pBoats=()=>buyList('Bateaux',BOATS,'boat','⛵',n=>!cur().lic.boat&&n!=='Kayak de mer'?'Permis bateau requis':'')();
 const pPlanes=()=>buyList('Avions',PLANES,'plane','✈️',()=>!cur().lic.pilot?'Licence de pilote requise':'')();
@@ -511,7 +507,7 @@ function pPartner(){
   const H=[
     act(L,{ic:'💑',t:'Passer du temps ensemble',key:'pt',fn:L=>{partnerRel(L,R(4,10));chg(L,{happy:3});return out(L,pick([`Balade au bord de l’eau avec ${p.first}.`,`Soirée série sous un plaid avec ${p.first}.`,`Vous cuisinez une raclette, ${p.first} et toi.`,`Brocante du dimanche avec ${p.first}.`]))}}),
     act(L,{ic:'🕯️',t:'Dîner en amoureux',s:'80 €',cost:80,min:16,key:'pd',fn:L=>{partnerRel(L,R(5,12));chg(L,{happy:4});return out(L,`Dîner aux chandelles avec ${p.first}.`)}}),
-    act(L,{ic:'🎁',t:'Offrir un bijou',s:'400 €',cost:400,min:16,key:'pg',fn:L=>{partnerRel(L,R(8,15));return out(L,`${p.first} est ${p.gender==='F'?'ravie':'ravi'}.`)}}),
+    typeof pGift==='function'&&L.age>=16?nav('🎁','Offrir un cadeau',L.used.pg?'Déjà fait cette année':'Fleurs, bijou, escapade…',pGift('partner'),!!L.used.pg):null,
     act(L,{ic:'🏝️',t:'Partir en week-end en amoureux',s:'900 €',cost:900,min:18,key:'pw',fn:L=>{partnerRel(L,R(8,16));chg(L,{happy:7});track(L,'trips');return out(L,`Week-end à ${pick(['Venise','Étretat','Annecy','Biarritz','Lisbonne'])} avec ${p.first}.`)}}),
     act(L,{ic:'💬',t:'Faire un compliment',key:'pc',fn:L=>{partnerRel(L,R(2,6));return out(L,`${p.first} rougit.`)}}),
     act(L,{ic:'💢',t:'Se disputer',key:'px',fn:L=>{partnerRel(L,-R(8,15));chg(L,{happy:-3});return out(L,`Grosse dispute avec ${p.first}.`)}})];
@@ -562,7 +558,7 @@ function pPerson(id){
   const L=cur();const p=byId(L,id);if(!p)return {title:'Relations',html:note('Cette personne ne fait plus partie de ta vie.')};
   const name=p.type==='pet'?p.first:`${p.first} ${p.last}`;const head=personProfile(L,p);
   if(!p.alive)return {title:role(p),html:head+group('Souvenir',[act(L,{ic:'💐',t:'Fleurir sa tombe',s:'20 €',cost:20,key:'tomb'+id,fn:L=>{chg(L,{happy:3});return out(L,`Tu déposes des fleurs pour ${p.first}.`)}})])};
-  const H=[];const g=(t,amt,d)=>act(L,{ic:'🎁',t,s:fmt(amt),cost:amt,min:6,key:'g'+id,fn:L=>{p.rel=clamp(p.rel+d);track(L,'given',amt);return out(L,`${p.first} adore ton cadeau.`)}});
+  const H=[];
   if(p.type==='pet'){
     H.push(act(L,{ic:'🎾',t:`Jouer avec ${p.first}`,key:'t'+id,fn:L=>{p.rel=clamp(p.rel+8);chg(L,{happy:R(3,6)});return out(L,`Tu joues avec ${p.first}. Bonheur total.`)}}));
     if(['Chien','Cheval','Chèvre naine'].includes(p.species))H.push(act(L,{ic:'🌳',t:'Partir en balade',key:'w'+id,fn:L=>{p.rel=clamp(p.rel+6);chg(L,{health:2,happy:3});return out(L,`Longue balade avec ${p.first}.`)}}));
@@ -573,8 +569,7 @@ function pPerson(id){
     H.push(act(L,{ic:'☕',t:'Passer du temps ensemble',key:'t'+id,fn:L=>spendTime(L,p)}));
     H.push(act(L,{ic:'💬',t:'Discuter',key:'d'+id,fn:L=>{p.rel=clamp(p.rel+R(1,5));return out(L,`Bonne conversation avec ${p.first}.`)}}));
     H.push(act(L,{ic:'🌷',t:'Faire un compliment',key:'c'+id,fn:L=>{p.rel=clamp(p.rel+R(1,4));return out(L,`${p.first} est touché par ton compliment.`)}}));
-    H.push(g('Offrir des chocolats',25,R(2,6)));
-    if(L.age>=18&&!L.used['g'+id])H.push(act(L,{ic:'💎',t:'Offrir un cadeau de luxe',s:'1 500 €',cost:1500,key:'g'+id,fn:L=>{p.rel=clamp(p.rel+R(10,18));track(L,'given',1500);return out(L,`${p.first} n’en revient pas.`)}}));
+    if(L.age>=4&&typeof pGift==='function')H.push(nav('🎁','Offrir un cadeau',L.used['g'+id]?'Déjà fait cette année':'Selon ses goûts, son âge et ton budget',pGift(id),!!L.used['g'+id]));
     if((p.type==='parent'||p.type==='grand')&&L.age<30)H.push(act(L,{ic:'💶',t:'Demander de l’argent',key:'m'+id,fn:L=>{if(chance(p.rel/140)){const v=L.age<18?R(10,150):R(200,3000)*(L.royal?10:1);L.money+=v;return out(L,`${p.first} te donne ${fmt(v)}.`)}p.rel=clamp(p.rel-4);return out(L,`${p.first} refuse.`)}}));
     if(p.type==='child'){
       if(L.age>=18)H.push(act(L,{ic:'💶',t:'Lui donner 1 000 €',cost:1000,key:'m'+id,fn:L=>{p.rel=clamp(p.rel+10);track(L,'given',1000);return out(L,`${p.first} te remercie.`)}}));
