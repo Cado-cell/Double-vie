@@ -3,6 +3,9 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 22/10/2026
+- À deux, chacun chez soi (Menu → À deux) : copie ton code et envoie-le à ta moitié ; colle le sien pour comparer vos deux vies (score de vie, patrimoine, enfants, prix, personnalité) et voir qui l'emporte. Tu peux aussi inviter son personnage dans ta vie : il devient un ami, avec son visage, qui t'appelle et te rend visite comme les autres proches.
+- Départ partagé : à la création, entrez le même mot sur vos deux téléphones, vous commencez avec le même personnage.
+- Le bilan de fin de vie affiche un score de vie sur 100 et propose de comparer avec ta moitié.
 - Quatre personnes reviennent dans ta vie, avec une histoire et des choix : un rival d'école (du défi en CM2 à la réunion d'anciens élèves, en passant par le bac et la promotion), un meilleur ami d'enfance (le déménagement, les retrouvailles, le mariage), un voisin pénible (excuses, gâteau ou dispute… et ce que ça donne des années plus tard) et l'ex qui t'écrit à 2 h du matin. Ils ont un visage, un nom et un rôle dans l'onglet Relations.
 - Des rumeurs circulent sur toi et sur tes proches.
 - Personnalité qui se révèle : ce que tu fais le plus souvent (soirées, travail, études, voyages, dons, sport, famille) finit par faire de toi un « Fêtard », un « Bosseur », un « Cérébral », un « Aventurier », un « Grand cœur », un « Zen » ou un « Pilier de famille ». Chaque personnalité amène des évènements à elle ; rester fidèle à toi-même rend heureux tous les 5 ans et peut te valoir un prix dans le bilan. La fiche est dans ton personnage → Personnalité.

@@ -19,6 +19,7 @@ const T=[
  ['mémoire des proches et héritage','will.js',[],o=>/"ok":true/.test(o)],
  ['personnages récurrents','recurring.js',[],o=>/"ok":true/.test(o)],
  ['personnalité qui se révèle','persona.js',[],o=>/"ok":true/.test(o)],
+ ['à deux, chacun chez soi','duo.js',[],o=>/"ok":true/.test(o)],
  ['rêves de vie','dreams.js',[],o=>/"ok":true/.test(o)],
  ['trait choisi à la création','traits.js',[],o=>/"ok":true/.test(o)],
  ['jalons de l’enfance','events4.js',[],o=>/"ok":true/.test(o)],

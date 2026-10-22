@@ -47,6 +47,14 @@ function lifeProverb(L){
   return list[h%list.length];
 }
 function lifeFact(L){const d=Math.round(L.age*365.25);return `Le saviez-vous ? Tu as vécu environ ${d.toLocaleString('fr-FR')} jours, soit à peu près ${Math.round(L.age*1095).toLocaleString('fr-FR')} repas.`}
+/* Score de vie sur 100 : fortune, famille, prix, longévité, rêves, bonheur, notoriété. Sert à comparer deux vies. */
+function lifeScore(L){
+  const nw=Math.max(0,netWorth(L)),dn=(L.dreams||[]).filter(d=>d.done!=null).length;
+  let s=Math.min(30,Math.log10(nw+1)*4);
+  s+=Math.min(15,allKids(L).length*3)+Math.min(15,lifeAwards(L).length*5)+Math.min(15,(L.age||0)/6);
+  s+=Math.min(10,dn*3.5)+Math.min(10,((L.st&&L.st.happy)||50)/10)+Math.min(5,(L.fame||0)/12);
+  return Math.round(Math.max(0,Math.min(100,s)));
+}
 function lifeFacts(L){return [['Patrimoine',fmtk(netWorth(L))],['Dernier métier',cap(String(jobLabel(L)||'Sans emploi'))],['Enfants',String(allKids(L).length)],['Génération',String(L.gen||1)]]}
 
 function cardWrap(x,text,cx,y,maxW,lh,maxLines){
