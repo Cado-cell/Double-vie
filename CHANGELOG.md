@@ -3,6 +3,7 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 22/10/2026
+- Correction : quand un panneau (Activités, Métier, Menu…) ou une fenêtre est ouvert, balayer l'écran ne fait plus bouger l'écran de derrière ; seule la liste du panneau défile.
 - Chacun de tes proches a son propre projet (fonder une famille, ouvrir un restaurant, faire le tour du monde, reprendre des études…). Il avance au fil des années, tu peux l'encourager depuis sa fiche ou lui donner un coup de pouce quand il te le demande, et tu apprends sa réussite. Celui que tu as aidé s'en souvient.
 - Les appels, visites, anniversaires, disputes et réconciliations de tes proches sont écrits de façon plus variée, selon leur caractère (sociable, réservé, impulsif) et votre relation.
 - À deux, chacun chez soi (Menu → À deux) : copie ton code et envoie-le à ta moitié ; colle le sien pour comparer vos deux vies (score de vie, patrimoine, enfants, prix, personnalité) et voir qui l'emporte. Tu peux aussi inviter son personnage dans ta vie : il devient un ami, avec son visage, qui t'appelle et te rend visite comme les autres proches.

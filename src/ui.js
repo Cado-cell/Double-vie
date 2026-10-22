@@ -845,6 +845,20 @@ function startGame(){
 }
 
 /* ---------- Évènements DOM ---------- */
+/* Panneau ou fenêtre ouverts : un balayage qui ne fait pas défiler leur propre liste ne doit pas faire bouger l'écran de derrière. */
+document.addEventListener('touchmove',e=>{
+  const t=e.target;if(!t||!t.closest)return;
+  const sh=document.getElementById('sheet'),md=document.getElementById('modal');
+  const root=(sh&&!sh.hidden)?sh:(md&&!md.hidden)?md:null;if(!root||!root.contains(t))return;
+  if(/^(TEXTAREA|INPUT|SELECT)$/.test(t.tagName))return;
+  for(let el=t;el;el=el.parentElement){
+    const cs=getComputedStyle(el);
+    if(/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight+1)return;
+    if(/(auto|scroll)/.test(cs.overflowX)&&el.scrollWidth>el.clientWidth+1)return;
+    if(el===root)break;
+  }
+  e.preventDefault();
+},{passive:false});
 document.addEventListener('change',e=>{
   const q=e.target.closest&&e.target.closest('select[data-quiz]');if(!q||typeof traitQuizResult!=='function')return;
   const px=q.dataset.quiz,ans=[...document.querySelectorAll(`select[data-quiz="${px}"]`)].map(s=>s.value);

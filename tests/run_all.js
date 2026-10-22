@@ -28,6 +28,7 @@ const T=[
  ['bilan de fin de vie et carte image','share.js',[],o=>/"ok":true/.test(o)],
  ['visite guidée et « Quoi de neuf »','tuto.js',[],o=>/"ok":true/.test(o)],
  ['aides ponctuelles','hints.js',[],o=>/"ok":true/.test(o)],
+ ['panneau ouvert : rien ne bouge derrière','sheetlock.js',[],o=>/"ok":true/.test(o)],
  ['plafonds de navigation (simplicité)','nav_budget.js',[],o=>/"ok":true/.test(o)],
  ['hors connexion (paquet publié)','pwatest2.js',[],o=>/erreurs \[\]/.test(o)&&/"cached":8/.test(o)]
 ];
