@@ -303,7 +303,7 @@ const AV_A = (() => {
       defs += `<clipPath id="${id}"><path d="${d}"/></clipPath>`;
       const [ix, iy] = T([F.ir[0], F.ir[1]]);
       const ir = F.ir[2] * sc;
-      out += `<g clip-path="url(#${id})">${P(d, c.white)}<circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir)}" fill="${c.eye}"/><circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir * 0.5)}" fill="${c.pupil}"/></g>`;
+      out += `<g class="blk" style="animation-delay:-${((uid * 7) % 50) / 10}s" clip-path="url(#${id})">${P(d, c.white)}<circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir)}" fill="${c.eye}"/><circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir * 0.5)}" fill="${c.pupil}"/></g>`;
       hl.push([ix + ir * 0.36, iy - ir * 0.38, ir * 0.3], [ix - ir * 0.36, iy + ir * 0.38, ir * 0.14]);
       // paupière supérieure
       const l0 = T([F.o[0][0] - 0.2, F.o[0][1] + 0.1]), l3 = T([F.o[3][0] + 0.5, F.o[3][1] - 0.3]);

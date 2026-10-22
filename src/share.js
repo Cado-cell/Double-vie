@@ -30,6 +30,21 @@ function lifeEpitaph(L){
   if(L.age<30)return `${il} est parti${ge(L,'','e')} trop tôt, mais pas sans avoir fait parler de ${ge(L,'lui','elle')}.`;
   return `${il} a vécu, tout simplement. C’est déjà beaucoup.`;
 }
+/* Proverbe et petit fait de fin de vie, choisis d’après le thème de la vie (même logique que l’épitaphe). */
+const PROVERBS={rich:['L’argent ne fait pas le bonheur, mais il aide à le chercher.','Qui paie ses dettes s’enrichit.','On ne prête qu’aux riches.'],
+  family:['Les enfants sont les ancres de la vie.','Tel arbre, tels fruits.','La famille, c’est là où la vie commence et où l’amour ne finit pas.'],
+  crime:['L’occasion fait le larron.','Il ne faut jamais dire : fontaine, je ne boirai pas de ton eau.','Pas vu, pas pris.'],
+  travel:['Les voyages forment la jeunesse.','Qui ne risque rien n’a rien.','Le monde appartient à ceux qui se lèvent tôt.'],
+  fame:['Il n’y a pas de fumée sans feu.','Pour vivre heureux, vivons cachés.','La gloire est un feu de paille.'],
+  young:['Vivre vite, c’est vivre deux fois.','Les plus belles bougies brûlent des deux bouts.','Rien ne sert de courir, il faut partir à point.'],
+  plain:['Petit à petit, l’oiseau fait son nid.','Tout est bien qui finit bien.','On ne voit bien qu’avec le cœur.','Chaque jour suffit à sa peine… et à sa joie.']};
+function lifeProverb(L){
+  const t=L.tr||{};
+  const theme=netWorth(L)>=1e6?'rich':(t.kidsMax||0)>=3?'family':(t.crimes||0)>=8?'crime':(t.trips||0)>=5?'travel':L.fame>=50?'fame':L.age<30?'young':'plain';
+  const list=PROVERBS[theme];let h=0;for(const c of String(L.first||'')+String(L.last||''))h=(h*31+c.charCodeAt(0))>>>0;
+  return list[h%list.length];
+}
+function lifeFact(L){const d=Math.round(L.age*365.25);return `Le saviez-vous ? Tu as vécu environ ${d.toLocaleString('fr-FR')} jours, soit à peu près ${Math.round(L.age*1095).toLocaleString('fr-FR')} repas.`}
 function lifeFacts(L){return [['Patrimoine',fmtk(netWorth(L))],['Dernier métier',cap(String(jobLabel(L)||'Sans emploi'))],['Enfants',String(allKids(L).length)],['Génération',String(L.gen||1)]]}
 
 function cardWrap(x,text,cx,y,maxW,lh,maxLines){

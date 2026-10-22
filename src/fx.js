@@ -5,7 +5,8 @@ const FX=(()=>{
   try{const v=JSON.parse(localStorage.getItem('dv.fx')||'{}');if(typeof v.haptic==='boolean')st.haptic=v.haptic;if(typeof v.sound==='boolean')st.sound=v.sound}catch(e){}
   const persist=()=>{try{localStorage.setItem('dv.fx',JSON.stringify(st))}catch(e){}};
   const calm=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}};
-  const last={cash:{},st:{},log:{}};
+  const last={cash:{},st:{},log:{},age:{}};
+  const CAKE_AGES=[1,5,10,16,18,21,30,40,50,60,70,80,90,100];
   let ac=null;
 
   /* ---------- Sons (synthétisés, aucun fichier) ---------- */
@@ -41,6 +42,16 @@ const FX=(()=>{
       const a=p.animate([{transform:'translate(0,-20px) rotate(0deg)',opacity:1},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:1,offset:.85},{transform:`translate(${dx*1.1}px,${dy+30}px) rotate(${rot*1.1}deg)`,opacity:0}],{duration:1500+Math.random()*1200,delay:Math.random()*250,easing:'cubic-bezier(.25,.6,.4,1)',fill:'forwards'});
       a.onfinish=()=>p.remove();
     }
+  }
+
+  /* Gâteau d’anniversaire qui s’élève au-dessus du portrait aux âges qui comptent. */
+  function cake(){
+    if(calm())return;const av=document.querySelector('#idcard .avatar');if(!av)return;
+    const r=av.getBoundingClientRect(),el=document.createElement('div');el.className='fxcake';el.textContent='🎂';
+    el.style.left=Math.max(4,r.left+r.width/2-20)+'px';el.style.top=Math.max(4,r.top-6)+'px';
+    layer().appendChild(el);if(!el.animate){el.remove();return}
+    const a=el.animate([{transform:'translateY(12px) scale(.4) rotate(-14deg)',opacity:0},{transform:'translateY(-12px) scale(1.3) rotate(7deg)',opacity:1,offset:.3},{transform:'translateY(-30px) scale(1) rotate(0deg)',opacity:1,offset:.75},{transform:'translateY(-52px) scale(.9)',opacity:0}],{duration:1600,easing:'ease-out'});
+    a.onfinish=()=>el.remove();buzz(15);
   }
 
   function deltas(items){
@@ -79,6 +90,8 @@ const FX=(()=>{
         requestAnimationFrame(step);
       }
     }
+    const pa=last.age[k];last.age[k]=L.age;
+    if(pa!=null&&L.age===pa+1&&!quiet&&L.alive!==false&&CAKE_AGES.includes(L.age))cake();
     const cu={happy:L.st.happy,health:L.st.health,smarts:L.st.smarts,looks:L.st.looks},pv=last.st[k];last.st[k]=cu;
     if(pv&&!quiet){
       const it=[];for(const [f,e] of [['happy','😊'],['health','❤️'],['smarts','🧠'],['looks','✨']]){const d=Math.round(cu[f]-pv[f]);if(Math.abs(d)>=2)it.push([e,d])}
@@ -98,5 +111,5 @@ const FX=(()=>{
 
   document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.age');if(b&&!b.disabled){buzz(8);play('age')}},true);
 
-  return {st,toggle,afterRender,confetti,deltas,play,buzz,modal:()=>{buzz(12);play('tap')}};
+  return {st,toggle,afterRender,confetti,cake,deltas,play,buzz,modal:()=>{buzz(12);play('tap')}};
 })();

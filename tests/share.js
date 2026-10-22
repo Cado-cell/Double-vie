@@ -10,12 +10,13 @@ const fs=require('fs');const dir='src';
    const L=cur();L.money=2500000;L.tr=Object.assign(L.tr||{},{given:20000,kidsMax:4,trips:7,jackpot:1});L.ribbon=L.ribbon||'president';render()});
  r.awards=await pg.evaluate(()=>lifeAwards(cur()).map(a=>a.n));
  r.epitaph=await pg.evaluate(()=>lifeEpitaph(cur()));
+ r.proverb=await pg.evaluate(()=>lifeProverb(cur()));
  const b64=await pg.evaluate(async()=>{const bl=await lifeCard(cur());const buf=new Uint8Array(await bl.arrayBuffer());let s='';for(const v of buf)s+=String.fromCharCode(v);return {size:bl.size,type:bl.type,b64:btoa(s)}});
  r.size=b64.size;r.type=b64.type;fs.writeFileSync('/tmp/card.png',Buffer.from(b64.b64,'base64'));
  // mort : le bilan affiche prix, épitaphe et boutons
  await pg.evaluate(()=>{const L=cur();L.alive=false;L.cause='vieillesse';render()});
- r.obit=await pg.evaluate(()=>{const o=document.querySelector('.obit');return !!o&&/Partager mon bilan/.test(o.innerText)&&!!o.querySelector('.epi')&&o.querySelectorAll('.award').length>0});
+ r.obit=await pg.evaluate(()=>{const o=document.querySelector('.obit');return !!o&&/Partager mon bilan/.test(o.innerText)&&!!o.querySelector('.epi')&&/Le saviez-vous/.test(o.querySelector('.prov')?o.querySelector('.prov').innerText:'')&&o.querySelectorAll('.award').length>0});
  const dl=pg.waitForEvent('download',{timeout:8000}).catch(()=>null);
  await pg.evaluate(()=>shareLife(cur(),'save'));const d=await dl;r.download=!!d&&/^bilan-.*\.png$/.test(d.suggestedFilename());
- r.ok=!errs.length&&r.awards.length>=2&&r.size>30000&&r.type==='image/png'&&r.obit&&r.download;
+ r.ok=!errs.length&&r.proverb.length>10&&r.awards.length>=2&&r.size>30000&&r.type==='image/png'&&r.obit&&r.download;
  console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

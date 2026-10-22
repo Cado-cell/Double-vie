@@ -84,10 +84,10 @@
 - [x] **S2. Offres d'emploi** *(fait le 21/10 : 5 « mieux payés pour toi » + 8 secteurs, au lieu de 55 lignes ; chaque métier hors de portée dit ce qu'il manque)*.
 - [x] **S3. Émigrer** *(fait le 21/10 : 6 destinations populaires + 6 régions, au lieu de 58 pays en vrac)*.
 - [x] **S4. Listes très longues** *(fait le 21/10 : études supérieures → 5 filières pour toi + licences / écoles ; contrebande → une ligne par marchandise ; journal financier → 5 derniers titres ; matrice de volatilité → 3 catégories ; leçons → par talent)*.
-- [x] **S4b. Listes restantes** *(fait le 21/10 : défis → 6 à relever + listes à part ; chirurgien esthétique → un chirurgien par ligne puis ses interventions)*. Reste : fiches des entreprises cotées (16 à 18 lignes) et panneau des traits (15).
+- [x] **S4b. Listes restantes** *(fait le 21/10 : défis → 6 à relever + listes à part ; chirurgien esthétique → un chirurgien par ligne puis ses interventions)*. Fiches des actions et panneau des traits raccourcis le 22/10.
 - [x] **S5. Découverte progressive** *(fait le 21/10 : Activités passe de 8 à 5 entrées ; argent, pouvoir, zone d'ombre et outils sont rangés dans « Plus d'aventures » ; Bourse et Entreprise remontent en « Juste pour toi » quand tu as de l'argent)*.
 - [x] **S6. Garde-fou automatique** *(fait le 21/10 : `tests/nav_budget.js` échoue si une liste dépasse 30 lignes ou si le nombre de panneaux, d'actions ou d'actions à 5 touches dépasse les plafonds ; les plafonds se resserrent à chaque lot)*.
-- [x] **S7. Parcours à 2 touches** *(fait le 21/10 : « À voir en ce moment » dans Relations — passer du temps avec les 3 proches qui en ont le plus besoin, en 2 touches ; idées rapides sur l'écran principal)*. Reste à étudier : raccourcis directs dans l'onglet Métier.
+- [x] **S7. Parcours à 2 touches** *(fait le 21/10 : « À voir en ce moment » dans Relations — passer du temps avec les 3 proches qui en ont le plus besoin, en 2 touches ; idées rapides sur l'écran principal)*. Onglet Métier vérifié le 22/10 : les actions courantes sont à 2 touches.
 
 ### NIVEAU 1 — Très gros chantiers (XL)
 
@@ -135,9 +135,9 @@
 
 ### NIVEAU 3 — Chantiers moyens (M) : sensation de jeu et confort
 
-- [x] **11. « Juice »** *(fait le 21/10 : compteur d'argent animé, variations de jauges flottantes, confettis sur diplôme/mariage/naissance, vibrations, sons synthétisés désactivés par défaut, réglages dans le Menu)*. Reste : gâteau 🎂 d'anniversaire et clignement des yeux (niveau 5).
+- [x] **11. « Juice »** *(fait le 21/10 : compteur d'argent animé, variations de jauges flottantes, confettis sur diplôme/mariage/naissance, vibrations, sons synthétisés désactivés par défaut, réglages dans le Menu)*. Gâteau d'anniversaire et clignement des yeux faits le 22/10.
 - [ ] **12. Événements illustrés** : cartes d'événement avec décor et avatars des personnes concernées, transitions entre les années.
-- [x] **13. Prise en main** *(fait le 21/10 : visite guidée de 6 écrans au premier lancement, rejouable depuis Menu → Réglages ; fenêtre « Quoi de neuf » alimentée par `CHANGELOG.md` quand une nouveauté est publiée)*. Reste : aides contextuelles ponctuelles.
+- [x] **13. Prise en main** *(fait le 21/10 : visite guidée de 6 écrans au premier lancement, rejouable depuis Menu → Réglages ; fenêtre « Quoi de neuf » alimentée par `CHANGELOG.md` quand une nouveauté est publiée)*. Bulles d'aide ponctuelles faites le 22/10 (Métier, Relations, Activités, Biens).
 - [ ] **14. Fil de vie 2.0** : chronologie, filtre « moments importants », « vieillir jusqu'au prochain événement », **album des portraits par âge** (l'avatar qui vieillit).
 - [x] **15. Bilan de fin de vie + carte à partager** *(fait le 21/10 : prix décernés (Millionnaire, Le plus généreux, Grande famille…), épitaphe, carte image 1080×1500 à partager par le téléphone ou à enregistrer)*. Reste : « photo de famille » et code de bilan pour la comparaison à deux (chantier 1).
 - [ ] **16. Personnalisation++** : tenues par métier et par époque, évolution du style avec l'âge, thèmes de couleurs de l'appli, cadres de portrait.
@@ -149,11 +149,11 @@
 ### NIVEAU 4 — Petits chantiers (S)
 
 - [x] 20. **Carrière avancée** *(fait le 21/10 : rythme de travail tranquille / normal / intense, délai de 1 à 2 ans entre deux demandes d'augmentation, retraite = 5 meilleures années × 2 % par année travaillée, entre 25 % et 75 %)*.
-- [x] 21. **Trait au choix à la création** *(fait le 21/10 : un menu « Trait de caractère » (au hasard ou l'une des 8 qualités) dans le formulaire de naissance)*. Reste : petit questionnaire de personnalité optionnel.
+- [x] 21. **Trait au choix à la création** *(fait le 21/10 : un menu « Trait de caractère » (au hasard ou l'une des 8 qualités) dans le formulaire de naissance)*. Questionnaire de trois questions fait le 22/10.
 - [x] 22. **Jalons de l'enfance** *(fait le 21/10 : 8 événements — premiers mots, premiers pas, caprice au supermarché, maternelle, ami imaginaire, vélo sans roulettes, CP, goûter d'anniversaire)*.
 - [x] 23. **Textes plus simples** *(première passe faite le 21/10 sur la bourse : « turbo baissier » → « pari à la baisse », « matrice de volatilité » → « risque des placements » ; entreprise : « trésorerie » → « argent en caisse », « valorisation » → « valeur de l'entreprise », « dividende » → « part des bénéfices » ; immobilier : fait le 22/10 (« Mes locations », note énergie, assurances, expulsion, achat à crédit) ; secte, zoo, showbiz, marché noir, mafia : passe faite le 22/10 sur les menus ; reste : lire les textes d'évènements de l'espion et des autres extensions)*.
 - [ ] 24. **Relecture qualité** des modules écrits sans relecteur (carrières spéciales, marché noir, secte, espion, zoo, showbiz…).
-- [ ] 25. Citations, proverbes et « le saviez-vous » dans le bilan de fin de vie.
+- [x] 25. Citations, proverbes et « le saviez-vous » dans le bilan de fin de vie *(fait le 22/10 : proverbe selon le thème de la vie + nombre de jours vécus)*.
 - [ ] 26. Raccourcis : « refaire la dernière action », favoris, recherche dans les menus.
 - [ ] 27. Notification discrète de nouvelle version dans le jeu.
 

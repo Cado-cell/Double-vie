@@ -111,6 +111,14 @@ function group(t,rows){rows=rows.filter(Boolean);if(!rows.length)return '';
   return keep.length?`${head}<div class="list">${keep.join('')}</div>${note}`:(note?`${head}${note}`:'');
 }
 const note=t=>`<p class="note">${esc(t)}</p>`;
+/* Aide ponctuelle : une seule fois par appareil, au premier passage dans un écran, fermable d’une touche.
+   Masquée pendant les tests automatiques (sauf si window.__forceHints est posé). */
+function hintsSeen(){try{return JSON.parse(localStorage.getItem('dv.hints')||'{}')}catch(e){return {}}}
+function hint(key,text,icon){
+  if(typeof navigator!=='undefined'&&navigator.webdriver&&!window.__forceHints)return '';
+  if(hintsSeen()[key])return '';
+  return `<button type="button" class="hint" data-a="${A(()=>{try{const o=hintsSeen();o[key]=1;localStorage.setItem('dv.hints',JSON.stringify(o))}catch(e){}render()})}"><span class="hi">${icon||'💡'}</span><span class="ht">${esc(text)}</span><b>OK</b></button>`;
+}
 function confirmP(title,text,fn,label){return ()=>({title,html:note(text)+group('',[row({ic:'⚠️',t:label||'Confirmer',danger:1,a:()=>{STACK.pop();run(fn)}}),row({ic:'↩️',t:'Annuler',a:back})])})}
 
 /* ---------- Avatars ---------- */
@@ -167,7 +175,7 @@ function obitHtml(L){
   const ks=kids(L);const rb=RIBBONS.find(r=>r.k===L.ribbon)||RIBBONS[RIBBONS.length-1];const ages=snapAges(L).slice(-6).reverse();
   return `<div class="obit"><div class="obav">${avatar(L,{happy:50})}</div><div class="ok">Repose en paix</div><h2>${esc(L.first)} ${esc(L.last)}</h2><p>${L.age} ans · ${esc(L.cause||'')}</p>
   <div class="ribbon"><span>${rb.ic}</span><div><b>Ruban : ${esc(rb.n)}</b><small>${esc(rb.d)}</small></div></div>
-  <p class="epi">« ${esc(lifeEpitaph(L))} »</p>${(()=>{const a=lifeAwards(L);return a.length?`<div class="awards">${a.map(x=>`<span class="award" title="${esc(x.d)}">${emoInline(x.ic+' '+x.n)}</span>`).join('')}</div>`:''})()}
+  <p class="epi">« ${esc(lifeEpitaph(L))} »</p><p class="prov">${esc(lifeProverb(L))}<br><small>${esc(lifeFact(L))}</small></p>${(()=>{const a=lifeAwards(L);return a.length?`<div class="awards">${a.map(x=>`<span class="award" title="${esc(x.d)}">${emoInline(x.ic+' '+x.n)}</span>`).join('')}</div>`:''})()}
   <dl><div><dt>Patrimoine</dt><dd>${fmt(netWorth(L))}</dd></div><div><dt>Dernier métier</dt><dd>${esc(jobLabel(L))}</dd></div><div><dt>Enfants</dt><dd>${allKids(L).length}</dd></div><div><dt>Génération</dt><dd>${L.gen}</dd></div></dl>
   <div class="list">${row({ic:'📤',t:'Partager mon bilan',s:'Une image à envoyer à ta moitié',a:()=>shareLife(L,'share')})}${row({ic:'💾',t:'Enregistrer l’image',s:'Dans ta galerie',a:()=>shareLife(L,'save')})}${ks.map(k=>row({av:avatar(k),t:`Continuer en tant que ${k.first}`,s:`${role(k)} · ${An(k.age)}${L.will.heir&&L.will.heir!==k.id?' · non désigné héritier':' · hérite de ta fortune'}`,right:'›',a:()=>{continueAs(G.turn,k.id);save();render()}})).join('')}
   ${ages.length?row({ic:'⏳',t:'Remonter le temps',s:`Revenir à ${An(ages[0])} ou avant`,right:'›',a:()=>openPanel(pTime)}):''}
@@ -285,7 +293,7 @@ function pWork(){
   if(L.age>=17)T2.push(nav('🎖️','Armée','Terre, Marine, Air, Légion étrangère',pArmy));
   for(const r of modCall('workRows',L))T2.push(...[].concat(r));
   h+=group('Carrière',T2);
-  return {title:inSchool(L)?'École':'Métier',html:h};
+  return {title:inSchool(L)?'École':'Métier',html:hint('work',inSchool(L)?'À l’école, les notes comptent pour la suite : réviser aide, sécher beaucoup moins.':L.job?'Ta performance décide des augmentations et des promotions : travaille dur… sans t’épuiser.':'Cherche un métier dans « Offres d’emploi » : ton argent en dépend.','🎒')+h};
 }
 function majorRow(L,k,M){return M.type==='lic'
   ?row({ic:'📘',t:M.n,s:`${An(M.y)}${canMajor(L,k)?'':` · ${M.g/5}/20 de moyenne requis`}`,dis:!canMajor(L,k),a:()=>{STACK.length=0;closeSheet();run(()=>enroll(L,k))}})
@@ -340,7 +348,7 @@ function pAssets(){
   }
   ts.push(ntile('🧰','Mes biens',`${L.assets.length} objet${L.assets.length>1?'s':''}`,pOwned));
   if(!kid&&!L.prison&&modCall('assetRows',L).flat().length)ts.push(ntile('📈','Investir','Bourse, entreprise, zoo…',pInvest));
-  return {title:'Biens',html:h+tiles(ts)+(L.prison?note('Impossible de faire des achats depuis ta cellule.'):kid?note('Tu peux acheter avec ton argent de poche, ou demander à tes parents.'):'')};
+  return {title:'Biens',html:h+hint('assets','Ici tu achètes, tu loues et tu investis. Un logement bien loué paie pour toi.','🏠')+tiles(ts)+(L.prison?note('Impossible de faire des achats depuis ta cellule.'):kid?note('Tu peux acheter avec ton argent de poche, ou demander à tes parents.'):'')};
 }
 function pOwned(){const L=cur();
   return {title:'Mes biens',html:L.assets.length?group('Mes biens',L.assets.map(a=>row({ic:KIND_IC[a.kind]||'📦',t:a.name,s:`Valeur ${fmt(a.value)}${a.loan?` · il reste ${fmt(a.loan)} à rembourser`:''}${a.rented?` · loué à ${a.rented.name}`:''}${L.home===a.id?' · ta résidence':''}${a.cond!=null?` · état ${a.cond} %`:''}`,right:'›',a:()=>pushPanel(pAsset(a.id))}))):note('Tu ne possèdes rien pour l’instant.')};
@@ -548,7 +556,7 @@ function pRel(){
     const list=L.family.filter(f);
     if(list.length)h+=group(n,list.map(p=>row({av:avatar(p),t:p.type==='pet'?p.first:`${p.first} ${p.last}`,s:`${role(p)} · ${p.alive?An(p.age):(p.gender==='F'?'décédée':'décédé')}${wTag(L,p)}`,right:p.alive?mini(p.rel):'',a:()=>pushPanel(()=>pPerson(p.id))})));
   }
-  return {title:'Relations',html:h};
+  return {title:'Relations',html:hint('rel','Touche une personne pour passer du temps avec elle. Une relation qu’on néglige s’abîme !','💞')+h};
 }
 function pPerson(id){
   const L=cur();const p=byId(L,id);if(!p)return {title:'Relations',html:note('Cette personne ne fait plus partie de ta vie.')};
@@ -613,7 +621,7 @@ function pAct(){
   const ts=ACT_CATS.filter(c=>!ACT_ADV.includes(c[0])).map(c=>actCatTile(L,items,c[0]));
   if(adv.length)ts.push(tile({ic:'🧭',t:'Plus d’aventures',s:adv.map(id=>ACT_CATS.find(c=>c[0]===id)[2]).join(', '),a:()=>pushPanel(pAdventures)}));
   const sug=actPick(L,items).map(([i,why])=>tile({ic:i[1],t:i[2],s:why,a:()=>pushPanel(i[4])}));
-  return {title:'Activités',html:(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+(rec.length?`<h3 class="sec">Récents</h3>${tiles(rec)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
+  return {title:'Activités',html:hint('act','« Juste pour toi » propose les idées du moment. Le reste est rangé par catégorie.','🎯')+(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+(rec.length?`<h3 class="sec">Récents</h3>${tiles(rec)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
 }
 /* Suggestions du moment, d’après la situation du personnage. */
 function actPick(L,items){
@@ -797,7 +805,8 @@ function formHtml(px,d,label,color){
   <div class="two"><label class="f">Prénom<input id="${px}-first" value="${esc(d.first)}" autocomplete="off" maxlength="30"></label><label class="f">Nom<input id="${px}-last" value="${esc(d.last)}" autocomplete="off" maxlength="30"></label></div>
   <div class="two"><label class="f">Genre<select id="${px}-gender">${opt('F','Femme',d.gender)}${opt('H','Homme',d.gender)}</select></label><label class="f">Attirance<select id="${px}-likes">${opt('H','Hommes',d.likes)}${opt('F','Femmes',d.likes)}${opt('both','Les deux',d.likes)}</select></label></div>
   <div class="two"><label class="f">Pays de naissance<select id="${px}-country">${Object.keys(COUNTRIES).map(c=>opt(c,c+(COUNTRIES[c].mon?' 👑':''),d.country)).join('')}</select></label><label class="f">Talent<select id="${px}-talent">${opt('rand','Au hasard',d.talent)}${opt('','Aucun',d.talent)}${Object.entries(TALENTS).map(([k,n])=>opt(k,n,d.talent)).join('')}</select></label></div>
-  ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>`:''}
+  ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>
+  ${typeof TRAIT_QUIZ!=='undefined'?`<details class="quiz"><summary>Pas sûr${d.gender==='F'?'e':''} ? Trois questions pour choisir</summary>${TRAIT_QUIZ.map((qz,i)=>`<label class="f">${esc(qz.q)}<select data-quiz="${px}"><option value="">—</option>${qz.a.map(([t,k])=>`<option value="${k}">${esc(t)}</option>`).join('')}</select></label>`).join('')}<p class="note" id="${px}-quizres"></p></details>`:''}`:''}
   <label class="chk"><input type="checkbox" id="${px}-royal"${d.royal?' checked':''}> Naître dans une famille royale <small>(pays marqués 👑)</small></label>
   <details class="led-wrap"><summary><span class="sav" id="${px}-sav">${AVATAR_R.render(LED[px].look,{age:24,gender:d.gender,mood:85})}</span><span>Apparence<small>Coiffure, couleurs, tenue : touche pour personnaliser</small></span></summary><div class="led" data-led="${px}">${ledInner(px)}</div></details></div>`;
 }
@@ -832,6 +841,13 @@ function startGame(){
 }
 
 /* ---------- Évènements DOM ---------- */
+document.addEventListener('change',e=>{
+  const q=e.target.closest&&e.target.closest('select[data-quiz]');if(!q||typeof traitQuizResult!=='function')return;
+  const px=q.dataset.quiz,ans=[...document.querySelectorAll(`select[data-quiz="${px}"]`)].map(s=>s.value);
+  if(ans.some(a=>!a))return;
+  const k=traitQuizResult(ans),sel=document.getElementById(`${px}-trait`),res=document.getElementById(`${px}-quizres`);
+  if(k&&sel){sel.value=k;const o=sel.options[sel.selectedIndex];if(res)res.textContent=`Ton trait : ${o?o.textContent:k}. Tu peux encore le changer ci-dessus.`}
+});
 document.addEventListener('click',e=>{
   const r=e.target.closest('[data-refill]');if(r){refill(r.dataset.refill);return}
   const lk=e.target.closest('[data-lk]');if(lk){const box=lk.closest('[data-led]');const id=box&&box.dataset.led;const S=id&&LED[id];if(S){const [k,v,t]=lk.dataset.lk.split('|');S.look[k]=t==='n'?+v:t==='b'?!S.look[k]:v;ledRefresh(id)}return}

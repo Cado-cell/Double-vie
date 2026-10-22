@@ -19,7 +19,8 @@ const {chromium}=require(require('child_process').execSync('npm root -g').toStri
     if(gs.length){await rnd(gs).click();continue}
     await pg.waitForTimeout(150);continue}
   if(await pg.isVisible('#sheet')){
-    const rows=await pg.$$('#pbody button.row:not([disabled]), #pbody button.tile:not([disabled]), #pbody button.btn');
+    const all=await pg.$$('#pbody button.row:not([disabled]), #pbody button.tile:not([disabled]), #pbody button.btn');
+    const vis=await Promise.all(all.map(e=>e.isVisible()));const rows=all.filter((e,i)=>vis[i]); // les lignes repliées (sections fermées) ne sont pas cliquables
     if(rows.length&&Math.random()<.75){const r=rnd(rows);const t=await r.innerText();if(/Nouvelle partie|Tout effacer|Revoir la visite guidée/.test(t)){await pg.click('#pclose');continue}await r.click();continue}
     await pg.click('#pclose');continue}
   const ob=await pg.$$('.obit button.row');

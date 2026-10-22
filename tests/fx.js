@@ -20,6 +20,10 @@ const fs=require('fs');const dir='src';
  // confettis sur un diplôme
  await pg.evaluate(()=>{const L=cur();L.log[L.log.length-1].lines.push('🎓 Tu décroches ton bac !');render()});
  r.confetti=await pg.evaluate(()=>document.querySelectorAll('#fxl .cf').length);
+ // gâteau d'anniversaire
+ await pg.evaluate(()=>{const L=cur();L.age=17;render();L.age=18;render()});
+ r.cake=await pg.evaluate(()=>document.querySelectorAll('#fxl .fxcake').length);
+ r.blink=await pg.evaluate(()=>document.querySelectorAll('#idcard .avatar .blk').length);
  // réglages
  await pg.evaluate(()=>FX.toggle('sound'));
  r.persisted=await pg.evaluate(()=>JSON.parse(localStorage.getItem('dv.fx')).sound===true&&FX.st.sound===true);
@@ -27,5 +31,5 @@ const fs=require('fs');const dir='src';
  r.menu=await pg.evaluate(()=>{openPanel(pMenu);const t=document.getElementById('pbody').innerText;return /Sons/.test(t)&&/Vibrations/.test(t)});
  // vieillir longtemps sans erreur
  await pg.evaluate(()=>{closeSheet();for(let i=0;i<40;i++){ageUp();let k=0;while(curM&&k++<40){const c=curM.choices;if(!c||!c.length)endModal('');else chooseM(0)}}});
- r.ok=!errs.length&&r.defaults.haptic===true&&r.defaults.sound===false&&r.cashClass&&r.cashFinal&&r.deltas>0&&r.confetti>0&&r.persisted&&r.menu;
+ r.ok=!errs.length&&r.defaults.haptic===true&&r.defaults.sound===false&&r.cashClass&&r.cashFinal&&r.deltas>0&&r.confetti>0&&r.cake>0&&r.blink>=1&&r.persisted&&r.menu;
  console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

@@ -3,6 +3,12 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 22/10/2026
+- Bourse : la page d'une action est plus courte (acheter 1, investir 1 000 ou 10 000 €, montant libre ; « vendre la moitié » et « tout vendre » n'apparaissent que si tu en possèdes).
+- Traits : « Qualités » et « Défauts » sont deux sections repliables au lieu d'une liste de 15 lignes.
+- Anniversaire : un gâteau s'envole au-dessus de ton portrait aux âges qui comptent (1, 5, 10, 16, 18, 21, 30, 40…), et tes yeux clignent.
+- Petites bulles d'aide, une seule fois par écran (Métier, Relations, Activités, Biens), à fermer d'une touche.
+- Création du personnage : trois questions pour t'aider à choisir ton trait de caractère.
+- Fin de vie : un proverbe et un petit « Le saviez-vous ? » accompagnent l'épitaphe.
 - Tes proches se souviennent : celui que tu as aidé finit par te remercier (parfois en te rendant une partie de l'argent), celui à qui tu as refusé un service peut garder rancune. Les parents et grands-parents que tu négliges te le font sentir.
 - Héritage : ce que te laisse un parent ou un grand-parent dépend de votre relation et du temps passé sans vous voir. Très proches : un testament généreux. Perdus de vue depuis des années : un testament maigre, voire rien.
 - Secte, zoo, cinéma et mafia : plus de mots compliqués (« dons des fidèles » au lieu de « dîme », « entrées et comptes » au lieu de « billetterie et finances », « tes points forts par genre » au lieu de « matrice d'adéquation », « les risques du zoo »).

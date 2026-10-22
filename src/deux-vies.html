@@ -406,6 +406,16 @@ details.led-wrap>summary small{display:block;color:var(--muted);font-weight:700;
 .cf{position:absolute;top:0;display:block}
 .fxd{position:absolute;font-family:var(--display);font-weight:800;font-size:16px;line-height:1;padding:4px 9px;border-radius:99px;background:var(--surface);border:2px solid var(--ol);box-shadow:0 2px 0 var(--ol);white-space:nowrap}
 .fxd.up{color:var(--good)}.fxd.down{color:var(--bad)}
+.prov{margin:6px 14px 0;font-style:italic;font-weight:700;font-size:13px;color:var(--ink-2);text-align:center}.prov small{font-style:normal;opacity:.8}
+.grp{margin:8px 0}.grp summary{cursor:pointer;font-family:var(--display);font-weight:800;font-size:15px;padding:10px 4px}
+.quiz{margin:8px 0}.quiz summary{cursor:pointer;font-weight:800;font-size:13.5px;color:var(--ink-2)}.quiz .f{margin-top:8px}
+.hint{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:12px 0 0;padding:10px 12px;border:2.5px solid var(--ol);border-radius:14px;background:var(--surface);box-shadow:0 3px 0 var(--ol);color:var(--ink);font:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
+.hint .hi{font-size:22px;flex:none}.hint .ht{flex:1}.hint b{flex:none;padding:3px 10px;border-radius:99px;background:var(--pc);color:#fff;font-family:var(--display);font-size:13px}
+.fxcake{position:absolute;font-size:34px;line-height:1;filter:drop-shadow(0 2px 0 var(--ol))}
+/* Clignement des yeux du portrait principal */
+.avatar .blk,.sheethead .blk{transform-box:fill-box;transform-origin:50% 55%;animation:blink 5.2s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.06)}}
+@media (prefers-reduced-motion:reduce){.avatar .blk,.sheethead .blk{animation:none}}
 .cash{transition:box-shadow .3s,background .3s}
 .cash.up{animation:cashup .8s ease-out}.cash.down{animation:cashdown .8s ease-out}
 @keyframes cashup{0%{transform:scale(1)}25%{transform:scale(1.12);box-shadow:0 0 0 4px rgba(31,178,84,.35)}100%{transform:scale(1)}}

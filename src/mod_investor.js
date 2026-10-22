@@ -403,9 +403,9 @@ const pAsset=id=>()=>{
   if(A.desc)h+=note(A.desc);
   if(L.age<18)return {title:A.n,html:h+note('Il faut avoir 18 ans pour passer des ordres.')};
   if(L.prison)return {title:A.n,html:h+note('Impossible de passer des ordres depuis ta cellule.')};
-  const qs=(A.frac&&p>=500?[.1]:[]).concat([1,10,100]);
+  const qs=A.frac&&p>=500?[.1]:[1];
   const B=qs.map(n=>{const cost=Math.max(1,Math.round(n*p*(1+f)));return act(L,{ic:'🟢',t:`Acheter ${qtyLab(A,n)}`,s:`${fmt(cost)} frais compris`,cost,fn:L=>out(L,buyQ(L,id,n,cost))})});
-  for(const amt of [1000,10000,100000]){
+  for(const amt of [1000,10000]){
     const n=A.frac?r6(amt/(p*(1+f))):Math.floor(amt/(p*(1+f)));const cost=n>0?Math.max(1,Math.round(n*p*(1+f))):amt;
     B.push(act(L,{ic:'💶',t:`Investir ${fmt(amt)}`,s:n>0?`Soit ${qtyLab(A,n)}`:'',dis:n>0?'':`Une action coûte ${pxF(p)}`,cost,fn:L=>out(L,buyQ(L,id,n,cost))}));
   }
@@ -414,11 +414,12 @@ const pAsset=id=>()=>{
   const readAmt=()=>{const el=document.getElementById('inv-amt');const v=el?Math.round(+String(el.value).replace(/\s/g,'').replace(',','.')):0;return v>0&&isFinite(v)?v:0};
   h+=group('',[
     row({ic:'✍️',t:'Acheter pour ce montant',s:'Saisis un montant ci-dessus',a:()=>{const v=readAmt();if(!v){toast('Indique un montant en euros.');return}if(v>L.money){toast('Fonds insuffisants.');return}run(()=>{const [ok,t]=buyAmt(L,id,v);return ok?out(L,t):t})}}),
-    row({ic:'✍️',t:'Vendre pour ce montant',s:q>0?'Dans la limite de ta position':'Aucune position',dis:!(q>0),a:()=>{const v=readAmt();if(!v){toast('Indique un montant en euros.');return}run(()=>out(L,sellAmt(L,id,v)))}})]);
-  const S=qs.map(n=>act(L,{ic:'🔴',t:`Vendre ${qtyLab(A,n)}`,s:`Environ ${fmt(n*p*(1-f))} encaissés`,dis:q+EPS<n?'Position insuffisante':'',fn:L=>out(L,sellQ(L,id,n))}));
-  for(const amt of [1000,10000])S.push(act(L,{ic:'💶',t:`Vendre pour ${fmt(amt)}`,dis:q*p*(1-f)<amt?'Position insuffisante':'',fn:L=>out(L,sellAmt(L,id,amt))}));
-  S.push(act(L,{ic:'🧺',t:'Tout vendre',s:q>0?`Environ ${fmt(q*p*(1-f))} encaissés`:'',dis:q>0?'':'Aucune position',danger:1,fn:L=>out(L,sellQ(L,id,q))}));
-  h+=group('Vendre',S);
+    q>0?row({ic:'✍️',t:'Vendre pour ce montant',s:'Dans la limite de ta position',a:()=>{const v=readAmt();if(!v){toast('Indique un montant en euros.');return}run(()=>out(L,sellAmt(L,id,v)))}}):null]);
+  if(q>0){
+    const half=A.frac?r6(q/2):Math.floor(q/2);
+    h+=group('Vendre',[half>EPS&&half<q?act(L,{ic:'🔴',t:`Vendre la moitié (${qtyLab(A,half)})`,s:`Environ ${fmt(half*p*(1-f))} encaissés`,fn:L=>out(L,sellQ(L,id,half))}):null,
+      act(L,{ic:'🧺',t:'Tout vendre',s:`Environ ${fmt(q*p*(1-f))} encaissés`,danger:1,fn:L=>out(L,sellQ(L,id,q))})]);
+  }
   h+=group('Parier sur la baisse',[1000,10000].map(amt=>act(L,{ic:'🎯',t:`Pari à la baisse de ${fmt(amt)}`,s:'Dénoué dans un an : jusqu’à ×2 si le cours s’effondre, perdu s’il double',cost:amt,fn:L=>out(L,openTurbo(L,id,amt))})));
   return {title:A.n,html:h};
 };

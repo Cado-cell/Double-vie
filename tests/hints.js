@@ -1,0 +1,20 @@
+/* Aides ponctuelles : une bulle par écran, une seule fois, fermable ; absentes pendant les tests sauf si on les force. */
+const {chromium}=require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright');
+const fs=require('fs');const dir='src';
+(async()=>{const b=await chromium.launch();const pg=await b.newPage({viewport:{width:390,height:844}});await pg.route('**/fonts.g*/**',r=>r.abort());
+ const errs=[];pg.on('pageerror',e=>errs.push(e.message));
+ const h=fs.readFileSync(dir+'/deux-vies.html','utf8');fs.writeFileSync(dir+'/shot.html','<!doctype html><html><head><meta charset="utf-8"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'+h+'</body></html>');
+ await pg.goto('file://'+process.cwd()+'/'+dir+'/shot.html');await pg.evaluate(()=>{try{localStorage.clear()}catch(e){}});await pg.reload();await pg.click('#goBtn');
+ const r={};
+ await pg.evaluate(()=>{for(let i=0;i<20;i++){ageUp();let k=0;while(curM&&k++<40){const c=curM.choices;if(!c||!c.length)endModal('');else chooseM(0)}}});
+ const count=f=>pg.evaluate(f=>{closeSheet();openPanel(eval(f));return document.querySelectorAll('#pbody .hint').length},f);
+ r.quiet=[await count('pRel'),await count('pAct'),await count('pAssets'),await count('pWork')];
+ await pg.evaluate(()=>{window.__forceHints=true});
+ r.shown=[await count('pRel'),await count('pAct'),await count('pAssets'),await count('pWork')];
+ await pg.evaluate(()=>{closeSheet();openPanel(pRel)});
+ await pg.click('#pbody .hint');await pg.waitForTimeout(60);
+ r.closed=await pg.evaluate(()=>document.querySelectorAll('#pbody .hint').length);
+ r.saved=await pg.evaluate(()=>JSON.parse(localStorage.getItem('dv.hints')).rel===1);
+ r.others=[await count('pAct'),await count('pAssets'),await count('pWork')];
+ r.ok=!errs.length&&r.quiet.every(n=>n===0)&&r.shown.every(n=>n===1)&&r.closed===0&&r.saved&&r.others.every(n=>n===1);
+ console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

@@ -666,7 +666,7 @@ const AV_A = (() => {
       defs += `<clipPath id="${id}"><path d="${d}"/></clipPath>`;
       const [ix, iy] = T([F.ir[0], F.ir[1]]);
       const ir = F.ir[2] * sc;
-      out += `<g clip-path="url(#${id})">${P(d, c.white)}<circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir)}" fill="${c.eye}"/><circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir * 0.5)}" fill="${c.pupil}"/></g>`;
+      out += `<g class="blk" style="animation-delay:-${((uid * 7) % 50) / 10}s" clip-path="url(#${id})">${P(d, c.white)}<circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir)}" fill="${c.eye}"/><circle cx="${f(ix)}" cy="${f(iy)}" r="${f(ir * 0.5)}" fill="${c.pupil}"/></g>`;
       hl.push([ix + ir * 0.36, iy - ir * 0.38, ir * 0.3], [ix - ir * 0.36, iy + ir * 0.38, ir * 0.14]);
       // paupière supérieure
       const l0 = T([F.o[0][0] - 0.2, F.o[0][1] + 0.1]), l3 = T([F.o[3][0] + 0.5, F.o[3][1] - 0.3]);
@@ -2844,9 +2844,9 @@ const pAsset=id=>()=>{
   if(A.desc)h+=note(A.desc);
   if(L.age<18)return {title:A.n,html:h+note('Il faut avoir 18 ans pour passer des ordres.')};
   if(L.prison)return {title:A.n,html:h+note('Impossible de passer des ordres depuis ta cellule.')};
-  const qs=(A.frac&&p>=500?[.1]:[]).concat([1,10,100]);
+  const qs=A.frac&&p>=500?[.1]:[1];
   const B=qs.map(n=>{const cost=Math.max(1,Math.round(n*p*(1+f)));return act(L,{ic:'🟢',t:`Acheter ${qtyLab(A,n)}`,s:`${fmt(cost)} frais compris`,cost,fn:L=>out(L,buyQ(L,id,n,cost))})});
-  for(const amt of [1000,10000,100000]){
+  for(const amt of [1000,10000]){
     const n=A.frac?r6(amt/(p*(1+f))):Math.floor(amt/(p*(1+f)));const cost=n>0?Math.max(1,Math.round(n*p*(1+f))):amt;
     B.push(act(L,{ic:'💶',t:`Investir ${fmt(amt)}`,s:n>0?`Soit ${qtyLab(A,n)}`:'',dis:n>0?'':`Une action coûte ${pxF(p)}`,cost,fn:L=>out(L,buyQ(L,id,n,cost))}));
   }
@@ -2855,11 +2855,12 @@ const pAsset=id=>()=>{
   const readAmt=()=>{const el=document.getElementById('inv-amt');const v=el?Math.round(+String(el.value).replace(/\s/g,'').replace(',','.')):0;return v>0&&isFinite(v)?v:0};
   h+=group('',[
     row({ic:'✍️',t:'Acheter pour ce montant',s:'Saisis un montant ci-dessus',a:()=>{const v=readAmt();if(!v){toast('Indique un montant en euros.');return}if(v>L.money){toast('Fonds insuffisants.');return}run(()=>{const [ok,t]=buyAmt(L,id,v);return ok?out(L,t):t})}}),
-    row({ic:'✍️',t:'Vendre pour ce montant',s:q>0?'Dans la limite de ta position':'Aucune position',dis:!(q>0),a:()=>{const v=readAmt();if(!v){toast('Indique un montant en euros.');return}run(()=>out(L,sellAmt(L,id,v)))}})]);
-  const S=qs.map(n=>act(L,{ic:'🔴',t:`Vendre ${qtyLab(A,n)}`,s:`Environ ${fmt(n*p*(1-f))} encaissés`,dis:q+EPS<n?'Position insuffisante':'',fn:L=>out(L,sellQ(L,id,n))}));
-  for(const amt of [1000,10000])S.push(act(L,{ic:'💶',t:`Vendre pour ${fmt(amt)}`,dis:q*p*(1-f)<amt?'Position insuffisante':'',fn:L=>out(L,sellAmt(L,id,amt))}));
-  S.push(act(L,{ic:'🧺',t:'Tout vendre',s:q>0?`Environ ${fmt(q*p*(1-f))} encaissés`:'',dis:q>0?'':'Aucune position',danger:1,fn:L=>out(L,sellQ(L,id,q))}));
-  h+=group('Vendre',S);
+    q>0?row({ic:'✍️',t:'Vendre pour ce montant',s:'Dans la limite de ta position',a:()=>{const v=readAmt();if(!v){toast('Indique un montant en euros.');return}run(()=>out(L,sellAmt(L,id,v)))}}):null]);
+  if(q>0){
+    const half=A.frac?r6(q/2):Math.floor(q/2);
+    h+=group('Vendre',[half>EPS&&half<q?act(L,{ic:'🔴',t:`Vendre la moitié (${qtyLab(A,half)})`,s:`Environ ${fmt(half*p*(1-f))} encaissés`,fn:L=>out(L,sellQ(L,id,half))}):null,
+      act(L,{ic:'🧺',t:'Tout vendre',s:`Environ ${fmt(q*p*(1-f))} encaissés`,danger:1,fn:L=>out(L,sellQ(L,id,q))})]);
+  }
   h+=group('Parier sur la baisse',[1000,10000].map(amt=>act(L,{ic:'🎯',t:`Pari à la baisse de ${fmt(amt)}`,s:'Dénoué dans un an : jusqu’à ×2 si le cours s’effondre, perdu s’il double',cost:amt,fn:L=>out(L,openTurbo(L,id,amt))})));
   return {title:A.n,html:h};
 };
@@ -10216,6 +10217,14 @@ const TR={
 const KEYS=Object.keys(TR);
 /* Traits proposés à la création du personnage (les qualités seulement). */
 window.TRAIT_CHOICES=KEYS.filter(k=>TR[k].good).map(k=>[k,TR[k].ic+' '+TR[k].n]);
+/* Mini-questionnaire optionnel de la création : trois questions, chaque réponse penche vers une qualité. */
+window.TRAIT_QUIZ=[
+  {q:'Un samedi sans rien de prévu, tu…',a:[['lis ou apprends un truc nouveau','rat'],['retrouves tout le monde en soirée','soc'],['avances sur un projet perso','bos']]},
+  {q:'Face à un gros problème, tu…',a:[['réfléchis calmement, longtemps','med'],['cherches l’astuce que personne n’a vue','gen'],['te dis que ça va s’arranger','opti']]},
+  {q:'Le matin, tu arrives…',a:[['impeccable, rien ne dépasse','soi'],['avec un grand sourire','opti'],['avec un plan pour la journée','bos'],['en ayant déjà lu trois articles','int']]}
+];
+/* Renvoie la qualité qui revient le plus souvent ; en cas d’égalité, la dernière réponse départage. */
+window.traitQuizResult=ans=>{const n={};ans.forEach(k=>{if(k)n[k]=(n[k]||0)+1});let best=null;for(const k of ans.slice().reverse()){if(k&&(!best||n[k]>n[best]))best=k}return best};
 /* compteur de pratique -> [trait, seuil] */
 const LEARN={k_med:['med',6],k_lib:['rat',6],k_study:['int',8],k_gym:['soi',8],k_party:['soc',8],k_walk:['opti',10],k_yoga:['med',8],k_doc:['tha',8]};
 const conflicts=(t,k)=>KEYS.filter(o=>t[o]&&(TR[o].x.includes(k)||TR[k].x.includes(o)));
@@ -10295,6 +10304,15 @@ function card1(L,k){
     fn:()=>out(L,`${T.ic} Tu as déjà le trait « ${T.n} ».`)});
 }
 
+const addRow=(L,k)=>{
+  const T=TR[k],cf=conflicts(L.traits,k);
+  return act(L,{ic:T.ic,t:T.n,s:T.d+(cf.length?` (remplace : ${cf.map(o=>TR[o].n).join(', ')})`:''),right:`${'★'.repeat(5-T.r)}`,
+    fn:()=>{const lost=add(L,k);lost.forEach(o=>out(L,`${TR[o].ic} « ${TR[o].n} » disparaît, car incompatible avec « ${T.n} ».`));return out(L,`${T.ic} Tu as maintenant le trait « ${T.n} ».`)}});
+};
+const addGroup=(L,title,good)=>{
+  const rows=KEYS.filter(k=>!L.traits[k]&&!!TR[k].good===good).map(k=>addRow(L,k));
+  return rows.length?`<details class="grp"><summary>${title} (${rows.length})</summary>${group('',rows)}</details>`:'';
+};
 function pTraits(){
   const L=cur();if(!L)return {title:'Traits',html:note('Aucun personnage.')};
   if(!L.traits)L.traits={};
@@ -10304,11 +10322,6 @@ function pTraits(){
     return act(L,{ic:T.ic,t:`Retirer : ${T.n}`,s:T.d,right:T.good?'😊':'😬',danger:!T.good,
       fn:()=>{delete L.traits[k];return out(L,`${T.ic} Tu n’as plus le trait « ${T.n} ».`)}});
   });
-  const addr=rest.map(k=>{
-    const T=TR[k],cf=conflicts(L.traits,k);
-    return act(L,{ic:T.ic,t:T.n,s:T.d+(cf.length?` (remplace : ${cf.map(o=>TR[o].n).join(', ')})`:''),right:`${'★'.repeat(5-T.r)}`,
-      fn:()=>{const lost=add(L,k);lost.forEach(o=>out(L,`${TR[o].ic} « ${TR[o].n} » disparaît, car incompatible avec « ${T.n} ».`));return out(L,`${T.ic} Tu as maintenant le trait « ${T.n} ».`)}});
-  });
   const prog=Object.keys(LEARN).filter(c=>(L.tr&&L.tr[c]>0)&&!L.traits[LEARN[c][0]]).map(c=>{
     const [k,th]=LEARN[c],T=TR[k];
     return `<div class="stat"><b>${esc(T.n)}</b><span class="n">${Math.min(L.tr[c],th)}/${th}</span>${bar(Math.min(100,100*L.tr[c]/th))}</div>`;
@@ -10317,7 +10330,7 @@ function pTraits(){
     note(mine.length?`Tu es défini${ge(L,'','e')} par ${mine.length} trait${mine.length>1?'s':''}. À force de pratique, d’autres peuvent s’ajouter.`:'Aucun trait marquant pour l’instant. Un peu fade, non ?')
     +group('Tes traits',own)
     +(prog?`<h3 class="sec">En apprentissage</h3>${prog}`:'')
-    +group('Ajouter un trait',addr)};
+    +(rest.length?`<h3 class="sec">Ajouter un trait</h3>${addGroup(L,'😊 Qualités',true)}${addGroup(L,'😬 Défauts',false)}`:'')};
 }
 
 registerMod({
@@ -12531,7 +12544,8 @@ const FX=(()=>{
   try{const v=JSON.parse(localStorage.getItem('dv.fx')||'{}');if(typeof v.haptic==='boolean')st.haptic=v.haptic;if(typeof v.sound==='boolean')st.sound=v.sound}catch(e){}
   const persist=()=>{try{localStorage.setItem('dv.fx',JSON.stringify(st))}catch(e){}};
   const calm=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}};
-  const last={cash:{},st:{},log:{}};
+  const last={cash:{},st:{},log:{},age:{}};
+  const CAKE_AGES=[1,5,10,16,18,21,30,40,50,60,70,80,90,100];
   let ac=null;
 
   /* ---------- Sons (synthétisés, aucun fichier) ---------- */
@@ -12567,6 +12581,16 @@ const FX=(()=>{
       const a=p.animate([{transform:'translate(0,-20px) rotate(0deg)',opacity:1},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:1,offset:.85},{transform:`translate(${dx*1.1}px,${dy+30}px) rotate(${rot*1.1}deg)`,opacity:0}],{duration:1500+Math.random()*1200,delay:Math.random()*250,easing:'cubic-bezier(.25,.6,.4,1)',fill:'forwards'});
       a.onfinish=()=>p.remove();
     }
+  }
+
+  /* Gâteau d’anniversaire qui s’élève au-dessus du portrait aux âges qui comptent. */
+  function cake(){
+    if(calm())return;const av=document.querySelector('#idcard .avatar');if(!av)return;
+    const r=av.getBoundingClientRect(),el=document.createElement('div');el.className='fxcake';el.textContent='🎂';
+    el.style.left=Math.max(4,r.left+r.width/2-20)+'px';el.style.top=Math.max(4,r.top-6)+'px';
+    layer().appendChild(el);if(!el.animate){el.remove();return}
+    const a=el.animate([{transform:'translateY(12px) scale(.4) rotate(-14deg)',opacity:0},{transform:'translateY(-12px) scale(1.3) rotate(7deg)',opacity:1,offset:.3},{transform:'translateY(-30px) scale(1) rotate(0deg)',opacity:1,offset:.75},{transform:'translateY(-52px) scale(.9)',opacity:0}],{duration:1600,easing:'ease-out'});
+    a.onfinish=()=>el.remove();buzz(15);
   }
 
   function deltas(items){
@@ -12605,6 +12629,8 @@ const FX=(()=>{
         requestAnimationFrame(step);
       }
     }
+    const pa=last.age[k];last.age[k]=L.age;
+    if(pa!=null&&L.age===pa+1&&!quiet&&L.alive!==false&&CAKE_AGES.includes(L.age))cake();
     const cu={happy:L.st.happy,health:L.st.health,smarts:L.st.smarts,looks:L.st.looks},pv=last.st[k];last.st[k]=cu;
     if(pv&&!quiet){
       const it=[];for(const [f,e] of [['happy','😊'],['health','❤️'],['smarts','🧠'],['looks','✨']]){const d=Math.round(cu[f]-pv[f]);if(Math.abs(d)>=2)it.push([e,d])}
@@ -12624,7 +12650,7 @@ const FX=(()=>{
 
   document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.age');if(b&&!b.disabled){buzz(8);play('age')}},true);
 
-  return {st,toggle,afterRender,confetti,deltas,play,buzz,modal:()=>{buzz(12);play('tap')}};
+  return {st,toggle,afterRender,confetti,cake,deltas,play,buzz,modal:()=>{buzz(12);play('tap')}};
 })();
 
 ;
@@ -12721,6 +12747,21 @@ function lifeEpitaph(L){
   if(L.age<30)return `${il} est parti${ge(L,'','e')} trop tôt, mais pas sans avoir fait parler de ${ge(L,'lui','elle')}.`;
   return `${il} a vécu, tout simplement. C’est déjà beaucoup.`;
 }
+/* Proverbe et petit fait de fin de vie, choisis d’après le thème de la vie (même logique que l’épitaphe). */
+const PROVERBS={rich:['L’argent ne fait pas le bonheur, mais il aide à le chercher.','Qui paie ses dettes s’enrichit.','On ne prête qu’aux riches.'],
+  family:['Les enfants sont les ancres de la vie.','Tel arbre, tels fruits.','La famille, c’est là où la vie commence et où l’amour ne finit pas.'],
+  crime:['L’occasion fait le larron.','Il ne faut jamais dire : fontaine, je ne boirai pas de ton eau.','Pas vu, pas pris.'],
+  travel:['Les voyages forment la jeunesse.','Qui ne risque rien n’a rien.','Le monde appartient à ceux qui se lèvent tôt.'],
+  fame:['Il n’y a pas de fumée sans feu.','Pour vivre heureux, vivons cachés.','La gloire est un feu de paille.'],
+  young:['Vivre vite, c’est vivre deux fois.','Les plus belles bougies brûlent des deux bouts.','Rien ne sert de courir, il faut partir à point.'],
+  plain:['Petit à petit, l’oiseau fait son nid.','Tout est bien qui finit bien.','On ne voit bien qu’avec le cœur.','Chaque jour suffit à sa peine… et à sa joie.']};
+function lifeProverb(L){
+  const t=L.tr||{};
+  const theme=netWorth(L)>=1e6?'rich':(t.kidsMax||0)>=3?'family':(t.crimes||0)>=8?'crime':(t.trips||0)>=5?'travel':L.fame>=50?'fame':L.age<30?'young':'plain';
+  const list=PROVERBS[theme];let h=0;for(const c of String(L.first||'')+String(L.last||''))h=(h*31+c.charCodeAt(0))>>>0;
+  return list[h%list.length];
+}
+function lifeFact(L){const d=Math.round(L.age*365.25);return `Le saviez-vous ? Tu as vécu environ ${d.toLocaleString('fr-FR')} jours, soit à peu près ${Math.round(L.age*1095).toLocaleString('fr-FR')} repas.`}
 function lifeFacts(L){return [['Patrimoine',fmtk(netWorth(L))],['Dernier métier',cap(String(jobLabel(L)||'Sans emploi'))],['Enfants',String(allKids(L).length)],['Génération',String(L.gen||1)]]}
 
 function cardWrap(x,text,cx,y,maxW,lh,maxLines){
@@ -12889,6 +12930,14 @@ function group(t,rows){rows=rows.filter(Boolean);if(!rows.length)return '';
   return keep.length?`${head}<div class="list">${keep.join('')}</div>${note}`:(note?`${head}${note}`:'');
 }
 const note=t=>`<p class="note">${esc(t)}</p>`;
+/* Aide ponctuelle : une seule fois par appareil, au premier passage dans un écran, fermable d’une touche.
+   Masquée pendant les tests automatiques (sauf si window.__forceHints est posé). */
+function hintsSeen(){try{return JSON.parse(localStorage.getItem('dv.hints')||'{}')}catch(e){return {}}}
+function hint(key,text,icon){
+  if(typeof navigator!=='undefined'&&navigator.webdriver&&!window.__forceHints)return '';
+  if(hintsSeen()[key])return '';
+  return `<button type="button" class="hint" data-a="${A(()=>{try{const o=hintsSeen();o[key]=1;localStorage.setItem('dv.hints',JSON.stringify(o))}catch(e){}render()})}"><span class="hi">${icon||'💡'}</span><span class="ht">${esc(text)}</span><b>OK</b></button>`;
+}
 function confirmP(title,text,fn,label){return ()=>({title,html:note(text)+group('',[row({ic:'⚠️',t:label||'Confirmer',danger:1,a:()=>{STACK.pop();run(fn)}}),row({ic:'↩️',t:'Annuler',a:back})])})}
 
 /* ---------- Avatars ---------- */
@@ -12945,7 +12994,7 @@ function obitHtml(L){
   const ks=kids(L);const rb=RIBBONS.find(r=>r.k===L.ribbon)||RIBBONS[RIBBONS.length-1];const ages=snapAges(L).slice(-6).reverse();
   return `<div class="obit"><div class="obav">${avatar(L,{happy:50})}</div><div class="ok">Repose en paix</div><h2>${esc(L.first)} ${esc(L.last)}</h2><p>${L.age} ans · ${esc(L.cause||'')}</p>
   <div class="ribbon"><span>${rb.ic}</span><div><b>Ruban : ${esc(rb.n)}</b><small>${esc(rb.d)}</small></div></div>
-  <p class="epi">« ${esc(lifeEpitaph(L))} »</p>${(()=>{const a=lifeAwards(L);return a.length?`<div class="awards">${a.map(x=>`<span class="award" title="${esc(x.d)}">${emoInline(x.ic+' '+x.n)}</span>`).join('')}</div>`:''})()}
+  <p class="epi">« ${esc(lifeEpitaph(L))} »</p><p class="prov">${esc(lifeProverb(L))}<br><small>${esc(lifeFact(L))}</small></p>${(()=>{const a=lifeAwards(L);return a.length?`<div class="awards">${a.map(x=>`<span class="award" title="${esc(x.d)}">${emoInline(x.ic+' '+x.n)}</span>`).join('')}</div>`:''})()}
   <dl><div><dt>Patrimoine</dt><dd>${fmt(netWorth(L))}</dd></div><div><dt>Dernier métier</dt><dd>${esc(jobLabel(L))}</dd></div><div><dt>Enfants</dt><dd>${allKids(L).length}</dd></div><div><dt>Génération</dt><dd>${L.gen}</dd></div></dl>
   <div class="list">${row({ic:'📤',t:'Partager mon bilan',s:'Une image à envoyer à ta moitié',a:()=>shareLife(L,'share')})}${row({ic:'💾',t:'Enregistrer l’image',s:'Dans ta galerie',a:()=>shareLife(L,'save')})}${ks.map(k=>row({av:avatar(k),t:`Continuer en tant que ${k.first}`,s:`${role(k)} · ${An(k.age)}${L.will.heir&&L.will.heir!==k.id?' · non désigné héritier':' · hérite de ta fortune'}`,right:'›',a:()=>{continueAs(G.turn,k.id);save();render()}})).join('')}
   ${ages.length?row({ic:'⏳',t:'Remonter le temps',s:`Revenir à ${An(ages[0])} ou avant`,right:'›',a:()=>openPanel(pTime)}):''}
@@ -13063,7 +13112,7 @@ function pWork(){
   if(L.age>=17)T2.push(nav('🎖️','Armée','Terre, Marine, Air, Légion étrangère',pArmy));
   for(const r of modCall('workRows',L))T2.push(...[].concat(r));
   h+=group('Carrière',T2);
-  return {title:inSchool(L)?'École':'Métier',html:h};
+  return {title:inSchool(L)?'École':'Métier',html:hint('work',inSchool(L)?'À l’école, les notes comptent pour la suite : réviser aide, sécher beaucoup moins.':L.job?'Ta performance décide des augmentations et des promotions : travaille dur… sans t’épuiser.':'Cherche un métier dans « Offres d’emploi » : ton argent en dépend.','🎒')+h};
 }
 function majorRow(L,k,M){return M.type==='lic'
   ?row({ic:'📘',t:M.n,s:`${An(M.y)}${canMajor(L,k)?'':` · ${M.g/5}/20 de moyenne requis`}`,dis:!canMajor(L,k),a:()=>{STACK.length=0;closeSheet();run(()=>enroll(L,k))}})
@@ -13118,7 +13167,7 @@ function pAssets(){
   }
   ts.push(ntile('🧰','Mes biens',`${L.assets.length} objet${L.assets.length>1?'s':''}`,pOwned));
   if(!kid&&!L.prison&&modCall('assetRows',L).flat().length)ts.push(ntile('📈','Investir','Bourse, entreprise, zoo…',pInvest));
-  return {title:'Biens',html:h+tiles(ts)+(L.prison?note('Impossible de faire des achats depuis ta cellule.'):kid?note('Tu peux acheter avec ton argent de poche, ou demander à tes parents.'):'')};
+  return {title:'Biens',html:h+hint('assets','Ici tu achètes, tu loues et tu investis. Un logement bien loué paie pour toi.','🏠')+tiles(ts)+(L.prison?note('Impossible de faire des achats depuis ta cellule.'):kid?note('Tu peux acheter avec ton argent de poche, ou demander à tes parents.'):'')};
 }
 function pOwned(){const L=cur();
   return {title:'Mes biens',html:L.assets.length?group('Mes biens',L.assets.map(a=>row({ic:KIND_IC[a.kind]||'📦',t:a.name,s:`Valeur ${fmt(a.value)}${a.loan?` · il reste ${fmt(a.loan)} à rembourser`:''}${a.rented?` · loué à ${a.rented.name}`:''}${L.home===a.id?' · ta résidence':''}${a.cond!=null?` · état ${a.cond} %`:''}`,right:'›',a:()=>pushPanel(pAsset(a.id))}))):note('Tu ne possèdes rien pour l’instant.')};
@@ -13326,7 +13375,7 @@ function pRel(){
     const list=L.family.filter(f);
     if(list.length)h+=group(n,list.map(p=>row({av:avatar(p),t:p.type==='pet'?p.first:`${p.first} ${p.last}`,s:`${role(p)} · ${p.alive?An(p.age):(p.gender==='F'?'décédée':'décédé')}${wTag(L,p)}`,right:p.alive?mini(p.rel):'',a:()=>pushPanel(()=>pPerson(p.id))})));
   }
-  return {title:'Relations',html:h};
+  return {title:'Relations',html:hint('rel','Touche une personne pour passer du temps avec elle. Une relation qu’on néglige s’abîme !','💞')+h};
 }
 function pPerson(id){
   const L=cur();const p=byId(L,id);if(!p)return {title:'Relations',html:note('Cette personne ne fait plus partie de ta vie.')};
@@ -13391,7 +13440,7 @@ function pAct(){
   const ts=ACT_CATS.filter(c=>!ACT_ADV.includes(c[0])).map(c=>actCatTile(L,items,c[0]));
   if(adv.length)ts.push(tile({ic:'🧭',t:'Plus d’aventures',s:adv.map(id=>ACT_CATS.find(c=>c[0]===id)[2]).join(', '),a:()=>pushPanel(pAdventures)}));
   const sug=actPick(L,items).map(([i,why])=>tile({ic:i[1],t:i[2],s:why,a:()=>pushPanel(i[4])}));
-  return {title:'Activités',html:(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+(rec.length?`<h3 class="sec">Récents</h3>${tiles(rec)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
+  return {title:'Activités',html:hint('act','« Juste pour toi » propose les idées du moment. Le reste est rangé par catégorie.','🎯')+(sug.length?`<h3 class="sec">Juste pour toi</h3>${tiles(sug)}`:'')+(rec.length?`<h3 class="sec">Récents</h3>${tiles(rec)}`:'')+`<h3 class="sec">Tout</h3>`+tiles(ts)};
 }
 /* Suggestions du moment, d’après la situation du personnage. */
 function actPick(L,items){
@@ -13575,7 +13624,8 @@ function formHtml(px,d,label,color){
   <div class="two"><label class="f">Prénom<input id="${px}-first" value="${esc(d.first)}" autocomplete="off" maxlength="30"></label><label class="f">Nom<input id="${px}-last" value="${esc(d.last)}" autocomplete="off" maxlength="30"></label></div>
   <div class="two"><label class="f">Genre<select id="${px}-gender">${opt('F','Femme',d.gender)}${opt('H','Homme',d.gender)}</select></label><label class="f">Attirance<select id="${px}-likes">${opt('H','Hommes',d.likes)}${opt('F','Femmes',d.likes)}${opt('both','Les deux',d.likes)}</select></label></div>
   <div class="two"><label class="f">Pays de naissance<select id="${px}-country">${Object.keys(COUNTRIES).map(c=>opt(c,c+(COUNTRIES[c].mon?' 👑':''),d.country)).join('')}</select></label><label class="f">Talent<select id="${px}-talent">${opt('rand','Au hasard',d.talent)}${opt('','Aucun',d.talent)}${Object.entries(TALENTS).map(([k,n])=>opt(k,n,d.talent)).join('')}</select></label></div>
-  ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>`:''}
+  ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>
+  ${typeof TRAIT_QUIZ!=='undefined'?`<details class="quiz"><summary>Pas sûr${d.gender==='F'?'e':''} ? Trois questions pour choisir</summary>${TRAIT_QUIZ.map((qz,i)=>`<label class="f">${esc(qz.q)}<select data-quiz="${px}"><option value="">—</option>${qz.a.map(([t,k])=>`<option value="${k}">${esc(t)}</option>`).join('')}</select></label>`).join('')}<p class="note" id="${px}-quizres"></p></details>`:''}`:''}
   <label class="chk"><input type="checkbox" id="${px}-royal"${d.royal?' checked':''}> Naître dans une famille royale <small>(pays marqués 👑)</small></label>
   <details class="led-wrap"><summary><span class="sav" id="${px}-sav">${AVATAR_R.render(LED[px].look,{age:24,gender:d.gender,mood:85})}</span><span>Apparence<small>Coiffure, couleurs, tenue : touche pour personnaliser</small></span></summary><div class="led" data-led="${px}">${ledInner(px)}</div></details></div>`;
 }
@@ -13610,6 +13660,13 @@ function startGame(){
 }
 
 /* ---------- Évènements DOM ---------- */
+document.addEventListener('change',e=>{
+  const q=e.target.closest&&e.target.closest('select[data-quiz]');if(!q||typeof traitQuizResult!=='function')return;
+  const px=q.dataset.quiz,ans=[...document.querySelectorAll(`select[data-quiz="${px}"]`)].map(s=>s.value);
+  if(ans.some(a=>!a))return;
+  const k=traitQuizResult(ans),sel=document.getElementById(`${px}-trait`),res=document.getElementById(`${px}-quizres`);
+  if(k&&sel){sel.value=k;const o=sel.options[sel.selectedIndex];if(res)res.textContent=`Ton trait : ${o?o.textContent:k}. Tu peux encore le changer ci-dessus.`}
+});
 document.addEventListener('click',e=>{
   const r=e.target.closest('[data-refill]');if(r){refill(r.dataset.refill);return}
   const lk=e.target.closest('[data-lk]');if(lk){const box=lk.closest('[data-led]');const id=box&&box.dataset.led;const S=id&&LED[id];if(S){const [k,v,t]=lk.dataset.lk.split('|');S.look[k]=t==='n'?+v:t==='b'?!S.look[k]:v;ledRefresh(id)}return}
