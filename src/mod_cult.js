@@ -68,7 +68,7 @@ function dm(C){const m={rec:0,fer:0,tithe:0,loy:0,heat:0};for(const k of C.docs)
 const capOf=C=>ESTATES[C.est].cap;
 const sgn=n=>(n>0?'+':n<0?'−':'')+Math.abs(n);
 const pc=n=>(n>0?'+':n<0?'−':'')+Math.abs(Math.round(n*100))+' %';
-function modTxt(d){return `Recrutement ${pc(d.rec)} · Ferveur ${sgn(d.fer)} · Dîme ${pc(d.tithe)} · Loyauté ${sgn(d.loy)} · Autorités ${sgn(d.heat)}`}
+function modTxt(d){return `Recrutement ${pc(d.rec)} · Ferveur ${sgn(d.fer)} · Dons ${pc(d.tithe)} · Loyauté ${sgn(d.loy)} · Autorités ${sgn(d.heat)}`}
 const adj=(C,k,v)=>{C[k]=clampN(Math.round(C[k]+v),0,100)};
 /* revenu annuel prévu (hors événements) */
 function proj(L,C){
@@ -129,13 +129,13 @@ function pMain(){
       +group('Fonder',[act(L,{ic:'🕯️',t:'Fonder un mouvement',s:'Nom, trois doctrines, 5 000 €',min:21,nav:pEditor('found')})])};
   }
   const E=ESTATES[C.est];const m=dm(C);const inc=proj(L,C);
-  const html=card(C.name,`${fmtn(C.fol)} adepte${C.fol>1?'s':''} / ${fmtn(E.cap)}`,`${E.n} · dîme ${C.tithe} % · revenus prévus ${fmt(inc)} par an, entretien ${fmt(E.up)}`,statLine('Loyauté',C.loy)+statLine('Ferveur',C.dev)+statLine('Attention des autorités',C.heat))
+  const html=card(C.name,`${fmtn(C.fol)} adepte${C.fol>1?'s':''} / ${fmtn(E.cap)}`,`${E.n} · dons ${C.tithe} % · revenus prévus ${fmt(inc)} par an, entretien ${fmt(E.up)}`,statLine('Loyauté',C.loy)+statLine('Ferveur',C.dev)+statLine('Attention des autorités',C.heat))
     +(C.docs.length<3?group('Doctrine incomplète',[nav('📜','Définir la doctrine','Choisis tes trois doctrines et rebaptise éventuellement le mouvement',pEditor('edit'))]):'')
     +(C.docs.length?card('Doctrine',C.docs.map(k=>DOCS[k].n).join(' · '),modTxt(m)):'')
     +(C.rival?card('Mouvement rival',C.rival.name,`${fmtn(C.rival.fol)} adepte${C.rival.fol>1?'s':''} : ils débauchent les tiens`):'')
     +group('Gérer',[
       nav('📢','Recrutement','Tracts, conférences, réseaux, stages, bouche-à-oreille',pRecruit),
-      nav('💶','Dîme',`Taux actuel : ${C.tithe} %`,pTithe),
+      nav('💶','Dons des fidèles',`Part de leur argent : ${C.tithe} %`,pTithe),
       nav(E.ic,'Domaine',`${E.n} · ${fmtn(E.cap)} places`,pEstate),
       nav('📜','Doctrine et nom','Rebaptiser ou réformer',pEditor('edit'))])
     +group('Vie spirituelle',[
@@ -178,9 +178,9 @@ function pRecruit(){
 }
 
 function pTithe(){
-  const L=cur();const C=st(L);if(!C)return {title:'Dîme',html:note('Aucun mouvement.')};
-  const rows=[0,5,10,15,20,25,30].map(t=>row({ic:t===C.tithe?'✅':'💶',t:`${t} %`,s:t===0?'Dons libres : fidélité maximale':t<=10?'Participation raisonnable':t<=20?'Les fidèles serrent la ceinture':'Les fidèles mangent des pâtes, toi du caviar',dis:t===C.tithe,a:()=>run(()=>{const c=st(L);const dd=t-c.tithe;c.tithe=t;adj(c,'loy',-dd*.5);lg(L,c,`dîme fixée à ${t} %`);return out(L,dd>0?`💶 Tu relèves la dîme à ${t} %. Quelques fronts se plissent.`:`💶 Tu abaisses la dîme à ${t} %. Soupirs de soulagement.`)})}));
-  return {title:'Dîme',html:card('Dîme actuelle',`${C.tithe} %`,`Revenus prévus : ${fmt(proj(L,C))} par an`,statLine('Loyauté',C.loy))+note('Une dîme élevée gonfle les revenus mais érode la loyauté chaque année. En dessous de 30 % de loyauté, la mutinerie rôde. Au-dessus de 15 %, les autorités commencent à compter.')+group('Taux',rows)};
+  const L=cur();const C=st(L);if(!C)return {title:'Dons des fidèles',html:note('Aucun mouvement.')};
+  const rows=[0,5,10,15,20,25,30].map(t=>row({ic:t===C.tithe?'✅':'💶',t:`${t} %`,s:t===0?'Dons libres : fidélité maximale':t<=10?'Participation raisonnable':t<=20?'Les fidèles serrent la ceinture':'Les fidèles mangent des pâtes, toi du caviar',dis:t===C.tithe,a:()=>run(()=>{const c=st(L);const dd=t-c.tithe;c.tithe=t;adj(c,'loy',-dd*.5);lg(L,c,`dons fixés à ${t} %`);return out(L,dd>0?`💶 Tu demandes plus aux fidèles : ${t} %. Quelques fronts se plissent.`:`💶 Tu demandes moins aux fidèles : ${t} %. Soupirs de soulagement.`)})}));
+  return {title:'Dons des fidèles',html:card('Part demandée',`${C.tithe} %`,`Revenus prévus : ${fmt(proj(L,C))} par an`,statLine('Loyauté',C.loy))+note('Demander beaucoup aux fidèles gonfle les revenus mais use leur loyauté chaque année. En dessous de 30 % de loyauté, la mutinerie rôde. Au-dessus de 15 %, les autorités commencent à compter.')+group('Part de leur argent',rows)};
 }
 
 function pEstate(){
@@ -227,7 +227,7 @@ function year(L){
   trackMax(L,'followers',C.fol);
   /* revenus récurrents */
   const inc=proj(L,C);
-  if(inc>0){earn(L,inc);say(L,`🕯️ ${C.name} : ${fmt(inc)} de dons et de dîmes cette année pour ${fmtn(C.fol)} adepte${C.fol>1?'s':''}.`)}
+  if(inc>0){earn(L,inc);say(L,`🕯️ ${C.name} : ${fmt(inc)} de dons cette année pour ${fmtn(C.fol)} adepte${C.fol>1?'s':''}.`)}
   if(C.loy>=80&&C.fol>=10&&!jail&&chance(.25)){const g=R(10000,60000)*(1+C.est);earn(L,g,1);say(L,`🕯️ Une fidèle lègue ${fmt(g)} au mouvement. Ses neveux sont moins enthousiastes.`)}
   if(C.fol>before+8)say(L,`🕯️ ${C.name} s’agrandit : +${C.fol-before} adeptes.`);
   else if(C.fol<before-5)say(L,`🕯️ ${C.name} perd ${before-C.fol} adeptes cette année.`);
@@ -244,7 +244,7 @@ function year(L){
 function probe(L,C,kind){
   const fin=kind==='fisc';
   const tit=fin?'Brigade financière':'Miviludes';
-  const txt=fin?`Des enquêteurs de la brigade financière épluchent les comptes de ${C.name} : dîmes, dons, travaux du domaine. On te convoque.`:`La Miviludes a reçu plusieurs signalements sur ${C.name}. Deux enquêteurs frappent à la porte, un dossier sous le bras.`;
+  const txt=fin?`Des enquêteurs de la brigade financière épluchent les comptes de ${C.name} : dons, travaux du domaine. On te convoque.`:`La Miviludes a reçu plusieurs signalements sur ${C.name}. Deux enquêteurs frappent à la porte, un dossier sous le bras.`;
   const m=dm(C);
   const base=clampN(.72-C.heat/190-Math.max(0,C.tithe-15)*.01-m.heat*.02,.1,.8);
   const end=(L,ok,boost)=>{
@@ -265,8 +265,8 @@ function mutiny(L,C){
   const lost=Math.max(1,Math.round(C.fol*R(20,40)/100));
   const rn=genName2();
   const mk=n=>{C.fol=Math.max(0,C.fol-n);C.rival={name:rn,fol:(C.rival?C.rival.fol:0)+n};lg(L,C,`schisme : ${rn}`)};
-  modal({title:'Mutinerie',icon:'🔥',text:`La coupe est pleine. Un groupe d’adeptes, mené par un ancien trésorier, exige des comptes et une dîme moins lourde. Il menace de fonder son propre mouvement, avec un meilleur buffet.`,choices:[
-    {t:'Faire des concessions : dîme réduite',pri:1,fn:()=>{C.tithe=Math.max(0,C.tithe-5);adj(C,'loy',R(12,20));chg(L,{karma:2});lg(L,C,'concessions aux mutins');return out(L,'🕊️ Tu baisses la dîme et promets plus de transparence. Le calme revient, le coffre un peu moins plein.')}},
+  modal({title:'Mutinerie',icon:'🔥',text:`La coupe est pleine. Un groupe d’adeptes, mené par un ancien trésorier, exige des comptes et des dons moins lourds. Il menace de fonder son propre mouvement, avec un meilleur buffet.`,choices:[
+    {t:'Faire des concessions : dons réduits',pri:1,fn:()=>{C.tithe=Math.max(0,C.tithe-5);adj(C,'loy',R(12,20));chg(L,{karma:2});lg(L,C,'concessions aux mutins');return out(L,'🕊️ Tu demandes moins d’argent et promets plus de transparence. Le calme revient, le coffre un peu moins plein.')}},
     {t:'Réprimer : excommunier les meneurs',danger:1,fn:()=>{chg(L,{karma:-5});if(chance(.5)){const n=Math.max(1,Math.round(lost/2));mk(n);adj(C,'heat',R(5,12));return out(L,`🔥 Les meneurs claquent la porte avec ${n} fidèles et créent ${rn}. Ils parlent déjà à la presse.`)}adj(C,'loy',-5);adj(C,'dev',R(3,8));return out(L,'🔥 La menace d’excommunication fait taire la salle. Pour l’instant.')}},
     {t:'Les laisser partir',fn:()=>{mk(lost);adj(C,'loy',R(8,14));return out(L,`🚶 ${lost} adepte${lost>1?'s':''} partent fonder ${rn}. Ceux qui restent n’en sont que plus fervents.`)}}
   ]});

@@ -159,7 +159,7 @@ function yearZoo(L){
   if(Z.rep>=80&&chance(.25))chg(L,{fame:1});
   if(Z.ticket>=40&&chance(.4))say(L,'💸 Les familles râlent : 40 € l’entrée, c’est le prix d’un week-end au ski.');
   /* trésorerie */
-  if(L.money<0){Z.rep=cl(Z.rep-3);const k=['keep','sec','vet'].find(x=>Z.staff[x]>(x==='vet'?0:1));if(k&&chance(.6)){Z.staff[k]--;say(L,'📉 Faute de trésorerie, un employé du zoo démissionne.')}}
+  if(L.money<0){Z.rep=cl(Z.rep-3);const k=['keep','sec','vet'].find(x=>Z.staff[x]>(x==='vet'?0:1));if(k&&chance(.6)){Z.staff[k]--;say(L,'📉 Faute d’argent en caisse, un employé du zoo démissionne.')}}
   Z.pen=0;
   const profit=rev-exp;Z.last={y:Z.y,vis,rev,exp,profit,weather:Math.round(weather*100)};Z.hist.push(profit);if(Z.hist.length>8)Z.hist.shift();
   say(L,`🦒 ${Z.name} : ${fmtn(vis)} visiteurs, ${fmt(rev)} de recettes, ${fmt(exp)} de dépenses${births?` et ${births} naissance${births>1?'s':''}`:''}.`);
@@ -311,7 +311,7 @@ function pZoo(){
     nav('🏞️','Enclos et animaux',`${Object.keys(Z.enc).length} enclos sur ${Z.ha*2} possibles`,pEnc),
     nav('🧑‍🌾','Personnel',`${Z.staff.keep+Z.staff.vet+Z.staff.sec} employés · ${fmtk(c.wages)} par an`,pStaff),
     nav('🛡️','Sécurité du public',`Niveau ${secLabel(c.secLvl).toLowerCase()} · risque d’évasion ${pct(c.risk)}`,pSec),
-    nav('🎟️','Billetterie et finances',`Entrée à ${fmt(Z.ticket)}`,pFin),
+    nav('🎟️','Entrées et comptes',`Entrée à ${fmt(Z.ticket)}`,pFin),
     nav('🍼','Reproduction',`${Object.values(Z.enc).filter(e=>e.breed).length} programme${Object.values(Z.enc).filter(e=>e.breed).length>1?'s':''} en cours`,pBreed),
     nav('🏗️','Aménagements et terrain',`${Z.ha} hectares`,pUp)])
     +group('Cession',[row({ic:'🤝',t:'Vendre le parc',s:fmt(zooValue(L)),danger:1,a:()=>pushPanel(confirmP('Vendre le zoo ?','Un repreneur rachète le terrain, les enclos et tous les animaux.',()=>{const v=zooValue(L);earn(L,v,1);L.zoo=null;return out(L,`🤝 Tu vends ton zoo pour ${fmt(v)}. Les suricates te font une haie d’honneur.`)},'Vendre'))})])};
@@ -365,14 +365,14 @@ function pSec(){
   const ups=['cam','sas'].map(k=>{const U=UPS[k];const cost=Math.round(U.p*costOf(L));return act(L,{ic:U.ic,t:U.n,s:Z.up[k]?'Installé':`${fmt(cost)} · ${U.d}`,cost:Z.up[k]?0:cost,dis:Z.up[k]?'Déjà installé':'',fn:L=>{Z.up[k]=1;return out(L,`${U.ic} ${U.n} : installation terminée.`)}})});
   return {title:'Sécurité du public',html:card('Niveau de sécurité',`${c.secLvl} % · ${secLabel(c.secLvl)}`,`Risque d’évasion : ${pct(c.risk)} par an`,statLine('Agents de sécurité',Math.round(c.cover.sec*100))+statLine('État moyen des enclos',c.avgC))
     +note('Le niveau dépend des agents, de l’état des enclos, des équipements et de la dangerosité des espèces. Une évasion peut coûter cher en indemnités et en réputation.')
-    +group('Matrice des risques',mat)+group('Équipements de sécurité',ups)};
+    +group('Les risques du zoo',mat)+group('Équipements de sécurité',ups)};
 }
 function pFin(){
   const L=cur();const Z=mig(L);if(!Z)return pOpen(L);const c=calc(L,Z);
   const presets=[8,12,16,20,25,32,40].map(t=>act(L,{ic:t===Z.ticket?'✅':'🎟️',t:`Billet à ${fmt(t)}`,s:t===Z.ticket?'Tarif actuel':t<12?'Accessible, très fréquenté':t>=32?'Élitiste : réputation en baisse':'',dis:t===Z.ticket?'Tarif actuel':'',fn:L=>{Z.ticket=t;return out(L,`🎟️ L’entrée passe à ${fmt(t)}.`)}}));
   const mk=['Aucune publicité','Campagne locale (20 000 €/an)','Campagne nationale (60 000 €/an)'].map((n,i)=>act(L,{ic:i===Z.mkt?'✅':'📣',t:n,s:i===Z.mkt?'En cours':'',dis:i===Z.mkt?'En cours':'',fn:L=>{Z.mkt=i;return out(L,`📣 Budget de communication : ${n.toLowerCase()}.`)}}));
-  const lines=[['Billetterie',c.vis*Z.ticket],['Restaurant et boutique',Math.round(c.vis*c.perV)],['Salaires',-c.wages],['Nourriture des animaux',-c.feed],['Équipements, publicité, programmes',-c.upk],['Frais généraux et accueil',-(c.over+Math.round(c.vis*1.2))]].map(([n,v])=>`<div class="stat"><b>${esc(n)}</b><span class="n">${v>=0?'+':'−'}${fmt(Math.abs(v))}</span></div>`).join('');
-  return {title:'Billetterie et finances',html:card('Résultat prévisionnel',`${c.profit>=0?'+':'−'}${fmt(Math.abs(c.profit))}`,`${fmtn(c.vis)} visiteurs attendus · réputation ${Z.rep} %`,lines)
+  const lines=[['Entrées vendues',c.vis*Z.ticket],['Restaurant et boutique',Math.round(c.vis*c.perV)],['Salaires',-c.wages],['Nourriture des animaux',-c.feed],['Équipements, publicité, programmes',-c.upk],['Frais divers et accueil',-(c.over+Math.round(c.vis*1.2))]].map(([n,v])=>`<div class="stat"><b>${esc(n)}</b><span class="n">${v>=0?'+':'−'}${fmt(Math.abs(v))}</span></div>`).join('');
+  return {title:'Entrées et comptes',html:card('Résultat prévu',`${c.profit>=0?'+':'−'}${fmt(Math.abs(c.profit))}`,`${fmtn(c.vis)} visiteurs attendus · réputation ${Z.rep} %`,lines)
     +note('Un billet cher rapporte plus par visiteur, mais en fait venir moins ; le prix idéal se situe autour de 25 €. Les recettes sont versées chaque année, selon la météo et la saison.')
     +group('Prix de l’entrée',presets)+group('Communication',mk)};
 }

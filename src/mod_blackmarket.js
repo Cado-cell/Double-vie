@@ -412,7 +412,7 @@ registerMod({
   },
   activities(L){return [{ic:'🕳️',t:'Marché noir',s:engaged(L)&&L.bm.heat>=60?'Enchères, receleurs… la police rôde':'Enchères clandestines, receleurs, contrebande',panel:pMain,min:18}]},
   assetRows(L){return [nav('🕳️','Marché noir',myPieces(L).length?`${myPieces(L).length} pièce(s) en collection`:'Enchères, contrebande et receleurs',pMain)]},
-  assetDetailRows(L,a){return bmIsAsset(a)?[nav('🕳️','Authentifier, blanchir, revendre',stateTxt(a),pPiece(a.id))]:[]},
+  assetDetailRows(L,a){return bmIsAsset(a)?[nav('🕳️','Vérifier, nettoyer, revendre',stateTxt(a),pPiece(a.id))]:[]},
   netWorth(L){try{return engaged(L)?Math.round(stockValue(L.bm)):0}catch(e){return 0}},
   badges(L){return engaged(L)&&L.bm.heat>=60?['🚨 Sous surveillance']:[]},
   jailed(L){if(engaged(L)){L.bm.heat=Math.floor((+L.bm.heat||0)/2)}},

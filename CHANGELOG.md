@@ -3,6 +3,7 @@
 Chaque version publiée est numérotée par sa date de construction (visible en bas du Menu du jeu).
 
 ## 22/10/2026
+- Secte, zoo, cinéma et mafia : plus de mots compliqués (« dons des fidèles » au lieu de « dîme », « entrées et comptes » au lieu de « billetterie et finances », « tes points forts par genre » au lieu de « matrice d'adéquation », « les risques du zoo »).
 - Immobilier : tout est écrit en mots simples (« note énergie » au lieu de « classe énergétique », « assurance loyers impayés », « loyers non payés », « emprunter sur 20 ans », « envoyer l'huissier réclamer les loyers », « demander l'aide de la police »…). Le menu s'appelle maintenant « Mes locations ». Navigation inchangée (liste la plus longue : 24 lignes, 110 actions en 3 touches).
 
 ## 21/10/2026 (nuit)

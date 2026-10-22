@@ -663,7 +663,7 @@ function mobYear(L){
   if(lost)say(L,`${lost>1?lost+' commerçants arrêtent':'Un commerçant arrête'} de payer.`);
   if(M.targets.length<10&&chance(.7))M.targets.push(genTarget());
   if(M.targets.length>11){const free=M.targets.findIndex(T=>T.st===0);if(free>=0)M.targets.splice(free,1)}
-  if(M.rank>=3){const d=R(8000,24000)*(M.rank-2);earn(L,d,1);say(L,`🎩 La dîme de la famille te rapporte ${fmt(d)}.`)}
+  if(M.rank>=3){const d=R(8000,24000)*(M.rank-2);earn(L,d,1);say(L,`🎩 La part de la famille te rapporte ${fmt(d)}.`)}
   /* équipe */
   const wages=M.crew.length*WAGE;
   if(wages>0){
@@ -732,7 +732,7 @@ function pMob(){
     M.loy=lim(M.loy-3,0,100);return out(L,'🎩 « Pas encore », dit le parrain en resservant du vin.')}}));
   else if(M.rank===3)promo.push(act(L,{ic:'👑',t:'Prendre la tête de la famille',s:promoCheck(L,M)?'Un coup à ne pas rater':`Il te faut ${RTHR[4]} de respect`,key:'pw_succ',danger:1,dis:promoCheck(L,M)?'':`Il te faut ${RTHR[4]} de respect`,fn:L=>succession(L,M)}));
   if(M.rank===4){
-    promo.push(act(L,{ic:'💼',t:'Prélever la dîme',s:'Une taxe supplémentaire sur tous les territoires',key:'pw_dime',fn:L=>{const d=R(15000,40000);earn(L,d,1);addHeat(L,M,8);M.loy=lim(M.loy-3,0,100);track(L,'crimes');chg(L,{karma:-3,crime:2});return out(L,`💼 Tes capitaines apportent ${fmt(d)}. Certains font la grimace.`)}}));
+    promo.push(act(L,{ic:'💼',t:'Faire payer une taxe',s:'Une taxe en plus sur tous les territoires',key:'pw_dime',fn:L=>{const d=R(15000,40000);earn(L,d,1);addHeat(L,M,8);M.loy=lim(M.loy-3,0,100);track(L,'crimes');chg(L,{karma:-3,crime:2});return out(L,`💼 Tes capitaines apportent ${fmt(d)}. Certains font la grimace.`)}}));
     promo.push(act(L,{ic:'🍷',t:'Réunir la Commission',s:'Arbitrer les querelles de territoires',key:'pw_commission',fn:L=>{const d=R(2,6);M.loy=lim(M.loy+d,0,100);M.crew.forEach(c=>{c.loy=lim(c.loy+d,0,100)});return out(L,'🍷 Autour d’une longue table, tu tranches trois litiges et un désaccord sur le dessert. Le respect grandit.')}}));
   }
   H.push(group('Hiérarchie',promo));

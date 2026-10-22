@@ -4644,7 +4644,7 @@ registerMod({
   },
   activities(L){return [{ic:'🕳️',t:'Marché noir',s:engaged(L)&&L.bm.heat>=60?'Enchères, receleurs… la police rôde':'Enchères clandestines, receleurs, contrebande',panel:pMain,min:18}]},
   assetRows(L){return [nav('🕳️','Marché noir',myPieces(L).length?`${myPieces(L).length} pièce(s) en collection`:'Enchères, contrebande et receleurs',pMain)]},
-  assetDetailRows(L,a){return bmIsAsset(a)?[nav('🕳️','Authentifier, blanchir, revendre',stateTxt(a),pPiece(a.id))]:[]},
+  assetDetailRows(L,a){return bmIsAsset(a)?[nav('🕳️','Vérifier, nettoyer, revendre',stateTxt(a),pPiece(a.id))]:[]},
   netWorth(L){try{return engaged(L)?Math.round(stockValue(L.bm)):0}catch(e){return 0}},
   badges(L){return engaged(L)&&L.bm.heat>=60?['🚨 Sous surveillance']:[]},
   jailed(L){if(engaged(L)){L.bm.heat=Math.floor((+L.bm.heat||0)/2)}},
@@ -4725,7 +4725,7 @@ function dm(C){const m={rec:0,fer:0,tithe:0,loy:0,heat:0};for(const k of C.docs)
 const capOf=C=>ESTATES[C.est].cap;
 const sgn=n=>(n>0?'+':n<0?'−':'')+Math.abs(n);
 const pc=n=>(n>0?'+':n<0?'−':'')+Math.abs(Math.round(n*100))+' %';
-function modTxt(d){return `Recrutement ${pc(d.rec)} · Ferveur ${sgn(d.fer)} · Dîme ${pc(d.tithe)} · Loyauté ${sgn(d.loy)} · Autorités ${sgn(d.heat)}`}
+function modTxt(d){return `Recrutement ${pc(d.rec)} · Ferveur ${sgn(d.fer)} · Dons ${pc(d.tithe)} · Loyauté ${sgn(d.loy)} · Autorités ${sgn(d.heat)}`}
 const adj=(C,k,v)=>{C[k]=clampN(Math.round(C[k]+v),0,100)};
 /* revenu annuel prévu (hors événements) */
 function proj(L,C){
@@ -4786,13 +4786,13 @@ function pMain(){
       +group('Fonder',[act(L,{ic:'🕯️',t:'Fonder un mouvement',s:'Nom, trois doctrines, 5 000 €',min:21,nav:pEditor('found')})])};
   }
   const E=ESTATES[C.est];const m=dm(C);const inc=proj(L,C);
-  const html=card(C.name,`${fmtn(C.fol)} adepte${C.fol>1?'s':''} / ${fmtn(E.cap)}`,`${E.n} · dîme ${C.tithe} % · revenus prévus ${fmt(inc)} par an, entretien ${fmt(E.up)}`,statLine('Loyauté',C.loy)+statLine('Ferveur',C.dev)+statLine('Attention des autorités',C.heat))
+  const html=card(C.name,`${fmtn(C.fol)} adepte${C.fol>1?'s':''} / ${fmtn(E.cap)}`,`${E.n} · dons ${C.tithe} % · revenus prévus ${fmt(inc)} par an, entretien ${fmt(E.up)}`,statLine('Loyauté',C.loy)+statLine('Ferveur',C.dev)+statLine('Attention des autorités',C.heat))
     +(C.docs.length<3?group('Doctrine incomplète',[nav('📜','Définir la doctrine','Choisis tes trois doctrines et rebaptise éventuellement le mouvement',pEditor('edit'))]):'')
     +(C.docs.length?card('Doctrine',C.docs.map(k=>DOCS[k].n).join(' · '),modTxt(m)):'')
     +(C.rival?card('Mouvement rival',C.rival.name,`${fmtn(C.rival.fol)} adepte${C.rival.fol>1?'s':''} : ils débauchent les tiens`):'')
     +group('Gérer',[
       nav('📢','Recrutement','Tracts, conférences, réseaux, stages, bouche-à-oreille',pRecruit),
-      nav('💶','Dîme',`Taux actuel : ${C.tithe} %`,pTithe),
+      nav('💶','Dons des fidèles',`Part de leur argent : ${C.tithe} %`,pTithe),
       nav(E.ic,'Domaine',`${E.n} · ${fmtn(E.cap)} places`,pEstate),
       nav('📜','Doctrine et nom','Rebaptiser ou réformer',pEditor('edit'))])
     +group('Vie spirituelle',[
@@ -4835,9 +4835,9 @@ function pRecruit(){
 }
 
 function pTithe(){
-  const L=cur();const C=st(L);if(!C)return {title:'Dîme',html:note('Aucun mouvement.')};
-  const rows=[0,5,10,15,20,25,30].map(t=>row({ic:t===C.tithe?'✅':'💶',t:`${t} %`,s:t===0?'Dons libres : fidélité maximale':t<=10?'Participation raisonnable':t<=20?'Les fidèles serrent la ceinture':'Les fidèles mangent des pâtes, toi du caviar',dis:t===C.tithe,a:()=>run(()=>{const c=st(L);const dd=t-c.tithe;c.tithe=t;adj(c,'loy',-dd*.5);lg(L,c,`dîme fixée à ${t} %`);return out(L,dd>0?`💶 Tu relèves la dîme à ${t} %. Quelques fronts se plissent.`:`💶 Tu abaisses la dîme à ${t} %. Soupirs de soulagement.`)})}));
-  return {title:'Dîme',html:card('Dîme actuelle',`${C.tithe} %`,`Revenus prévus : ${fmt(proj(L,C))} par an`,statLine('Loyauté',C.loy))+note('Une dîme élevée gonfle les revenus mais érode la loyauté chaque année. En dessous de 30 % de loyauté, la mutinerie rôde. Au-dessus de 15 %, les autorités commencent à compter.')+group('Taux',rows)};
+  const L=cur();const C=st(L);if(!C)return {title:'Dons des fidèles',html:note('Aucun mouvement.')};
+  const rows=[0,5,10,15,20,25,30].map(t=>row({ic:t===C.tithe?'✅':'💶',t:`${t} %`,s:t===0?'Dons libres : fidélité maximale':t<=10?'Participation raisonnable':t<=20?'Les fidèles serrent la ceinture':'Les fidèles mangent des pâtes, toi du caviar',dis:t===C.tithe,a:()=>run(()=>{const c=st(L);const dd=t-c.tithe;c.tithe=t;adj(c,'loy',-dd*.5);lg(L,c,`dons fixés à ${t} %`);return out(L,dd>0?`💶 Tu demandes plus aux fidèles : ${t} %. Quelques fronts se plissent.`:`💶 Tu demandes moins aux fidèles : ${t} %. Soupirs de soulagement.`)})}));
+  return {title:'Dons des fidèles',html:card('Part demandée',`${C.tithe} %`,`Revenus prévus : ${fmt(proj(L,C))} par an`,statLine('Loyauté',C.loy))+note('Demander beaucoup aux fidèles gonfle les revenus mais use leur loyauté chaque année. En dessous de 30 % de loyauté, la mutinerie rôde. Au-dessus de 15 %, les autorités commencent à compter.')+group('Part de leur argent',rows)};
 }
 
 function pEstate(){
@@ -4884,7 +4884,7 @@ function year(L){
   trackMax(L,'followers',C.fol);
   /* revenus récurrents */
   const inc=proj(L,C);
-  if(inc>0){earn(L,inc);say(L,`🕯️ ${C.name} : ${fmt(inc)} de dons et de dîmes cette année pour ${fmtn(C.fol)} adepte${C.fol>1?'s':''}.`)}
+  if(inc>0){earn(L,inc);say(L,`🕯️ ${C.name} : ${fmt(inc)} de dons cette année pour ${fmtn(C.fol)} adepte${C.fol>1?'s':''}.`)}
   if(C.loy>=80&&C.fol>=10&&!jail&&chance(.25)){const g=R(10000,60000)*(1+C.est);earn(L,g,1);say(L,`🕯️ Une fidèle lègue ${fmt(g)} au mouvement. Ses neveux sont moins enthousiastes.`)}
   if(C.fol>before+8)say(L,`🕯️ ${C.name} s’agrandit : +${C.fol-before} adeptes.`);
   else if(C.fol<before-5)say(L,`🕯️ ${C.name} perd ${before-C.fol} adeptes cette année.`);
@@ -4901,7 +4901,7 @@ function year(L){
 function probe(L,C,kind){
   const fin=kind==='fisc';
   const tit=fin?'Brigade financière':'Miviludes';
-  const txt=fin?`Des enquêteurs de la brigade financière épluchent les comptes de ${C.name} : dîmes, dons, travaux du domaine. On te convoque.`:`La Miviludes a reçu plusieurs signalements sur ${C.name}. Deux enquêteurs frappent à la porte, un dossier sous le bras.`;
+  const txt=fin?`Des enquêteurs de la brigade financière épluchent les comptes de ${C.name} : dons, travaux du domaine. On te convoque.`:`La Miviludes a reçu plusieurs signalements sur ${C.name}. Deux enquêteurs frappent à la porte, un dossier sous le bras.`;
   const m=dm(C);
   const base=clampN(.72-C.heat/190-Math.max(0,C.tithe-15)*.01-m.heat*.02,.1,.8);
   const end=(L,ok,boost)=>{
@@ -4922,8 +4922,8 @@ function mutiny(L,C){
   const lost=Math.max(1,Math.round(C.fol*R(20,40)/100));
   const rn=genName2();
   const mk=n=>{C.fol=Math.max(0,C.fol-n);C.rival={name:rn,fol:(C.rival?C.rival.fol:0)+n};lg(L,C,`schisme : ${rn}`)};
-  modal({title:'Mutinerie',icon:'🔥',text:`La coupe est pleine. Un groupe d’adeptes, mené par un ancien trésorier, exige des comptes et une dîme moins lourde. Il menace de fonder son propre mouvement, avec un meilleur buffet.`,choices:[
-    {t:'Faire des concessions : dîme réduite',pri:1,fn:()=>{C.tithe=Math.max(0,C.tithe-5);adj(C,'loy',R(12,20));chg(L,{karma:2});lg(L,C,'concessions aux mutins');return out(L,'🕊️ Tu baisses la dîme et promets plus de transparence. Le calme revient, le coffre un peu moins plein.')}},
+  modal({title:'Mutinerie',icon:'🔥',text:`La coupe est pleine. Un groupe d’adeptes, mené par un ancien trésorier, exige des comptes et des dons moins lourds. Il menace de fonder son propre mouvement, avec un meilleur buffet.`,choices:[
+    {t:'Faire des concessions : dons réduits',pri:1,fn:()=>{C.tithe=Math.max(0,C.tithe-5);adj(C,'loy',R(12,20));chg(L,{karma:2});lg(L,C,'concessions aux mutins');return out(L,'🕊️ Tu demandes moins d’argent et promets plus de transparence. Le calme revient, le coffre un peu moins plein.')}},
     {t:'Réprimer : excommunier les meneurs',danger:1,fn:()=>{chg(L,{karma:-5});if(chance(.5)){const n=Math.max(1,Math.round(lost/2));mk(n);adj(C,'heat',R(5,12));return out(L,`🔥 Les meneurs claquent la porte avec ${n} fidèles et créent ${rn}. Ils parlent déjà à la presse.`)}adj(C,'loy',-5);adj(C,'dev',R(3,8));return out(L,'🔥 La menace d’excommunication fait taire la salle. Pour l’instant.')}},
     {t:'Les laisser partir',fn:()=>{mk(lost);adj(C,'loy',R(8,14));return out(L,`🚶 ${lost} adepte${lost>1?'s':''} partent fonder ${rn}. Ceux qui restent n’en sont que plus fervents.`)}}
   ]});
@@ -5840,7 +5840,7 @@ function yearZoo(L){
   if(Z.rep>=80&&chance(.25))chg(L,{fame:1});
   if(Z.ticket>=40&&chance(.4))say(L,'💸 Les familles râlent : 40 € l’entrée, c’est le prix d’un week-end au ski.');
   /* trésorerie */
-  if(L.money<0){Z.rep=cl(Z.rep-3);const k=['keep','sec','vet'].find(x=>Z.staff[x]>(x==='vet'?0:1));if(k&&chance(.6)){Z.staff[k]--;say(L,'📉 Faute de trésorerie, un employé du zoo démissionne.')}}
+  if(L.money<0){Z.rep=cl(Z.rep-3);const k=['keep','sec','vet'].find(x=>Z.staff[x]>(x==='vet'?0:1));if(k&&chance(.6)){Z.staff[k]--;say(L,'📉 Faute d’argent en caisse, un employé du zoo démissionne.')}}
   Z.pen=0;
   const profit=rev-exp;Z.last={y:Z.y,vis,rev,exp,profit,weather:Math.round(weather*100)};Z.hist.push(profit);if(Z.hist.length>8)Z.hist.shift();
   say(L,`🦒 ${Z.name} : ${fmtn(vis)} visiteurs, ${fmt(rev)} de recettes, ${fmt(exp)} de dépenses${births?` et ${births} naissance${births>1?'s':''}`:''}.`);
@@ -5992,7 +5992,7 @@ function pZoo(){
     nav('🏞️','Enclos et animaux',`${Object.keys(Z.enc).length} enclos sur ${Z.ha*2} possibles`,pEnc),
     nav('🧑‍🌾','Personnel',`${Z.staff.keep+Z.staff.vet+Z.staff.sec} employés · ${fmtk(c.wages)} par an`,pStaff),
     nav('🛡️','Sécurité du public',`Niveau ${secLabel(c.secLvl).toLowerCase()} · risque d’évasion ${pct(c.risk)}`,pSec),
-    nav('🎟️','Billetterie et finances',`Entrée à ${fmt(Z.ticket)}`,pFin),
+    nav('🎟️','Entrées et comptes',`Entrée à ${fmt(Z.ticket)}`,pFin),
     nav('🍼','Reproduction',`${Object.values(Z.enc).filter(e=>e.breed).length} programme${Object.values(Z.enc).filter(e=>e.breed).length>1?'s':''} en cours`,pBreed),
     nav('🏗️','Aménagements et terrain',`${Z.ha} hectares`,pUp)])
     +group('Cession',[row({ic:'🤝',t:'Vendre le parc',s:fmt(zooValue(L)),danger:1,a:()=>pushPanel(confirmP('Vendre le zoo ?','Un repreneur rachète le terrain, les enclos et tous les animaux.',()=>{const v=zooValue(L);earn(L,v,1);L.zoo=null;return out(L,`🤝 Tu vends ton zoo pour ${fmt(v)}. Les suricates te font une haie d’honneur.`)},'Vendre'))})])};
@@ -6046,14 +6046,14 @@ function pSec(){
   const ups=['cam','sas'].map(k=>{const U=UPS[k];const cost=Math.round(U.p*costOf(L));return act(L,{ic:U.ic,t:U.n,s:Z.up[k]?'Installé':`${fmt(cost)} · ${U.d}`,cost:Z.up[k]?0:cost,dis:Z.up[k]?'Déjà installé':'',fn:L=>{Z.up[k]=1;return out(L,`${U.ic} ${U.n} : installation terminée.`)}})});
   return {title:'Sécurité du public',html:card('Niveau de sécurité',`${c.secLvl} % · ${secLabel(c.secLvl)}`,`Risque d’évasion : ${pct(c.risk)} par an`,statLine('Agents de sécurité',Math.round(c.cover.sec*100))+statLine('État moyen des enclos',c.avgC))
     +note('Le niveau dépend des agents, de l’état des enclos, des équipements et de la dangerosité des espèces. Une évasion peut coûter cher en indemnités et en réputation.')
-    +group('Matrice des risques',mat)+group('Équipements de sécurité',ups)};
+    +group('Les risques du zoo',mat)+group('Équipements de sécurité',ups)};
 }
 function pFin(){
   const L=cur();const Z=mig(L);if(!Z)return pOpen(L);const c=calc(L,Z);
   const presets=[8,12,16,20,25,32,40].map(t=>act(L,{ic:t===Z.ticket?'✅':'🎟️',t:`Billet à ${fmt(t)}`,s:t===Z.ticket?'Tarif actuel':t<12?'Accessible, très fréquenté':t>=32?'Élitiste : réputation en baisse':'',dis:t===Z.ticket?'Tarif actuel':'',fn:L=>{Z.ticket=t;return out(L,`🎟️ L’entrée passe à ${fmt(t)}.`)}}));
   const mk=['Aucune publicité','Campagne locale (20 000 €/an)','Campagne nationale (60 000 €/an)'].map((n,i)=>act(L,{ic:i===Z.mkt?'✅':'📣',t:n,s:i===Z.mkt?'En cours':'',dis:i===Z.mkt?'En cours':'',fn:L=>{Z.mkt=i;return out(L,`📣 Budget de communication : ${n.toLowerCase()}.`)}}));
-  const lines=[['Billetterie',c.vis*Z.ticket],['Restaurant et boutique',Math.round(c.vis*c.perV)],['Salaires',-c.wages],['Nourriture des animaux',-c.feed],['Équipements, publicité, programmes',-c.upk],['Frais généraux et accueil',-(c.over+Math.round(c.vis*1.2))]].map(([n,v])=>`<div class="stat"><b>${esc(n)}</b><span class="n">${v>=0?'+':'−'}${fmt(Math.abs(v))}</span></div>`).join('');
-  return {title:'Billetterie et finances',html:card('Résultat prévisionnel',`${c.profit>=0?'+':'−'}${fmt(Math.abs(c.profit))}`,`${fmtn(c.vis)} visiteurs attendus · réputation ${Z.rep} %`,lines)
+  const lines=[['Entrées vendues',c.vis*Z.ticket],['Restaurant et boutique',Math.round(c.vis*c.perV)],['Salaires',-c.wages],['Nourriture des animaux',-c.feed],['Équipements, publicité, programmes',-c.upk],['Frais divers et accueil',-(c.over+Math.round(c.vis*1.2))]].map(([n,v])=>`<div class="stat"><b>${esc(n)}</b><span class="n">${v>=0?'+':'−'}${fmt(Math.abs(v))}</span></div>`).join('');
+  return {title:'Entrées et comptes',html:card('Résultat prévu',`${c.profit>=0?'+':'−'}${fmt(Math.abs(c.profit))}`,`${fmtn(c.vis)} visiteurs attendus · réputation ${Z.rep} %`,lines)
     +note('Un billet cher rapporte plus par visiteur, mais en fait venir moins ; le prix idéal se situe autour de 25 €. Les recettes sont versées chaque année, selon la météo et la saison.')
     +group('Prix de l’entrée',presets)+group('Communication',mk)};
 }
@@ -6239,7 +6239,7 @@ function audition(L,o){
     {t:'Rester naturel',fn:()=>verdict(L,o,p)},
     {t:'Tenter un coup de poker',fn:()=>verdict(L,o,p+(chance(.5)?.2:-.15))}];
   if(c&&c.rel>=50)ch.push({t:`Rappeler ${c.first} pour qu’${ge(c,'il','elle')} glisse un mot`,fn:()=>{c.rel=lim(c.rel-4,0,100);return verdict(L,o,p+.1)}});
-  modal({title:`Casting · ${K.n}`,icon:K.ic,text:`« ${o.title} » (${o.g.toLowerCase()}), ${R0.n.toLowerCase()}, sous la direction de ${o.dn}. ${pick(ACT_INTRO)} Adéquation : ${offFit(L,o)} %.`,choices:ch});
+  modal({title:`Casting · ${K.n}`,icon:K.ic,text:`« ${o.title} » (${o.g.toLowerCase()}), ${R0.n.toLowerCase()}, sous la direction de ${o.dn}. ${pick(ACT_INTRO)} Ce rôle te correspond à ${offFit(L,o)} %.`,choices:ch});
 }
 function verdict(L,o,p){
   if(o.done)return '';
@@ -6320,18 +6320,18 @@ function pCast(){
   const L=cur();if(!isAct(L))return {title:'Castings',html:note('Tu n’es pas comédien.')};
   const s=sb(L),g=gsb(),yr=ycount(L);
   const rows=offers(L).map(o=>{const K=KIND[o.kind],R0=ROLES[o.rid];
-    return act(L,{ic:K.ic,t:`${K.n} « ${o.title} »`,s:`${R0.n} · ${o.g} · de ${o.dn}${o.boost>0?' (ton réseau t’appuie)':''} · cachet ${fmtk(o.pay)} · prestige ${'★'.repeat(o.prest)} · adéquation ${offFit(L,o)} %`,
+    return act(L,{ic:K.ic,t:`${K.n} « ${o.title} »`,s:`${R0.n} · ${o.g} · de ${o.dn}${o.boost>0?' (ton réseau t’appuie)':''} · cachet ${fmtk(o.pay)} · prestige ${'★'.repeat(o.prest)} · te correspond à ${offFit(L,o)} %`,
       key:'sbo'+o.id,dis:o.done===1?'Rôle décroché':o.done===-1?'Casting raté':yr>=2?'Agenda complet (2 rôles par an)':'',fn:L=>{audition(L,o);return 'Direction la salle de casting.'}})});
-  let h=note('Trois offres de casting par an. L’adéquation tient compte de ton apparence, de ton jeu, de ta notoriété et de ton affinité avec le genre. Tu peux décrocher deux rôles par an.')+group(`Offres de l’année (${yr}/2 rôles obtenus)`,rows);
+  let h=note('Trois offres de casting par an. Le score dépend de ton apparence, de ton jeu, de ta notoriété et de ton goût pour le genre. Tu peux décrocher deux rôles par an.')+group(`Offres de l’année (${yr}/2 rôles obtenus)`,rows);
   h+=note(`Genre à la mode : ${g.trend.toLowerCase()} (cachets +10 %).${g.hit?` Au box-office : « ${g.hit.t} » (${g.hit.g.toLowerCase()}).`:''}`);
   return {title:'Castings',html:h};
 }
 function pMatrix(){
-  const L=cur();if(!isAct(L))return {title:'Adéquation',html:note('Tu n’es pas comédien.')};
+  const L=cur();if(!isAct(L))return {title:'Tes points forts',html:note('Tu n’es pas comédien.')};
   const lv=lim(L.job.lvl||0,0,4);
   const list=MOVIE_GENRES.map(g=>({g,f:fitOf(L,g,REQ_LV[lv],0),p:parts(L,g,REQ_LV[lv])})).sort((a,b)=>b.f-a.f);
   const rows=list.map(x=>`<div class="stat"><b>${esc(x.g)}</b><span class="n">${x.f} %</span>${bar(x.f)}</div><p class="note">Apparence ${x.p.looks} · Jeu ${x.p.jeu} · Notoriété ${x.p.fame} · Affinité ${x.p.aff}</p>`).join('');
-  return {title:'Matrice d’adéquation',html:note(`Ton meilleur terrain : ${list[0].g.toLowerCase()} (${list[0].f} %). Plus tu joues un genre, plus ton affinité progresse.`)+rows};
+  return {title:'Tes points forts par genre',html:note(`Ton meilleur terrain : ${list[0].g.toLowerCase()} (${list[0].f} %). Plus tu joues un genre, plus ton affinité progresse.`)+rows};
 }
 function pRep(){
   const L=cur(),s=sb(L);const w=Math.round(.6*L.fame+.4*s.crit);
@@ -6422,7 +6422,7 @@ function panelA(L){
     nav('📋','Castings de l’année',`${n}/2 rôles obtenus · 3 offres à étudier`,pCast),
     nav('📒','Contacts du milieu',`${s.contacts.length} contact${s.contacts.length>1?'s':''} · réalisateurs, partenaires, producteurs`,pContacts),
     nav('🌍','Réputation mondiale',`Notoriété ${L.fame} · critique ${Math.round(s.crit)} · ${L.tr.cesars||0} César`,pRep),
-    nav('📊','Matrice d’adéquation','Ton score pour chaque genre',pMatrix),
+    nav('📊','Tes points forts par genre','Ton score pour chaque genre',pMatrix),
     nav('🎞️','Filmographie',`${s.filmo.length} rôle${s.filmo.length>1?'s':''} à ton actif`,pWorks)];
   if(j.lvl>=4){rows.push(nav('📣','Publicités lucratives',`${s.pub} campagne${s.pub>1?'s':''}`,pAds));rows.push(nav('📺','Plateaux télé',`${s.talk} passage${s.talk>1?'s':''}`,pTalk))}
   rows.push(act(L,{ic:'🎓',t:'Cours d’art dramatique',s:'Améliore ton jeu · 1 500 €',cost:1500,key:'cours',fn:L=>{L.skills.theatre=clamp((L.skills.theatre||0)+R(6,12));chg(L,{smarts:1});return out(L,'🎓 Tu travailles Tchekhov au Cours Florent. Ton jeu gagne en finesse.')}}));
@@ -8693,7 +8693,7 @@ function mobYear(L){
   if(lost)say(L,`${lost>1?lost+' commerçants arrêtent':'Un commerçant arrête'} de payer.`);
   if(M.targets.length<10&&chance(.7))M.targets.push(genTarget());
   if(M.targets.length>11){const free=M.targets.findIndex(T=>T.st===0);if(free>=0)M.targets.splice(free,1)}
-  if(M.rank>=3){const d=R(8000,24000)*(M.rank-2);earn(L,d,1);say(L,`🎩 La dîme de la famille te rapporte ${fmt(d)}.`)}
+  if(M.rank>=3){const d=R(8000,24000)*(M.rank-2);earn(L,d,1);say(L,`🎩 La part de la famille te rapporte ${fmt(d)}.`)}
   /* équipe */
   const wages=M.crew.length*WAGE;
   if(wages>0){
@@ -8762,7 +8762,7 @@ function pMob(){
     M.loy=lim(M.loy-3,0,100);return out(L,'🎩 « Pas encore », dit le parrain en resservant du vin.')}}));
   else if(M.rank===3)promo.push(act(L,{ic:'👑',t:'Prendre la tête de la famille',s:promoCheck(L,M)?'Un coup à ne pas rater':`Il te faut ${RTHR[4]} de respect`,key:'pw_succ',danger:1,dis:promoCheck(L,M)?'':`Il te faut ${RTHR[4]} de respect`,fn:L=>succession(L,M)}));
   if(M.rank===4){
-    promo.push(act(L,{ic:'💼',t:'Prélever la dîme',s:'Une taxe supplémentaire sur tous les territoires',key:'pw_dime',fn:L=>{const d=R(15000,40000);earn(L,d,1);addHeat(L,M,8);M.loy=lim(M.loy-3,0,100);track(L,'crimes');chg(L,{karma:-3,crime:2});return out(L,`💼 Tes capitaines apportent ${fmt(d)}. Certains font la grimace.`)}}));
+    promo.push(act(L,{ic:'💼',t:'Faire payer une taxe',s:'Une taxe en plus sur tous les territoires',key:'pw_dime',fn:L=>{const d=R(15000,40000);earn(L,d,1);addHeat(L,M,8);M.loy=lim(M.loy-3,0,100);track(L,'crimes');chg(L,{karma:-3,crime:2});return out(L,`💼 Tes capitaines apportent ${fmt(d)}. Certains font la grimace.`)}}));
     promo.push(act(L,{ic:'🍷',t:'Réunir la Commission',s:'Arbitrer les querelles de territoires',key:'pw_commission',fn:L=>{const d=R(2,6);M.loy=lim(M.loy+d,0,100);M.crew.forEach(c=>{c.loy=lim(c.loy+d,0,100)});return out(L,'🍷 Autour d’une longue table, tu tranches trois litiges et un désaccord sur le dessert. Le respect grandit.')}}));
   }
   H.push(group('Hiérarchie',promo));

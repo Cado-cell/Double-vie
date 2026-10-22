@@ -136,7 +136,7 @@ function audition(L,o){
     {t:'Rester naturel',fn:()=>verdict(L,o,p)},
     {t:'Tenter un coup de poker',fn:()=>verdict(L,o,p+(chance(.5)?.2:-.15))}];
   if(c&&c.rel>=50)ch.push({t:`Rappeler ${c.first} pour qu’${ge(c,'il','elle')} glisse un mot`,fn:()=>{c.rel=lim(c.rel-4,0,100);return verdict(L,o,p+.1)}});
-  modal({title:`Casting · ${K.n}`,icon:K.ic,text:`« ${o.title} » (${o.g.toLowerCase()}), ${R0.n.toLowerCase()}, sous la direction de ${o.dn}. ${pick(ACT_INTRO)} Adéquation : ${offFit(L,o)} %.`,choices:ch});
+  modal({title:`Casting · ${K.n}`,icon:K.ic,text:`« ${o.title} » (${o.g.toLowerCase()}), ${R0.n.toLowerCase()}, sous la direction de ${o.dn}. ${pick(ACT_INTRO)} Ce rôle te correspond à ${offFit(L,o)} %.`,choices:ch});
 }
 function verdict(L,o,p){
   if(o.done)return '';
@@ -217,18 +217,18 @@ function pCast(){
   const L=cur();if(!isAct(L))return {title:'Castings',html:note('Tu n’es pas comédien.')};
   const s=sb(L),g=gsb(),yr=ycount(L);
   const rows=offers(L).map(o=>{const K=KIND[o.kind],R0=ROLES[o.rid];
-    return act(L,{ic:K.ic,t:`${K.n} « ${o.title} »`,s:`${R0.n} · ${o.g} · de ${o.dn}${o.boost>0?' (ton réseau t’appuie)':''} · cachet ${fmtk(o.pay)} · prestige ${'★'.repeat(o.prest)} · adéquation ${offFit(L,o)} %`,
+    return act(L,{ic:K.ic,t:`${K.n} « ${o.title} »`,s:`${R0.n} · ${o.g} · de ${o.dn}${o.boost>0?' (ton réseau t’appuie)':''} · cachet ${fmtk(o.pay)} · prestige ${'★'.repeat(o.prest)} · te correspond à ${offFit(L,o)} %`,
       key:'sbo'+o.id,dis:o.done===1?'Rôle décroché':o.done===-1?'Casting raté':yr>=2?'Agenda complet (2 rôles par an)':'',fn:L=>{audition(L,o);return 'Direction la salle de casting.'}})});
-  let h=note('Trois offres de casting par an. L’adéquation tient compte de ton apparence, de ton jeu, de ta notoriété et de ton affinité avec le genre. Tu peux décrocher deux rôles par an.')+group(`Offres de l’année (${yr}/2 rôles obtenus)`,rows);
+  let h=note('Trois offres de casting par an. Le score dépend de ton apparence, de ton jeu, de ta notoriété et de ton goût pour le genre. Tu peux décrocher deux rôles par an.')+group(`Offres de l’année (${yr}/2 rôles obtenus)`,rows);
   h+=note(`Genre à la mode : ${g.trend.toLowerCase()} (cachets +10 %).${g.hit?` Au box-office : « ${g.hit.t} » (${g.hit.g.toLowerCase()}).`:''}`);
   return {title:'Castings',html:h};
 }
 function pMatrix(){
-  const L=cur();if(!isAct(L))return {title:'Adéquation',html:note('Tu n’es pas comédien.')};
+  const L=cur();if(!isAct(L))return {title:'Tes points forts',html:note('Tu n’es pas comédien.')};
   const lv=lim(L.job.lvl||0,0,4);
   const list=MOVIE_GENRES.map(g=>({g,f:fitOf(L,g,REQ_LV[lv],0),p:parts(L,g,REQ_LV[lv])})).sort((a,b)=>b.f-a.f);
   const rows=list.map(x=>`<div class="stat"><b>${esc(x.g)}</b><span class="n">${x.f} %</span>${bar(x.f)}</div><p class="note">Apparence ${x.p.looks} · Jeu ${x.p.jeu} · Notoriété ${x.p.fame} · Affinité ${x.p.aff}</p>`).join('');
-  return {title:'Matrice d’adéquation',html:note(`Ton meilleur terrain : ${list[0].g.toLowerCase()} (${list[0].f} %). Plus tu joues un genre, plus ton affinité progresse.`)+rows};
+  return {title:'Tes points forts par genre',html:note(`Ton meilleur terrain : ${list[0].g.toLowerCase()} (${list[0].f} %). Plus tu joues un genre, plus ton affinité progresse.`)+rows};
 }
 function pRep(){
   const L=cur(),s=sb(L);const w=Math.round(.6*L.fame+.4*s.crit);
@@ -319,7 +319,7 @@ function panelA(L){
     nav('📋','Castings de l’année',`${n}/2 rôles obtenus · 3 offres à étudier`,pCast),
     nav('📒','Contacts du milieu',`${s.contacts.length} contact${s.contacts.length>1?'s':''} · réalisateurs, partenaires, producteurs`,pContacts),
     nav('🌍','Réputation mondiale',`Notoriété ${L.fame} · critique ${Math.round(s.crit)} · ${L.tr.cesars||0} César`,pRep),
-    nav('📊','Matrice d’adéquation','Ton score pour chaque genre',pMatrix),
+    nav('📊','Tes points forts par genre','Ton score pour chaque genre',pMatrix),
     nav('🎞️','Filmographie',`${s.filmo.length} rôle${s.filmo.length>1?'s':''} à ton actif`,pWorks)];
   if(j.lvl>=4){rows.push(nav('📣','Publicités lucratives',`${s.pub} campagne${s.pub>1?'s':''}`,pAds));rows.push(nav('📺','Plateaux télé',`${s.talk} passage${s.talk>1?'s':''}`,pTalk))}
   rows.push(act(L,{ic:'🎓',t:'Cours d’art dramatique',s:'Améliore ton jeu · 1 500 €',cost:1500,key:'cours',fn:L=>{L.skills.theatre=clamp((L.skills.theatre||0)+R(6,12));chg(L,{smarts:1});return out(L,'🎓 Tu travailles Tchekhov au Cours Florent. Ton jeu gagne en finesse.')}}));
