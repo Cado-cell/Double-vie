@@ -1985,11 +1985,14 @@ function timeTravel(idx,age){
 }
 
 /* ---------- Vieillir ---------- */
+/* Générateur pseudo-aléatoire à graine : sert au « départ partagé » à deux (mêmes marchés et mêmes évènements du monde). */
+function seedRng(s){let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}let a=h>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function withSeed(s,fn){const o=Math.random;Math.random=seedRng(s);try{return fn()}finally{Math.random=o}}
 function ageUp(){
   if(!G||busy())return;const L=cur();if(!L.alive)return;
   closeSheet();snapshot(L);
   L.age++;L.used={};L.market=null;L.yr={inc:0,dep:0,tax:0};delete L._tmp;
-  if(G.turn===0||G.players.length===1)modCall('worldYear');
+  if(G.turn===0||G.players.length===1){if(G.shared)withSeed(`monde:${G.shared}:${L.age}`,()=>modCall('worldYear'));else modCall('worldYear')}
   familyYear(L);schoolYear(L);lessonsYear(L);workYear(L);packsYear(L);financeYear(L);healthYear(L);prisonYear(L);milestones(L);
   trackMax(L,'fameMax',L.fame);
   const cause=deathCheck(L);
@@ -10821,7 +10824,8 @@ registerMod({
    • Mon code : résumé de ma vie (âge, patrimoine, enfants, prix, score de vie, personnalité) + mon visage.
    • Comparer : on colle le code de l'autre, le jeu compare les deux vies ligne par ligne.
    • Inviter : le personnage de l'autre entre dans ma vie comme un ami, qui agit comme les autres proches.
-   • Départ partagé : un mot commun (« banane ») donne le même personnage de départ aux deux joueurs.
+   • Départ partagé : un mot commun (« banane ») donne le même personnage de départ aux deux joueurs, et les mêmes marchés
+     (bourse, jackpot, tendances) année après année (G.shared, voir withSeed dans engine.js).
    Le code est du JSON encodé en texte ; tout ce qui entre est nettoyé (longueurs, valeurs, visage normalisé). */
 (()=>{
 const MOD='duo';
@@ -10834,7 +10838,7 @@ const num=(v,lo,hi)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,Math.round
 function summary(L){
   const pe=(L.persona&&L.persona.bestName)||'';
   return {v:1,n:L.first,l:L.last,g:L.gender,a:L.age,al:L.alive===false?0:1,nw:Math.round(netWorth(L)),kd:allKids(L).length,sc:lifeScore(L),
-    aw:lifeAwards(L).map(x=>x.n),pe,jb:String(jobLabel(L)||''),ct:L.country,lk:L.look};
+    aw:lifeAwards(L).map(x=>x.n),pe,jb:String(jobLabel(L)||''),ct:L.country,mi:(L.tr&&L.tr.millionAge)||0,lk:L.look};
 }
 const myCode=L=>'DV1.'+b64e(JSON.stringify(summary(L)));
 /* Renvoie un résumé nettoyé, ou null si le texte n'est pas un code valable. */
@@ -10845,16 +10849,14 @@ function parse(text){
   const g=j.g==='F'?'F':'H';
   let lk=null;try{lk=AVATAR_R.normalize(j.lk&&typeof j.lk==='object'?j.lk:{},g)}catch(e){return null}
   return {n:txt(j.n,30)||'Inconnu',l:txt(j.l,30),g,a:num(j.a,0,130),al:j.al?1:0,nw:num(j.nw,-1e10,1e12),kd:num(j.kd,0,60),sc:num(j.sc,0,100),
-    aw:(Array.isArray(j.aw)?j.aw:[]).slice(0,3).map(x=>txt(x,30)).filter(Boolean),pe:txt(j.pe,30),jb:txt(j.jb,40),ct:COUNTRIES[j.ct]?j.ct:'France',lk};
+    aw:(Array.isArray(j.aw)?j.aw:[]).slice(0,3).map(x=>txt(x,30)).filter(Boolean),pe:txt(j.pe,30),jb:txt(j.jb,40),ct:COUNTRIES[j.ct]?j.ct:'France',mi:num(j.mi,0,130),lk};
 }
 
 /* ---------- Départ partagé ---------- */
-const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
-const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 /* Même mot = même personnage de départ. Math.random est détourné le temps de la génération, puis rétabli. */
 function seeded(word){
   const w=String(word||'').trim().toLowerCase();if(!w)return null;
-  const rng=mulberry(hash(w)),orig=Math.random;Math.random=rng;
+  const rng=seedRng(w),orig=Math.random;Math.random=rng;
   try{
     const g=rng()<.5?'H':'F',cs=Object.keys(COUNTRIES),c=cs[Math.floor(rng()*cs.length)];
     const tal=Object.keys(TALENTS),trs=(typeof TRAIT_CHOICES!=='undefined'?TRAIT_CHOICES:[]).map(x=>x[0]);
@@ -10867,7 +10869,8 @@ window.applySeed=px=>{
   for(const k of ['first','last','gender','likes','country','talent','trait']){const e=document.getElementById(`${px}-${k}`);if(e&&f[k]!=null)e.value=f[k]}
   const roy=document.getElementById(`${px}-royal`);if(roy)roy.checked=false;
   if(LED[px]){LED[px].look=f.look;LED[px].ctx.gender=f.gender;ledRefresh(px)}
-  toast(`Départ partagé : ${f.first} ${f.last}, ${f.country}.`);
+  window.__seedApplied=String(el.value).trim().toLowerCase();
+  toast(`Départ partagé : ${f.first} ${f.last}, ${f.country}. Les marchés seront les mêmes pour vous deux.`);
 };
 window.duoSeeded=seeded;
 
@@ -10892,6 +10895,7 @@ const pCompare=o=>()=>{
     line('⭐','Score de vie',`${me.sc} / 100`,`${o.sc} / 100`,me.sc,o.sc),
     line('💰','Patrimoine',money(me.nw),money(o.nw),me.nw,o.nw),
     line('👨‍👩‍👧','Enfants',String(me.kd),String(o.kd),me.kd,o.kd),
+    row({ic:'🏁',t:'Premier million',s:`Toi : ${me.mi?'à '+An(me.mi):'pas encore'} · ${o.n} : ${o.mi?'à '+An(o.mi):'pas encore'}`,right:me.mi&&(!o.mi||me.mi<o.mi)?'🏆 toi':o.mi&&(!me.mi||o.mi<me.mi)?`🏆 ${esc(o.n)}`:me.mi?'🤝':''}),
     line('⏳','Âge',An(me.a),An(o.a),me.a,o.a),
     me.aw.length||o.aw.length?row({ic:'🏅',t:'Prix',s:`Toi : ${me.aw.join(', ')||'aucun'} · ${o.n} : ${o.aw.join(', ')||'aucun'}`}):null,
     me.pe||o.pe?row({ic:'🪞',t:'Personnalité',s:`Toi : ${me.pe||'—'} · ${o.n} : ${o.pe||'—'}`}):null]);
@@ -10920,6 +10924,7 @@ function pDuo(){
 window.duoPanel=pDuo;
 
 registerMod({id:MOD,
+  year(L){if(L&&L.tr&&!L.tr.millionAge&&netWorth(L)>=1e6)L.tr.millionAge=L.age},
   menuRows(L){return L?[nav('💞','À deux, chacun chez soi','Codes pour comparer vos vies',pDuo)]:[]}
 });
 window.duoParse=parse;window.duoCode=myCode;window.duoCompare=pCompare;window.duoInvite=invite;
@@ -14040,7 +14045,7 @@ function formHtml(px,d,label,color){
   <div class="two"><label class="f">Pays de naissance<select id="${px}-country">${Object.keys(COUNTRIES).map(c=>opt(c,c+(COUNTRIES[c].mon?' 👑':''),d.country)).join('')}</select></label><label class="f">Talent<select id="${px}-talent">${opt('rand','Au hasard',d.talent)}${opt('','Aucun',d.talent)}${Object.entries(TALENTS).map(([k,n])=>opt(k,n,d.talent)).join('')}</select></label></div>
   ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>
   ${typeof TRAIT_QUIZ!=='undefined'?`<details class="quiz"><summary>Pas sûr${d.gender==='F'?'e':''} ? Trois questions pour choisir</summary>${TRAIT_QUIZ.map((qz,i)=>`<label class="f">${esc(qz.q)}<select data-quiz="${px}"><option value="">—</option>${qz.a.map(([t,k])=>`<option value="${k}">${esc(t)}</option>`).join('')}</select></label>`).join('')}<p class="note" id="${px}-quizres"></p></details>`:''}`:''}
-  ${typeof applySeed==='function'?`<details class="quiz"><summary>Départ partagé avec ta moitié</summary><p class="note">Entrez le même mot sur vos deux téléphones : vous commencerez avec le même personnage.</p><div class="two"><label class="f">Votre mot<input id="${px}-seed" autocomplete="off" maxlength="30" placeholder="par exemple : banane"></label><button type="button" class="link" data-seed="${px}" style="align-self:end;padding:12px 6px">Utiliser ce mot</button></div></details>`:''}
+  ${typeof applySeed==='function'?`<details class="quiz"><summary>Départ partagé avec ta moitié</summary><p class="note">Entrez le même mot sur vos deux téléphones : même personnage de départ et mêmes marchés (bourse, jackpot…).</p><div class="two"><label class="f">Votre mot<input id="${px}-seed" autocomplete="off" maxlength="30" placeholder="par exemple : banane"></label><button type="button" class="link" data-seed="${px}" style="align-self:end;padding:12px 6px">Utiliser ce mot</button></div></details>`:''}
   <label class="chk"><input type="checkbox" id="${px}-royal"${d.royal?' checked':''}> Naître dans une famille royale <small>(pays marqués 👑)</small></label>
   <details class="led-wrap"><summary><span class="sav" id="${px}-sav">${AVATAR_R.render(LED[px].look,{age:24,gender:d.gender,mood:85})}</span><span>Apparence<small>Coiffure, couleurs, tenue : touche pour personnaliser</small></span></summary><div class="led" data-led="${px}">${ledInner(px)}</div></details></div>`;
 }
@@ -14071,7 +14076,10 @@ function buildSetup(){
 }
 function startGame(){
   const players=[makeLife(readForm('s1'))];if(setupMode===2)players.push(makeLife(readForm('s2')));
-  G={v:2,sv:SAVE_V,mode:setupMode,players,turn:0,cemetery:[],ribbons:{},challenges:{},snaps:{}};modCall('worldInit');save();render();
+  G={v:2,sv:SAVE_V,mode:setupMode,players,turn:0,cemetery:[],ribbons:{},challenges:{},snaps:{}};
+  const shared=String(window.__seedApplied||'').trim().toLowerCase().slice(0,30);
+  if(shared){G.shared=shared;withSeed(`monde:${shared}:init`,()=>modCall('worldInit'))}else modCall('worldInit');
+  save();render();
 }
 
 /* ---------- Évènements DOM ---------- */

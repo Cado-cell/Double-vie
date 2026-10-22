@@ -617,11 +617,14 @@ function timeTravel(idx,age){
 }
 
 /* ---------- Vieillir ---------- */
+/* Générateur pseudo-aléatoire à graine : sert au « départ partagé » à deux (mêmes marchés et mêmes évènements du monde). */
+function seedRng(s){let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}let a=h>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function withSeed(s,fn){const o=Math.random;Math.random=seedRng(s);try{return fn()}finally{Math.random=o}}
 function ageUp(){
   if(!G||busy())return;const L=cur();if(!L.alive)return;
   closeSheet();snapshot(L);
   L.age++;L.used={};L.market=null;L.yr={inc:0,dep:0,tax:0};delete L._tmp;
-  if(G.turn===0||G.players.length===1)modCall('worldYear');
+  if(G.turn===0||G.players.length===1){if(G.shared)withSeed(`monde:${G.shared}:${L.age}`,()=>modCall('worldYear'));else modCall('worldYear')}
   familyYear(L);schoolYear(L);lessonsYear(L);workYear(L);packsYear(L);financeYear(L);healthYear(L);prisonYear(L);milestones(L);
   trackMax(L,'fameMax',L.fame);
   const cause=deathCheck(L);

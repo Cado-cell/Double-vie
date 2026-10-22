@@ -33,14 +33,14 @@ const fs=require('fs');const dir='src';
  // comparaison : on se compare à une vie fabriquée
  r.cmp=await pg.evaluate(()=>{
   const L=cur();const enc=o=>'DV1.'+btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  const code=enc({v:1,n:'Camille',l:'Durand',g:'F',a:41,al:1,nw:2500000,kd:2,sc:80,aw:['Millionnaire'],pe:'Bosseuse',jb:'Chirurgienne',ct:'France',lk:L.look});
+  L.tr.millionAge=38;const code=enc({v:1,n:'Camille',l:'Durand',g:'F',a:41,al:1,nw:2500000,kd:2,sc:80,aw:['Millionnaire'],pe:'Bosseuse',jb:'Chirurgienne',ct:'France',mi:33,lk:L.look});
   openPanel(duoPanel);const t=document.getElementById('pbody');
   const panel=!!document.getElementById('duo-code')&&/Mon code/.test(t.innerText);
   document.getElementById('duo-in').value='n’importe quoi';[...t.querySelectorAll('button.row')].find(x=>/Comparer/.test(x.innerText)).click();
   const refused=document.getElementById('ptitle').textContent==='À deux, chacun chez soi';
   document.getElementById('duo-in').value='Voici mon code : '+code+' à bientôt';[...t.querySelectorAll('button.row')].find(x=>/Comparer/.test(x.innerText)).click();
   const txt=document.getElementById('pbody').innerText;
-  return {panel,refused,title:document.getElementById('ptitle').textContent,verdict:/verdict/i.test(txt),names:/Camille/.test(txt)&&new RegExp(L.first).test(txt),rows:/Score de vie/.test(txt)&&/Patrimoine/.test(txt)&&/Enfants/.test(txt),trophy:/🏆/.test(txt),inviteRow:/Inviter Camille/.test(txt)}});
+  return {panel,refused,title:document.getElementById('ptitle').textContent,verdict:/verdict/i.test(txt),names:/Camille/.test(txt)&&new RegExp(L.first).test(txt),rows:/Score de vie/.test(txt)&&/Patrimoine/.test(txt)&&/Enfants/.test(txt)&&/Premier million/.test(txt)&&/38 ans/.test(txt)&&/33 ans/.test(txt),trophy:/🏆/.test(txt),inviteRow:/Inviter Camille/.test(txt)}});
  // invitation
  r.invite=await pg.evaluate(()=>{
   const L=cur(),n0=L.family.length;[...document.querySelectorAll('#pbody button.row')].find(x=>/Inviter Camille/.test(x.innerText)).click();
@@ -49,6 +49,16 @@ const fs=require('fs');const dir='src';
  // le menu et le bilan proposent l'entrée
  r.menu=await pg.evaluate(()=>{closeSheet();openPanel(pMenu);return /À deux, chacun chez soi/.test(document.getElementById('pbody').innerText)});
  r.obit=await pg.evaluate(()=>{closeSheet();const L=cur();L.alive=false;L.cause='vieillesse';render();const o=document.querySelector('.obit');return !!o&&/Score de vie/.test(o.innerText)&&/Comparer avec ta moitié/.test(o.innerText)});
- r.ok=!errs.length&&r.seed.same&&r.seed.diff&&r.seed.restored&&r.seed.form&&r.seed.empty&&r.code.pref==='DV1.'&&r.code.name&&r.code.age&&r.code.sc&&r.code.look&&r.bad.garbage&&r.bad.evilClean
+ // mêmes marchés pour le même mot
+ const play=async word=>{const q=await b.newPage({viewport:{width:390,height:844}});await q.route('**/fonts.g*/**',x=>x.abort());q.on('pageerror',e=>errs.push(e.message));
+  await q.goto('file://'+process.cwd()+'/'+dir+'/shot.html');await q.evaluate(()=>{try{localStorage.clear()}catch(e){}});await q.reload();await q.click('[data-mode="1"]');
+  if(word){await q.evaluate(w=>{document.getElementById('s1-seed').value=w;applySeed('s1')},word)}
+  await q.click('#goBtn');
+  const res=await q.evaluate(()=>{for(let i=0;i<8;i++){ageUp();let k=0;while(curM&&k++<40){const c=curM.choices;if(!c||!c.length)endModal('');else chooseM(0)}}
+   return {shared:G.shared||null,ix:JSON.stringify(G.mk.ix),jack:G.jackpot||0}});
+  await q.close();return res};
+ const w1=await play('banane'),w2=await play('banane'),w3=await play('ananas'),w4=await play('');
+ r.world={shared:w1.shared,same:w1.ix===w2.ix&&w1.jack===w2.jack,diffWord:w1.ix!==w3.ix,noSeed:w4.shared===null,diffNone:w1.ix!==w4.ix};
+ r.ok=!errs.length&&r.world.shared==='banane'&&r.world.same&&r.world.diffWord&&r.world.noSeed&&r.world.diffNone&&r.seed.same&&r.seed.diff&&r.seed.restored&&r.seed.form&&r.seed.empty&&r.code.pref==='DV1.'&&r.code.name&&r.code.age&&r.code.sc&&r.code.look&&r.bad.garbage&&r.bad.evilClean
   &&r.cmp.panel&&r.cmp.refused&&r.cmp.verdict&&r.cmp.names&&r.cmp.rows&&r.cmp.trophy&&r.cmp.inviteRow&&r.invite.added&&/Ami.? d’une autre vie/.test(r.invite.role)&&r.invite.face&&r.invite.name&&r.invite.stillThere===1&&r.menu&&r.obit;
  console.log(JSON.stringify(r));console.log('errs',JSON.stringify(errs));await b.close()})();

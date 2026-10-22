@@ -807,7 +807,7 @@ function formHtml(px,d,label,color){
   <div class="two"><label class="f">Pays de naissance<select id="${px}-country">${Object.keys(COUNTRIES).map(c=>opt(c,c+(COUNTRIES[c].mon?' 👑':''),d.country)).join('')}</select></label><label class="f">Talent<select id="${px}-talent">${opt('rand','Au hasard',d.talent)}${opt('','Aucun',d.talent)}${Object.entries(TALENTS).map(([k,n])=>opt(k,n,d.talent)).join('')}</select></label></div>
   ${typeof TRAIT_CHOICES!=='undefined'?`<label class="f">Trait de caractère<select id="${px}-trait">${opt('rand','Au hasard',d.trait||'rand')}${TRAIT_CHOICES.map(([k,n])=>opt(k,n,d.trait||'rand')).join('')}</select></label>
   ${typeof TRAIT_QUIZ!=='undefined'?`<details class="quiz"><summary>Pas sûr${d.gender==='F'?'e':''} ? Trois questions pour choisir</summary>${TRAIT_QUIZ.map((qz,i)=>`<label class="f">${esc(qz.q)}<select data-quiz="${px}"><option value="">—</option>${qz.a.map(([t,k])=>`<option value="${k}">${esc(t)}</option>`).join('')}</select></label>`).join('')}<p class="note" id="${px}-quizres"></p></details>`:''}`:''}
-  ${typeof applySeed==='function'?`<details class="quiz"><summary>Départ partagé avec ta moitié</summary><p class="note">Entrez le même mot sur vos deux téléphones : vous commencerez avec le même personnage.</p><div class="two"><label class="f">Votre mot<input id="${px}-seed" autocomplete="off" maxlength="30" placeholder="par exemple : banane"></label><button type="button" class="link" data-seed="${px}" style="align-self:end;padding:12px 6px">Utiliser ce mot</button></div></details>`:''}
+  ${typeof applySeed==='function'?`<details class="quiz"><summary>Départ partagé avec ta moitié</summary><p class="note">Entrez le même mot sur vos deux téléphones : même personnage de départ et mêmes marchés (bourse, jackpot…).</p><div class="two"><label class="f">Votre mot<input id="${px}-seed" autocomplete="off" maxlength="30" placeholder="par exemple : banane"></label><button type="button" class="link" data-seed="${px}" style="align-self:end;padding:12px 6px">Utiliser ce mot</button></div></details>`:''}
   <label class="chk"><input type="checkbox" id="${px}-royal"${d.royal?' checked':''}> Naître dans une famille royale <small>(pays marqués 👑)</small></label>
   <details class="led-wrap"><summary><span class="sav" id="${px}-sav">${AVATAR_R.render(LED[px].look,{age:24,gender:d.gender,mood:85})}</span><span>Apparence<small>Coiffure, couleurs, tenue : touche pour personnaliser</small></span></summary><div class="led" data-led="${px}">${ledInner(px)}</div></details></div>`;
 }
@@ -838,7 +838,10 @@ function buildSetup(){
 }
 function startGame(){
   const players=[makeLife(readForm('s1'))];if(setupMode===2)players.push(makeLife(readForm('s2')));
-  G={v:2,sv:SAVE_V,mode:setupMode,players,turn:0,cemetery:[],ribbons:{},challenges:{},snaps:{}};modCall('worldInit');save();render();
+  G={v:2,sv:SAVE_V,mode:setupMode,players,turn:0,cemetery:[],ribbons:{},challenges:{},snaps:{}};
+  const shared=String(window.__seedApplied||'').trim().toLowerCase().slice(0,30);
+  if(shared){G.shared=shared;withSeed(`monde:${shared}:init`,()=>modCall('worldInit'))}else modCall('worldInit');
+  save();render();
 }
 
 /* ---------- Évènements DOM ---------- */

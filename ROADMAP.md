@@ -91,7 +91,7 @@
 
 ### NIVEAU 1 — Très gros chantiers (XL)
 
-- [ ] **1. Jeu à deux, chacun de son côté (asynchrone, sans serveur)** *(impact : 4/5 — remplace l'ancien « Mode Duo 2.0 » ; fait le 22/10 : code de vie à copier-coller, comparaison côte à côte avec score de vie, invitation du personnage de l'autre, départ partagé par un mot commun ; reste : événements du monde communs année après année, défis communs comparés à la fin)*
+- [ ] **1. Jeu à deux, chacun de son côté (asynchrone, sans serveur)** *(impact : 4/5 — remplace l'ancien « Mode Duo 2.0 » ; fait le 22/10 : code de vie à copier-coller, comparaison côte à côte avec score de vie, invitation du personnage de l'autre, départ partagé par un mot commun ; marchés et tendances communs avec le même mot ; premier million comparé ; reste : d'autres défis communs comparés à la fin, évènements aléatoires de vie communs)*
   - **Code de défi** : un court code à s'envoyer par message ; il donne le même départ (famille, naissance) et les mêmes **événements du monde** année après année (crises, innovations) ; chacun vit sa propre vie, puis on compare.
   - **Carte de bilan partageable** (image + code) à s'envoyer, et **comparaison côte à côte** de deux bilans (richesse, bonheur, amour, héritage, aventures, prix décernés : le plus généreux, le plus chanceux…).
   - **Échange de personnage par code** : le personnage de l'autre joueur apparaît dans ta vie comme ami, rival ou conjoint (avatar, métier, traits), avec des événements liés ; il devient un vrai agent du chantier 2b.
