@@ -11,3 +11,7 @@ Simulateur de vie à jouer seul ou à deux sur le même téléphone. Application
   `--publish` copie le paquet construit à la racine, c'est ce que sert GitHub Pages.
 - **Tester** : `node tests/run_all.js` (Playwright requis).
 - **Feuille de route** : `ROADMAP.md`. **Pilote automatique** : `AUTOPILOT.md`.
+
+## Déploiement sur Dokploy (Docker)
+
+`docker-compose.yml`, `Dockerfile` et `deploy/nginx.conf` servent le jeu avec nginx. Mode d'emploi dans `deploy/README.md`.

@@ -1,0 +1,11 @@
+# Allow-list: only what the image needs is sent to the Docker build context.
+*
+!index.html
+!app.js
+!sw.js
+!manifest.webmanifest
+!apple-touch-icon.png
+!icon-192.png
+!icon-512.png
+!icon-maskable-512.png
+!deploy/nginx.conf

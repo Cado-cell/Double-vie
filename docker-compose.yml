@@ -1,0 +1,31 @@
+# Double Vie — Docker Compose for Dokploy (Compose type, "Git" provider, compose path ./docker-compose.yml).
+#
+# In Dokploy:
+#   1. Create a "Compose" service from this repository (branch main).
+#   2. Open the "Domains" tab, add your domain, pick the service `double-vie` and port `80`
+#      (HTTPS / Let's Encrypt is handled by Traefik; the PWA needs HTTPS for its service worker).
+#   3. Deploy. Use "Auto Deploy" (webhook) to redeploy on every push.
+#
+# No Traefik labels are needed: Dokploy adds them from the Domains tab.
+services:
+  double-vie:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # `expose` (not `ports`): the container is only reachable through Traefik.
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    mem_limit: 128m
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
